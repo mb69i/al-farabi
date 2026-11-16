@@ -1,0 +1,158 @@
+/* Built for a 1920x1080 projector; scales with the viewport, never scrolls. */
+.display {
+  height: 100dvh;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  padding: 2.4vw 3vw;
+  gap: 2vw;
+}
+
+.display-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2vw;
+}
+
+.display-brand {
+  display: flex;
+  align-items: center;
+  gap: 1.4vw;
+}
+
+.display-crest {
+  display: grid;
+  place-items: center;
+  width: 5.2vw;
+  height: 5.2vw;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: 0 0 0 0.25vw rgba(242, 194, 48, 0.4);
+}
+
+.display-crest img {
+  height: 78%;
+  width: auto;
+}
+
+.display-brand svg {
+  width: 5.6vw;
+  height: auto;
+}
+
+.display-brand h1 {
+  font-size: 2vw;
+  color: var(--gold);
+}
+
+.display-brand p {
+  margin-top: 0.3vw;
+  font-size: 1.05vw;
+  color: var(--text-on-dark-muted);
+}
+
+.display-offline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6vw;
+  font-size: 1vw;
+  color: var(--text-on-dark-muted);
+}
+
+.display-offline .dot {
+  width: 0.7vw;
+  height: 0.7vw;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: display-pulse 1.2s ease-in-out infinite;
+}
+
+.display-body {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+  gap: 3vw;
+  min-height: 0;
+}
+
+.display-qr {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1vw;
+  padding: 2vw;
+  border-radius: 1.6vw;
+  background: var(--white);
+  color: var(--ink);
+  border-top: 0.5vw solid var(--burgundy);
+}
+
+.qr-box {
+  width: min(100%, 30vw, 52dvh);
+  aspect-ratio: 1;
+}
+
+.qr-box svg {
+  width: 100%;
+  height: 100%;
+}
+
+.qr-caption {
+  font-size: 1.9vw;
+  font-weight: 700;
+  text-align: center;
+}
+
+.qr-url {
+  font-size: 1.1vw;
+  color: var(--ink-muted);
+}
+
+.display-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 1.4vw;
+  min-height: 0;
+}
+
+.counter {
+  display: grid;
+  align-content: center;
+  gap: 0.4vw;
+  padding: 1.4vw 2vw;
+  border-radius: 1.4vw;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line-dark);
+}
+
+.counter-label {
+  font-size: 1.4vw;
+  color: var(--text-on-dark-muted);
+  font-weight: 500;
+}
+
+.counter-value {
+  font-size: 5vw;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.counter--gold {
+  border-color: rgba(242, 194, 48, 0.4);
+}
+
+.counter--gold .counter-value {
+  color: var(--gold);
+}
+
+.counter--burgundy {
+  background: rgba(163, 38, 43, 0.22);
+  border-color: rgba(194, 52, 58, 0.5);
+}
+
+@keyframes display-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
