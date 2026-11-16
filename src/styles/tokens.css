@@ -1,0 +1,49 @@
+/* Al-Farabi Conference identity — from the official flyers. */
+:root {
+  --navy-deep: #0C1733;
+  --navy: #14234B;
+  --navy-raised: #1B2D5C;
+  --burgundy: #A3262B;
+  --burgundy-bright: #C2343A;
+  --gold: #F2C230;
+  --gold-soft: #F7D873;
+  --white: #FFFFFF;
+  --paper: #FBFAF7;
+  --ink: #14234B;
+  --ink-muted: #56607A;
+  --line-dark: rgba(255, 255, 255, 0.12);
+  --line-light: #E3E1DA;
+  --text-on-dark: #FFFFFF;
+  --text-on-dark-muted: rgba(255, 255, 255, 0.74);
+  --danger: #B42318;
+  --success: #1F7A4D;
+
+  --font: 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+  --fs-xs: 0.8125rem;
+  --fs-sm: 0.9375rem;
+  --fs-md: 1rem;
+  --fs-lg: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
+  --fs-xl: clamp(1.5rem, 1.2rem + 1.4vw, 2.25rem);
+  --fs-2xl: clamp(2rem, 1.4rem + 3vw, 3.5rem);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --tap: 48px;
+  --shadow-card: 0 1px 2px rgba(12, 23, 51, 0.18), 0 18px 48px -18px rgba(12, 23, 51, 0.55);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* Flyer background: faint dot grid with sparse burgundy dots. */
+  --dots:
+    radial-gradient(circle, rgba(194, 52, 58, 0.55) 1.6px, transparent 2px) 13px 13px / 104px 104px,
+    radial-gradient(circle, rgba(255, 255, 255, 0.07) 1.1px, transparent 1.5px) 0 0 / 26px 26px;
+}
