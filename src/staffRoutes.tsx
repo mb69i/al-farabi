@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { createAdminApi } from './admin/adminApi';
 import { AdminApiProvider, AdminLayout } from './admin/AdminLayout';
 import { AdminResearchers, Deliveries, Guests, Overview, SwitchesPage } from './admin/pages';
+import { AuditPage, ExportPage, StaffPage, TemplateStudio } from './admin/pages2';
 import { useAuth } from './auth/AuthProvider';
 import { Shell } from './components/Shell';
 import { useI18n } from './i18n';
@@ -43,7 +44,10 @@ export default function StaffRoutes({ area }: { area: 'researchers' | 'admin' })
             <Route path="researchers" element={<AdminResearchers />} />
             <Route path="deliveries" element={<Deliveries />} />
             <Route path="switches" element={<SwitchesPage />} />
-            {role === 'owner' && <Route path="staff" element={<p />} />}
+            <Route path="templates" element={<TemplateStudio />} />
+            <Route path="export" element={<ExportPage />} />
+            {role === 'owner' && <Route path="staff" element={<StaffPage />} />}
+            {role === 'owner' && <Route path="audit" element={<AuditPage />} />}
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>
         </AdminLayout>
