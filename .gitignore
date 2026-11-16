@@ -1,4 +1,12 @@
-.superpowers/
 node_modules/
+dist/
+.superpowers/
+output/
+__pycache__/
+.pytest_cache/
+*.pyc
+.vercel/
 .env*
 !.env.example
+playwright-report/
+test-results/
