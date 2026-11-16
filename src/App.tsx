@@ -1,11 +1,15 @@
-import { Shell } from './components/Shell';
-import { useI18n } from './i18n';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { api } from './lib/apiInstance';
+import { EVENT_SLUG } from './lib/supabase';
+import { Register } from './pages/Register';
 
 export default function App() {
-  const { t } = useI18n();
   return (
-    <Shell>
-      <h1 style={{ fontSize: 'var(--fs-xl)' }}>{t('brand.conferenceLong')}</h1>
-    </Shell>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Register api={api} slug={EVENT_SLUG} />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
