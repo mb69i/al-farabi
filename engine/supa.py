@@ -28,6 +28,14 @@ class Supa:
             raise SupaError(f"rpc {name}: {res.status_code} {res.text[:300]}")
         return res.json() if res.content else None
 
+    def invite_user(self, email: str) -> str:
+        """Sends a Supabase invite email and returns the new user's id."""
+        res = self.http.post(f"{self.url}/auth/v1/invite", json={"email": email},
+                             headers=self._headers({"Content-Type": "application/json"}), timeout=30)
+        if not 200 <= res.status_code < 300:
+            raise SupaError(f"invite: {res.status_code} {res.text[:200]}")
+        return res.json()["id"]
+
     def download(self, bucket: str, path: str) -> bytes:
         res = self.http.get(f"{self.url}/storage/v1/object/{bucket}/{quote(path)}",
                             headers=self._headers(), timeout=60)

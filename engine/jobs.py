@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import io
 import os
+import time
 
 from PIL import Image
 
@@ -47,11 +48,13 @@ def _make_one(supa, mailer, row: dict, formas: dict) -> None:
     supa.rpc("complete_delivery", {"p_id": row["id"], "p_provider_id": provider_id, "p_file_path": file_path})
 
 
-def process_batch(supa, mailer, limit: int = 10) -> dict:
+def process_batch(supa, mailer, limit: int = 10, before_send=None, formas: dict | None = None) -> dict:
     rows = supa.rpc("claim_deliveries", {"p_limit": limit}) or []
     summary = {"claimed": len(rows), "sent": 0, "failed": 0}
-    formas: dict = {}
+    formas = {} if formas is None else formas
     for row in rows:
+        if before_send:
+            before_send()
         try:
             _make_one(supa, mailer, row, formas)
             summary["sent"] += 1
@@ -59,3 +62,39 @@ def process_batch(supa, mailer, limit: int = 10) -> dict:
             summary["failed"] += 1
             supa.rpc("fail_delivery", {"p_id": row["id"], "p_error": str(exc)[:500]})
     return summary
+
+
+def run(supa, mailer, *, clock=time.monotonic, sleep=time.sleep,
+        budget: float = 45.0, interval: float = 0.55, batch: int = 5) -> dict:
+    """Single runner: drains the queue at <= 1/interval sends per second within budget.
+
+    Another invocation holding the lease means this one exits at once; the
+    holder keeps claiming until the queue is empty, so new rows are not missed.
+    """
+    if not supa.rpc("acquire_runner", {"p_ttl_seconds": int(budget) + 30}):
+        return {"skipped": True}
+    total = {"claimed": 0, "sent": 0, "failed": 0}
+    start = clock()
+    last = [None]
+    formas: dict = {}
+
+    def pace():
+        if last[0] is not None:
+            wait = interval - (clock() - last[0])
+            if wait > 0:
+                sleep(wait)
+        last[0] = clock()
+
+    try:
+        while clock() - start < budget:
+            remaining = int((budget - (clock() - start)) / interval)
+            if remaining < 1:
+                break
+            out = process_batch(supa, mailer, limit=min(batch, remaining), before_send=pace, formas=formas)
+            for k in total:
+                total[k] += out[k]
+            if out["claimed"] == 0:
+                break
+    finally:
+        supa.rpc("release_runner", {})
+    return total
