@@ -1,4 +1,8 @@
 import { useMemo } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { createAdminApi } from './admin/adminApi';
+import { AdminApiProvider, AdminLayout } from './admin/AdminLayout';
+import { AdminResearchers, Deliveries, Guests, Overview, SwitchesPage } from './admin/pages';
 import { useAuth } from './auth/AuthProvider';
 import { Shell } from './components/Shell';
 import { useI18n } from './i18n';
@@ -19,6 +23,9 @@ function SignOut() {
 /** Staff-only screens, loaded on demand so the public page stays small. */
 export default function StaffRoutes({ area }: { area: 'researchers' | 'admin' }) {
   const staff = useMemo(() => createStaffApi(supabase!, EVENT_SLUG), []);
+  const admin = useMemo(() => createAdminApi(supabase!, EVENT_SLUG), []);
+  const { role } = useAuth();
+
   if (area === 'researchers') {
     return (
       <Shell variant="staff" actions={<SignOut />}>
@@ -28,7 +35,19 @@ export default function StaffRoutes({ area }: { area: 'researchers' | 'admin' })
   }
   return (
     <Shell variant="staff" actions={<SignOut />}>
-      <p>admin</p>
+      <AdminApiProvider value={admin}>
+        <AdminLayout>
+          <Routes>
+            <Route index element={<Overview />} />
+            <Route path="guests" element={<Guests />} />
+            <Route path="researchers" element={<AdminResearchers />} />
+            <Route path="deliveries" element={<Deliveries />} />
+            <Route path="switches" element={<SwitchesPage />} />
+            {role === 'owner' && <Route path="staff" element={<p />} />}
+            <Route path="*" element={<Navigate to="/admin" replace />} />
+          </Routes>
+        </AdminLayout>
+      </AdminApiProvider>
     </Shell>
   );
 }
