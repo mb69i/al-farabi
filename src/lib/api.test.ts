@@ -61,3 +61,12 @@ describe('registerGuest', () => {
     expect(c.rpc).toHaveBeenCalledTimes(3);
   });
 });
+
+describe('verifyCertificate', () => {
+  it('calls verify_certificate with the serial and returns its answer', async () => {
+    const c = client([{ data: { status: 'not_found' }, status: 200 }]);
+    const res = await createApi(c, 'slug', { sleep: async () => {} }).verifyCertificate('ALF26-ABCD-EFGH-JKLM');
+    expect(res).toEqual({ status: 'not_found' });
+    expect(c.rpc).toHaveBeenCalledWith('verify_certificate', { p_serial: 'ALF26-ABCD-EFGH-JKLM' });
+  });
+});

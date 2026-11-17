@@ -52,12 +52,26 @@ export type DisplayCounts = {
   researchers_total: number;
 };
 
+export type VerifyResult =
+  | {
+      status: 'valid';
+      serial: string;
+      name: string;
+      role: 'attendee' | 'researcher';
+      event_ar: string;
+      event_en: string;
+      date_from: string;
+      date_to: string;
+    }
+  | { status: 'not_found' | 'rate_limited' };
+
 export type Api = {
   getPublicEvent: (slug: string) => Promise<PublicEvent>;
   registerGuest: (input: GuestInput) => Promise<RegisterResult>;
   checkinGuest: (slug: string, serial: string, phone: string) => Promise<CheckinResult>;
   getDisplayCounts: (slug: string) => Promise<DisplayCounts>;
   getSiteContact: () => Promise<SiteContact | null>;
+  verifyCertificate: (serial: string) => Promise<VerifyResult>;
 };
 
 export type SiteContact = { phone: string; email: string; location_ar: string; location_en: string };
@@ -114,5 +128,6 @@ export function createApi(client: RpcClient, defaultSlug: string, opts: Opts = {
       call<CheckinResult>('checkin_guest', { p_slug: slug || defaultSlug, p_serial: serial, p_phone: phone }),
     getDisplayCounts: (slug) => call<DisplayCounts>('get_display_counts', { p_slug: slug || defaultSlug }),
     getSiteContact: () => call<SiteContact | null>('get_site_contact', {}),
+    verifyCertificate: (serial) => call<VerifyResult>('verify_certificate', { p_serial: serial }),
   };
 }

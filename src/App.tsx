@@ -9,6 +9,7 @@ import type { StaffPage } from './staffApp';
 // Only the registration form is in the first download; every other screen loads when opened.
 const StaffApp = lazy(() => import('./staffApp'));
 const Display = lazy(() => import('./pages/Display').then((m) => ({ default: m.Display })));
+const Verify = lazy(() => import('./pages/Verify').then((m) => ({ default: m.Verify })));
 
 function Later({ children }: { children: ReactNode }) {
   return <Suspense fallback={<div className="page-loading" aria-busy="true" />}>{children}</Suspense>;
@@ -27,6 +28,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Register api={api} slug={EVENT_SLUG} />} />
           <Route path="/display" element={<Later><Display api={api} slug={EVENT_SLUG} /></Later>} />
+          <Route path="/verify" element={<Later><Verify api={api} /></Later>} />
           <Route path="/staff/login" element={staff('login')} />
           <Route path="/staff/mfa" element={staff('mfa')} />
           <Route path="/researchers/*" element={staff('researchers')} />

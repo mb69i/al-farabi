@@ -24,6 +24,10 @@ const fakeRpc = {
   controls: { whoami: { role: 'owner', aal: 'aal2', email: 'owner@example.org' }, get_site_contact: SAMPLE_CONTACT,
     admin_overview: { total: 0, present_today: 0, male: 0, female: 0, vip: 0, researchers_signed: 0, researchers_total: 0,
       switches: { registration_open: true, cards_enabled: false, certificates_enabled: false }, deliveries: [] } },
+  'verify-ok': { verify_certificate: { status: 'valid', serial: 'ALF26-K7Q2-MXH4-P9TB', name: 'محمد الباقر علي', role: 'attendee',
+    event_ar: 'مؤتمر الفارابي للبحوث التطبيقية في التحول الرقمي الشامل', event_en: 'Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation',
+    date_from: '2026-11-21', date_to: '2026-11-22' } },
+  'verify-missing': { verify_certificate: { status: 'not_found' } },
   busy: { register_guest: { status: 'rate_limited', checked_in_today: false } },
   thanks: { register_guest: { status: 'created', serial: 'ALF26-K7Q2MX', checked_in_today: true } },
   researchers: { whoami: { role: 'doctor', aal: 'aal1', email: 'doctor@example.org' }, search_researchers: RESEARCHERS },
@@ -82,7 +86,7 @@ if (scenario === 'researchers' || scenario === 'admin' || scenario === 'controls
   await page.route('**/auth/v1/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(session.user) }));
 }
 
-const path = { display: '/display', 'display-live': '/display', login: '/staff/login', researchers: '/researchers', admin: '/admin', controls: '/admin/switches', 'verify-ok': '/verify?s=ALF26-K7Q2MX', 'verify-missing': '/verify?s=ALF26-ZZZZZZ' }[scenario] ?? '/';
+const path = { display: '/display', 'display-live': '/display', login: '/staff/login', researchers: '/researchers', admin: '/admin', controls: '/admin/switches', 'verify-ok': '/verify?s=ALF26-K7Q2-MXH4-P9TB', 'verify-missing': '/verify?s=ALF26-ZZZZ-ZZZZ-ZZZZ' }[scenario] ?? '/';
 if (!['researchers', 'admin', 'controls'].includes(scenario)) {
   await page.goto(base + path, { waitUntil: 'networkidle' });
   await page.evaluate(() => { try { localStorage.clear(); } catch {} });
