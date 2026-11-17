@@ -17,7 +17,10 @@ class Supa:
         self.http = http
 
     def _headers(self, extra: dict | None = None) -> dict:
-        h = {"apikey": self.key, "Authorization": f"Bearer {self.key}"}
+        h = {"apikey": self.key}
+        if not self.key.startswith("sb_"):
+            # Legacy service_role JWT. New sb_secret_ keys are not JWTs and Supabase rejects them as Bearer.
+            h["Authorization"] = f"Bearer {self.key}"
         h.update(extra or {})
         return h
 
