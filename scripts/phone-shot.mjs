@@ -1,6 +1,6 @@
 // Phone-size screenshots of the app for review.
 // Usage: node scripts/phone-shot.mjs <scenario> <out.png> [baseUrl]
-// Scenarios: form, busy, thanks, display, display-live, verify-ok, verify-missing, login
+// Scenarios: form, busy, thanks, display, display-live (day), display-night, verify-ok, verify-missing, login
 // Needs PLAYWRIGHT_BROWSERS_PATH pointing at the installed Chromium.
 import { chromium, devices } from '@playwright/test';
 
@@ -53,7 +53,8 @@ async function fillForm(page) {
 }
 
 const browser = await chromium.launch();
-const isDisplay = scenario === 'display' || scenario === 'display-live';
+const isDisplay = scenario.startsWith('display');
+const isLive = scenario === 'display-live' || scenario === 'display-night';
 const ctx = await browser.newContext(
   isDisplay
     ? { viewport: { width: 1280, height: 720 }, locale: 'ar-IQ' }
@@ -66,7 +67,7 @@ for (const [fn, body] of Object.entries(fakeRpc[scenario] ?? {})) {
   );
 }
 
-if (scenario === 'display-live') {
+if (isLive) {
   // Hall screen just after a new registration: the first poll after load returns higher numbers
   // (dev StrictMode calls twice on mount, and the page is opened twice).
   let calls = 0;
@@ -86,7 +87,7 @@ if (scenario === 'researchers' || scenario === 'admin' || scenario === 'controls
   await page.route('**/auth/v1/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(session.user) }));
 }
 
-const path = { display: '/display', 'display-live': '/display', login: '/staff/login', researchers: '/researchers', admin: '/admin', controls: '/admin/switches', 'verify-ok': '/verify?s=ALF26-K7Q2-MXH4-P9TB', 'verify-missing': '/verify?s=ALF26-ZZZZ-ZZZZ-ZZZZ' }[scenario] ?? '/';
+const path = { display: '/display', 'display-live': '/display?theme=day', 'display-night': '/display?theme=night', login: '/staff/login', researchers: '/researchers', admin: '/admin', controls: '/admin/switches', 'verify-ok': '/verify?s=ALF26-K7Q2-MXH4-P9TB', 'verify-missing': '/verify?s=ALF26-ZZZZ-ZZZZ-ZZZZ' }[scenario] ?? '/';
 if (!['researchers', 'admin', 'controls'].includes(scenario)) {
   await page.goto(base + path, { waitUntil: 'networkidle' });
   await page.evaluate(() => { try { localStorage.clear(); } catch {} });
@@ -102,7 +103,7 @@ if (scenario === 'busy' || scenario === 'thanks') {
   await page.waitForTimeout(scenario === 'thanks' ? 3500 : 800);
 }
 if (isDisplay || scenario === 'admin' || scenario === 'controls') await page.waitForTimeout(2000);
-if (scenario === 'display-live') await page.waitForTimeout(3600); // second poll + bump in progress
+if (isLive) await page.waitForTimeout(3600); // second poll + bump in progress
 if (scenario === 'footer') { await page.waitForTimeout(800); await page.locator('footer').scrollIntoViewIfNeeded(); }
 
 await page.screenshot({ path: out, fullPage: ['form', 'admin', 'controls'].includes(scenario) });

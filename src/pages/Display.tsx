@@ -1,26 +1,48 @@
 import QRCode from 'qrcode';
-import { useEffect, useRef, useState } from 'react';
-import { useI18n, type Key } from '../i18n';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useI18n } from '../i18n';
 import type { Api, DisplayCounts } from '../lib/api';
 import './Display.css';
 
 type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean };
 
 type CounterKey = Exclude<keyof DisplayCounts, 'researchers_total'>;
+type Theme = 'day' | 'night';
 
-const COUNTERS: Array<{ key: CounterKey; label: Key; tone?: 'gold' | 'burgundy' }> = [
-  { key: 'male', label: 'display.male' },
-  { key: 'female', label: 'display.female' },
-  { key: 'vip', label: 'display.vip', tone: 'gold' },
-  { key: 'researchers_signed', label: 'display.researchers', tone: 'burgundy' },
-  { key: 'total', label: 'display.total' },
-  { key: 'present_today', label: 'display.today' },
-];
-
-const BUMP_MS = 2200; // how long a counter glows after its number goes up
+const KEYS: CounterKey[] = ['total', 'present_today', 'male', 'female', 'vip', 'researchers_signed'];
+const BUMP_MS = 2200; // how long a number glows after it goes up
 const MOMENT_MS = 6000; // how long "Welcome, guest no. N" stays up
+const THEME_KEY = 'display-theme';
 
-/** True when the viewer's system asks for less motion (projector PCs can set this too). */
+/** Hour of day in Baghdad (UTC+3 all year, no daylight saving). */
+const baghdadHour = (now: number) => (new Date(now).getUTCHours() + 3) % 24;
+const autoTheme = (now: number): Theme => {
+  const h = baghdadHour(now);
+  return h >= 18 || h < 6 ? 'night' : 'day';
+};
+const baghdadClock = (now: number) => {
+  const d = new Date(now + 3 * 3600_000);
+  return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
+};
+
+function readStored(): Theme | null {
+  try {
+    const v = localStorage.getItem(THEME_KEY);
+    return v === 'day' || v === 'night' ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Link (?theme=) wins, then this screen's saved choice, then the time of day in Baghdad. */
+function initialTheme(): { theme: Theme; chosen: boolean } {
+  const q = new URLSearchParams(window.location.search).get('theme');
+  if (q === 'day' || q === 'night') return { theme: q, chosen: true };
+  const stored = readStored();
+  if (stored) return { theme: stored, chosen: true };
+  return { theme: autoTheme(Date.now()), chosen: false };
+}
+
 function usePrefersReducedMotion(): boolean {
   const query = '(prefers-reduced-motion: reduce)';
   const get = () => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia(query).matches;
@@ -62,6 +84,23 @@ function AnimatedNumber({ value, animate }: { value: number; animate: boolean })
   return <>{shown.toLocaleString('en-US')}</>;
 }
 
+function SunIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.5" />
+      <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" />
+    </svg>
+  );
+}
+
 export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
   const { t, setLang } = useI18n();
   const reduced = usePrefersReducedMotion();
@@ -71,17 +110,18 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
   const [moment, setMoment] = useState<{ n: number; id: number } | null>(null);
   const [lastRegAt, setLastRegAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  const [mode, setMode] = useState(initialTheme);
   const prev = useRef<DisplayCounts | null>(null);
   const bumpTimer = useRef<number>();
   const momentTimer = useRef<number>();
+  const [offline, setOffline] = useState(false);
+  const [qr, setQr] = useState('');
+  const target = `${window.location.origin}/`;
 
   // The projector shows Arabic unless the URL asks for English (?lang=en).
   useEffect(() => {
     setLang(new URLSearchParams(window.location.search).get('lang') === 'en' ? 'en' : 'ar');
   }, [setLang]);
-  const [offline, setOffline] = useState(false);
-  const [qr, setQr] = useState('');
-  const target = `${window.location.origin}/`;
 
   useEffect(() => {
     QRCode.toString(target, { type: 'svg', margin: 1, errorCorrectionLevel: 'M', color: { dark: '#0C1733', light: '#FFFFFF' } })
@@ -102,7 +142,7 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
         if (!before) return;
         // Which numbers went up since the last poll (aggregates only, never who).
         const up: Partial<Record<CounterKey, number>> = {};
-        for (const { key } of COUNTERS) {
+        for (const key of KEYS) {
           const d = (Number(c[key]) || 0) - (Number(before[key]) || 0);
           if (d > 0) up[key] = d;
         }
@@ -132,26 +172,46 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
     };
   }, [api, slug, pollMs]);
 
-  // Keep "last registration: N min ago" current.
+  // Clock, "N min ago", and the automatic day/night switch (only when nobody chose a mode).
   useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 5_000);
+    const id = window.setInterval(() => {
+      const t0 = Date.now();
+      setNow(t0);
+      setMode((m) => (m.chosen || autoTheme(t0) === m.theme ? m : { theme: autoTheme(t0), chosen: false }));
+    }, 5_000);
     return () => window.clearInterval(id);
   }, []);
 
-  // Staff convenience on the projector PC: F or a double-click toggles full screen.
+  const toggleTheme = () =>
+    setMode((m) => {
+      const theme: Theme = m.theme === 'night' ? 'day' : 'night';
+      try {
+        localStorage.setItem(THEME_KEY, theme);
+      } catch {
+        /* private window: still switches for this visit */
+      }
+      return { theme, chosen: true };
+    });
+  const toggleRef = useRef(toggleTheme);
+  toggleRef.current = toggleTheme;
+
+  // Staff shortcuts on the projector PC: F or double-click = full screen, N = day/night.
   useEffect(() => {
-    const toggle = () => {
+    const fullscreen = () => {
       if (document.fullscreenElement) void document.exitFullscreen?.();
       else void document.documentElement.requestFullscreen?.().catch(() => {});
     };
     const onKey = (e: KeyboardEvent) => {
-      if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey) toggle();
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const k = e.key.toLowerCase();
+      if (k === 'f') fullscreen();
+      if (k === 'n') toggleRef.current();
     };
     window.addEventListener('keydown', onKey);
-    window.addEventListener('dblclick', toggle);
+    window.addEventListener('dblclick', fullscreen);
     return () => {
       window.removeEventListener('keydown', onKey);
-      window.removeEventListener('dblclick', toggle);
+      window.removeEventListener('dblclick', fullscreen);
     };
   }, []);
 
@@ -163,46 +223,141 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
     return t('display.hoursAgo', { n: String(Math.floor(mins / 60)) });
   })();
 
-  const signed = Number(counts?.researchers_signed) || 0;
-  const researchersTotal = Number(counts?.researchers_total) || 0;
-  const pct = researchersTotal ? Math.min(100, Math.round((signed / researchersTotal) * 100)) : 0;
+  const n = (k: keyof DisplayCounts) => Number(counts?.[k]) || 0;
+  const pct = (a: number, b: number) => (b > 0 ? Math.min(100, Math.round((a / b) * 100)) : 0);
+  const people = n('male') + n('female');
+  const malePct = people > 0 ? (n('male') / people) * 100 : 50;
+  const night = mode.theme === 'night';
+  const todayPct = pct(n('present_today'), n('total'));
+
+  /** One number with its label, glow and "+N" badge (class names are what the tests read). */
+  const stat = (key: CounterKey, label: string, extra: string, children?: ReactNode) => {
+    const delta = bumps[key];
+    return (
+      <div className={`counter ${extra} ${delta ? 'counter--bump' : ''}`}>
+        <span className="counter-label">{label}</span>
+        <span className="counter-value num">{counts ? <AnimatedNumber value={n(key)} animate={motion} /> : '—'}</span>
+        {delta ? (
+          <span key={`${key}-${n(key)}`} className="counter-delta" aria-hidden="true">
+            <bdi dir="ltr">+{delta}</bdi>
+          </span>
+        ) : null}
+        {children}
+      </div>
+    );
+  };
 
   return (
-    <div className={`display ${motion ? '' : 'display--still'}`}>
-      <header className="display-head">
-        <div className="display-brand">
-          <span className="display-crest">
+    <div className={`display ${motion ? '' : 'display--still'}`} data-theme={mode.theme}>
+      <header className="d-head">
+        <div className="d-brand">
+          <span className="d-crest">
             <img src="/brand/crest-192.png" alt={t('brand.university')} />
           </span>
-          <div>
+          <div className="d-titles">
             <h1>{t('brand.conferenceLong')}</h1>
             <p>
               {t('brand.slogan')} · {t('brand.dates')}
             </p>
           </div>
         </div>
-        <div className="display-status">
+        <div className="d-status">
           {ago && (
-            <span className="display-last" data-testid="last-reg">
+            <span className="d-last" data-testid="last-reg">
               {t('display.lastReg', { when: ago })}
             </span>
           )}
           {offline ? (
-            <span className="display-offline" role="status">
+            <span className="d-pill d-pill--offline" role="status">
               <span className="dot" aria-hidden="true" />
               {t('display.reconnecting')}
             </span>
           ) : (
-            <span className="display-live">
+            <span className="d-pill d-pill--live">
               <span className="dot" aria-hidden="true" />
               {t('display.live')}
             </span>
           )}
+          <span className="d-clock num" data-testid="clock">
+            {baghdadClock(now)}
+          </span>
+          <button
+            type="button"
+            className="d-theme"
+            aria-label={night ? t('display.dayMode') : t('display.nightMode')}
+            title={night ? t('display.dayMode') : t('display.nightMode')}
+            onClick={toggleTheme}
+          >
+            {night ? <SunIcon /> : <MoonIcon />}
+          </button>
         </div>
       </header>
 
-      <main className="display-body">
-        <section className="display-qr">
+      <main className="d-body">
+        <section className="d-hero">
+          {stat('total', t('display.total'), 'counter--hero')}
+          <div className="d-moment-slot">
+            {moment && (
+              <div className="d-moment" data-testid="moment" role="status" key={moment.id}>
+                <span className="d-moment-spark" aria-hidden="true">✦</span>
+                {t('display.moment', { n: moment.n.toLocaleString('en-US') })}
+              </div>
+            )}
+          </div>
+          {stat(
+            'present_today',
+            t('display.today'),
+            'counter--today',
+            counts && n('total') > 0 ? (
+              <div className="d-meter">
+                <div className="d-meter-track" aria-hidden="true">
+                  <span style={{ width: `${todayPct}%` }} />
+                </div>
+                <span className="d-meter-text">{t('display.ofRegistered', { n: String(todayPct) })}</span>
+              </div>
+            ) : null,
+          )}
+        </section>
+
+        <section className="d-side">
+          <div className="d-tile d-gender">
+            <div className="d-gender-nums">
+              {stat('male', t('display.male'), 'counter--male')}
+              {stat('female', t('display.female'), 'counter--female')}
+            </div>
+            <div
+              className="d-split"
+              role="img"
+              aria-label={`${t('display.male')} ${n('male')} · ${t('display.female')} ${n('female')}`}
+            >
+              <span className="d-split-male" style={{ width: `${malePct}%` }} />
+              <span className="d-split-female" />
+            </div>
+          </div>
+          {stat('vip', t('display.vip'), 'd-tile counter--gold')}
+          {stat(
+            'researchers_signed',
+            t('display.researchers'),
+            'd-tile counter--burgundy',
+            counts && n('researchers_total') > 0 ? (
+              <div className="counter-progress-wrap">
+                <div
+                  className="counter-progress"
+                  role="progressbar"
+                  aria-label={t('display.researchers')}
+                  aria-valuemin={0}
+                  aria-valuemax={n('researchers_total')}
+                  aria-valuenow={n('researchers_signed')}
+                >
+                  <span style={{ width: `${pct(n('researchers_signed'), n('researchers_total'))}%` }} />
+                </div>
+                <span className="counter-sub num">{t('display.ofTotal', { n: n('researchers_total').toLocaleString('en-US') })}</span>
+              </div>
+            ) : null,
+          )}
+        </section>
+
+        <section className="d-qr">
           <div
             className="qr-box"
             data-testid="qr"
@@ -212,57 +367,9 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
             dangerouslySetInnerHTML={{ __html: qr }}
           />
           <p className="qr-caption">{t('display.scan')}</p>
-          {/* One fixed-height slot: the site address, or for a few seconds the welcome moment. */}
-          <div className="qr-foot">
-            {moment ? (
-              <div className="display-moment" data-testid="moment" role="status" key={moment.id}>
-                <span className="display-moment-spark" aria-hidden="true">✦</span>
-                {t('display.moment', { n: moment.n.toLocaleString('en-US') })}
-              </div>
-            ) : (
-              <p className="qr-url num">{target.replace(/^https?:\/\//, '').replace(/\/$/, '')}</p>
-            )}
-          </div>
-        </section>
-
-        <section className="display-grid">
-          {COUNTERS.map((c) => {
-            const delta = bumps[c.key];
-            return (
-              <div
-                key={c.key}
-                className={`counter ${c.tone ? `counter--${c.tone}` : ''} ${delta ? 'counter--bump' : ''}`}
-              >
-                <span className="counter-label">{t(c.label)}</span>
-                <span className="counter-value num">
-                  {counts ? <AnimatedNumber value={Number(counts[c.key]) || 0} animate={motion} /> : '—'}
-                </span>
-                {delta ? (
-                  <span key={`${c.key}-${counts?.[c.key]}`} className="counter-delta num" aria-hidden="true">
-                    +{delta}
-                  </span>
-                ) : null}
-                {c.key === 'researchers_signed' && counts && researchersTotal > 0 && (
-                  <div className="counter-progress-wrap">
-                    <div
-                      className="counter-progress"
-                      role="progressbar"
-                      aria-label={t('display.researchers')}
-                      aria-valuemin={0}
-                      aria-valuemax={researchersTotal}
-                      aria-valuenow={signed}
-                    >
-                      <span style={{ width: `${pct}%` }} />
-                    </div>
-                    <span className="counter-sub num">{t('display.ofTotal', { n: researchersTotal.toLocaleString('en-US') })}</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          <p className="qr-url num">{target.replace(/^https?:\/\//, '').replace(/\/$/, '')}</p>
         </section>
       </main>
-
     </div>
   );
 }

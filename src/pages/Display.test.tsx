@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { I18nProvider } from '../i18n';
 import type { Api, DisplayCounts } from '../lib/api';
@@ -161,5 +161,77 @@ describe('Display — live feel (item 7)', () => {
     } finally {
       window.matchMedia = original;
     }
+  });
+});
+
+describe('Display — day/night mode', () => {
+  const theme = () => document.querySelector('.display')!.getAttribute('data-theme');
+  function open(url: string) {
+    window.history.pushState({}, '', url);
+    return render(
+      <I18nProvider initial="en">
+        <Display api={api(vi.fn(async () => COUNTS))} slug="s" animate={false} />
+      </I18nProvider>,
+    );
+  }
+  beforeEach(() => localStorage.clear());
+  afterEach(() => localStorage.clear());
+
+  it('follows ?theme=night and ?theme=day in the link', async () => {
+    const r = open('/display?lang=en&theme=night');
+    await act(async () => {});
+    expect(theme()).toBe('night');
+    r.unmount();
+    open('/display?lang=en&theme=day');
+    await act(async () => {});
+    expect(theme()).toBe('day');
+  });
+
+  it('when nothing is chosen, uses night from 6 pm to 6 am Baghdad time', async () => {
+    vi.setSystemTime(new Date('2026-11-21T16:00:00Z')); // 19:00 in Baghdad
+    const r = open('/display?lang=en');
+    await act(async () => {});
+    expect(theme()).toBe('night');
+    r.unmount();
+    vi.setSystemTime(new Date('2026-11-21T07:00:00Z')); // 10:00 in Baghdad
+    open('/display?lang=en');
+    await act(async () => {});
+    expect(theme()).toBe('day');
+  });
+
+  it('the toggle switches mode and remembers it on this screen', async () => {
+    vi.setSystemTime(new Date('2026-11-21T07:00:00Z'));
+    const r = open('/display?lang=en');
+    await act(async () => {});
+    fireEvent.click(screen.getByRole('button', { name: 'Night mode' }));
+    expect(theme()).toBe('night');
+    expect(localStorage.getItem('display-theme')).toBe('night');
+    r.unmount();
+    open('/display?lang=en');
+    await act(async () => {});
+    expect(theme()).toBe('night');
+    fireEvent.click(screen.getByRole('button', { name: 'Day mode' }));
+    expect(theme()).toBe('day');
+  });
+
+  it('N on the keyboard also switches mode', async () => {
+    vi.setSystemTime(new Date('2026-11-21T07:00:00Z'));
+    open('/display?lang=en');
+    await act(async () => {});
+    fireEvent.keyDown(window, { key: 'n' });
+    expect(theme()).toBe('night');
+  });
+
+  it('shows the Baghdad time', async () => {
+    vi.setSystemTime(new Date('2026-11-21T18:04:00Z'));
+    open('/display?lang=en');
+    await act(async () => {});
+    expect(screen.getByTestId('clock')).toHaveTextContent('21:04');
+  });
+
+  it('shows the male/female split as one bar', async () => {
+    open('/display?lang=en');
+    await act(async () => {});
+    expect(screen.getByRole('img', { name: 'Male 198 · Female 176' })).toBeInTheDocument();
   });
 });
