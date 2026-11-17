@@ -50,7 +50,7 @@ On each tablet:
 1. Open **https://al-farabi-gilt.vercel.app/staff/login** and sign in with the doctor's account.
    They go straight to **توقيع الباحثين** (researcher sign-off).
 2. Type part of a name, e.g. `احمد`, `فاطمه`, `مصطفى` or `john`.
-   Six **demo researchers** marked **(تجريبي)** are already loaded.
+   Five **demo researchers** marked **(تجريبي)** / **(Demo)** are already loaded.
 3. Tap a name → check the details → the researcher signs with a finger → **تأكيد التوقيع**.
 4. Expected message right now: **"تم حفظ التوقيع. إرسال الشهادات متوقف مؤقتاً…"**
    (certificates are paused until email is set up — this is correct).
@@ -69,7 +69,7 @@ In the admin dashboard (your laptop) you can watch it live:
 
 ## 6. Optional: guest registration test
 
-1. Admin → **التحكم / Controls** → switch **Registration open** ON.
+1. Registration is already **open** for the demo (Admin → **التحكم / Controls** to change it).
 2. On a phone open **https://al-farabi-gilt.vercel.app** → register → the robot thanks you.
 3. Open **https://al-farabi-gilt.vercel.app/display** on a big screen → counters go up.
 4. Switch **Registration open** OFF again after the test.
