@@ -19,8 +19,24 @@ def _site_url() -> str:
     return os.environ.get("SITE_URL") or "https://al-farabi-gilt.vercel.app"
 
 
+def _send_premade(supa, mailer, row: dict, ctx: dict, path: str) -> None:
+    """A certificate already drawn by the Chromium engine (certs/) and stored in 'outputs': email it as is."""
+    if not path.endswith(".pdf") or ".." in path:
+        raise RuntimeError("pre-made certificate must be a PDF in outputs")
+    pdf = supa.download("outputs", path)
+    if not pdf.startswith(b"%PDF-"):
+        raise RuntimeError("pre-made certificate is not a PDF")
+    subject, html, text = build(ctx["kind"], ctx["lang"], ctx["values"], _site_url())
+    provider_id = mailer.send(ctx["to_email"], subject, html, text,
+                              [("al-farabi-certificate.pdf", pdf, "application/pdf")],
+                              idempotency_key=f"delivery-{row['id']}-{row.get('resend_count', 0)}")
+    supa.rpc("complete_delivery", {"p_id": row["id"], "p_provider_id": provider_id, "p_file_path": path})
+
+
 def _make_one(supa, mailer, row: dict, formas: dict) -> None:
     ctx = supa.rpc("delivery_context", {"p_id": row["id"]})
+    if ctx and ctx.get("kind") == "certificate" and ctx.get("prerendered"):
+        return _send_premade(supa, mailer, row, ctx, ctx["prerendered"])
     tpl = (ctx or {}).get("template")
     if not tpl or not tpl.get("forma_path"):
         raise RuntimeError("template missing")

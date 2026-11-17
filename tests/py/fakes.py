@@ -34,6 +34,7 @@ class FakeSupa:
         self.calls = []
         self.uploads = {}
         self.downloads = 0
+        self.downloaded = []
 
     def rpc(self, name, args=None):
         self.calls.append((name, args))
@@ -45,6 +46,9 @@ class FakeSupa:
 
     def download(self, bucket, path):
         self.downloads += 1
+        self.downloaded.append((bucket, path))
+        if path.endswith(".pdf"):
+            return b"%PDF-1.4 pre-made certificate"
         return png_bytes()
 
     def upload(self, bucket, path, data, content_type):

@@ -40,3 +40,10 @@ def test_logos_use_absolute_site_urls():
 
 def test_unknown_lang_falls_back_to_arabic():
     assert build("card", "fr", {"full_name": "A"}, "https://s")[0].startswith("بطاقة")
+
+
+@pytest.mark.parametrize("lang", ["ar", "en"])
+def test_attendee_certificate_does_not_talk_about_research(lang):
+    _, html, text = build("certificate", lang, {"full_name": "Ali"}, "https://s")
+    assert "«" not in text and "“" not in text and "بحثكم" not in text and "research:" not in text
+    assert "Ali" in text and "PDF" in text

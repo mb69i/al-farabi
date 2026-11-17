@@ -35,6 +35,18 @@ BODIES = {
     ],
 }
 
+# Certificates for attendees (no research title): the Chromium engine sends one PDF.
+BODIES[("certificate_attendee", "ar")] = [
+    "عزيزنا {full_name}،",
+    "يسرّ جامعة الفارابي أن تقدّم لكم شهادة المشاركة في مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل، شاكرين حضوركم.",
+    "تجدون الشهادة في المرفقات بصيغة PDF، ويمكن التحقق منها بمسح الرمز المطبوع عليها.",
+]
+BODIES[("certificate_attendee", "en")] = [
+    "Dear {full_name},",
+    "Al-Farabi University is pleased to present your certificate of participation in the First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation. Thank you for attending.",
+    "The certificate is attached as a PDF; scan the code printed on it to verify it.",
+]
+
 SIGN_OFF = {
     "ar": "اللجنة التنظيمية — جامعة الفارابي، بغداد",
     "en": "Organising Committee — Al-Farabi University, Baghdad",
@@ -52,7 +64,8 @@ def build(kind: str, lang: str, values: dict, site_url: str) -> tuple[str, str, 
     align = "right" if lang == "ar" else "left"
     raw = _Blank({k: str(v) for k, v in (values or {}).items() if v is not None})
     safe = _Blank({k: escape(v) for k, v in raw.items()})
-    lines = BODIES[(kind, lang)]
+    body_kind = "certificate_attendee" if kind == "certificate" and not raw.get("research_title") else kind
+    lines = BODIES[(body_kind, lang)]
     site = escape(site_url.rstrip("/"))
 
     text = "\n\n".join(line.format_map(raw) for line in lines) + "\n\n" + SIGN_OFF[lang]

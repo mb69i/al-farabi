@@ -70,3 +70,26 @@ def test_resend_uses_new_idempotency_key():
     supa, mailer = FakeSupa([({"id": "d9", "kind": "card", "event_id": "e", "resend_count": 2}, context(9))]), FakeMailer()
     process_batch(supa, mailer)
     assert mailer.sent[0]["key"] == "delivery-d9-2"
+
+
+def _premade(prerendered="e/certificate/demo-x.pdf"):
+    ctx = context(5, kind="certificate")
+    ctx["template"] = None  # the Chromium engine made the file; no Pillow template needed
+    ctx["prerendered"] = prerendered
+    return [({"id": "d5", "kind": "certificate", "event_id": "e"}, ctx)]
+
+
+def test_premade_certificate_is_emailed_as_is():
+    supa, mailer = FakeSupa(_premade()), FakeMailer()
+    assert process_batch(supa, mailer) == {"claimed": 1, "sent": 1, "failed": 0}
+    assert supa.downloaded == [("outputs", "e/certificate/demo-x.pdf")]
+    assert supa.uploads == {}  # nothing re-drawn or re-stored
+    assert mailer.sent[0]["attachments"] == [
+        ("al-farabi-certificate.pdf", b"%PDF-1.4 pre-made certificate", "application/pdf")]
+    assert supa.called("complete_delivery")[0]["p_file_path"] == "e/certificate/demo-x.pdf"
+
+
+def test_premade_file_that_is_not_a_pdf_fails_the_row():
+    supa, mailer = FakeSupa(_premade("e/certificate/demo-x.png")), FakeMailer()
+    assert process_batch(supa, mailer)["failed"] == 1
+    assert mailer.sent == []
