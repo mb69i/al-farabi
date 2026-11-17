@@ -30,10 +30,17 @@ each runs inside BEGIN…ROLLBACK).
 | 3 | Remove "Attending as" | **Done**, live |
 | 4 | White page, blue glass cards, red borders, crest only, contrast | **Done**, live |
 | 5 | Editable "Contact us" footer + credits | **Done**, live; phone/email still empty (owner fills in Admin → التحكم) |
-| 6 | Faster loading on phones/mobile data | To do |
-| 7 | More animated/interactive hall screen counter (`/display`) | To do |
-| 8 | Public `/verify?s=SERIAL` page + read-only `verify_certificate(serial)` (name, event, date, role only), rate-limited; consider longer printed serials | To do |
-| 9 | Certificate engine from the owner's `engine-template` folder (template.html with {{NAME}}, {{ORG_LINE}}, {{DATE_PHRASE}}, {{SERIAL}}, {{QR}}, {{VARIANT}}); Playwright/Chromium render; flat 300 dpi PDF; fresh per-person QR to `<VERIFY_BASE_URL>/verify?s=<serial>` verified by decoding; fail on missing name/date/URL; sponsors and no-sponsors variants; show samples (short/long name, one-day/multi-day date) first | To do — **needs the owner's engine-template folder** |
+| 6 | Faster loading on phones/mobile data | **Done** (preview) — registration page 1039 KB → 273 KB, fully loaded 6.0 s → 2.4 s on slow 4G; `scripts/check-bundle.mjs` (75 KB gzip budget), `scripts/perf-check.mjs` |
+| 7 | More animated/interactive hall screen counter (`/display`) | **Done** (preview) — count-up, glow + "+N", "Welcome, guest no. N", last-registration time, Live badge, researcher progress, reduced-motion, F/double-click full screen |
+| 8 | Public `/verify?s=SERIAL` page + read-only `verify_certificate(serial)` (name, event, date, role only), rate-limited; consider longer printed serials | **Done** (preview; migration 13 applied) — `certificates` table, serials `ALF26-XXXX-XXXX-XXXX`, `issue_certificate()` server-only, limits `verify_ip` 30/min, `verify_global` 3000/10 min; test `tests/db/verify.sql` |
+| 9 | Certificate engine from the owner's `engine-template` folder (template.html with {{NAME}}, {{ORG_LINE}}, {{DATE_PHRASE}}, {{SERIAL}}, {{QR}}, {{VARIANT}}); Playwright/Chromium render; flat 300 dpi PDF; fresh per-person QR to `<VERIFY_BASE_URL>/verify?s=<serial>` verified by decoding; fail on missing name/date/URL; sponsors and no-sponsors variants; show samples (short/long name, one-day/multi-day date) first | **Waiting** — the `engine-template` folder is not on this PC; asked the owner for it (17 Nov evening). Engine should call `issue_certificate()` for the serial and `src/lib/datePhrase.ts` rules for DATE_PHRASE |
+
+## Notes from items 6–8
+- Public pages talk to the database through `src/lib/rpcFetch.ts` (no supabase-js); staff screens load
+  `src/staffApp.tsx` on demand. Keep `npm run build && node scripts/check-bundle.mjs` passing.
+- Fonts are self-hosted (`src/styles/fonts.css`); Google Fonts were removed from the CSP.
+- Certificates are not yet in `backup_export` / `scripts/backup.py`: add them once item 9 issues real ones,
+  so printed serials survive a restore.
 
 ## Open decisions for the owner
 - Shared admin/data-entry token: not added to the live login (personal logins + authenticator are stronger; see SECURITY.md §3).
