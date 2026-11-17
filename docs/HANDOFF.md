@@ -54,4 +54,7 @@ each runs inside BEGIN…ROLLBACK).
 ## Open decisions for the owner
 - Shared admin/data-entry token: not added to the live login (personal logins + authenticator are stronger; see SECURITY.md §3).
 - Schedule the 5-minute backup task (command in BACKUP.md).
-- Email (Resend domain + Vercel secret settings) is still not set up, so cards/certificates are not emailed.
+- Email (17 Nov, live): domain `mb-ai.org` (Cloudflare) has the Resend DKIM/SPF/DMARC records; sender defaults to
+  `certificates@mb-ai.org`; the database vault holds the sender URL and secret. Still needed from the owner:
+  Resend shows *Verified*, then `RESEND_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY` in Vercel. Until then nothing is sent
+  or retried.
