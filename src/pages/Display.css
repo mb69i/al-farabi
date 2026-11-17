@@ -3,7 +3,8 @@
    One unit (--u) fits 16:9 and 4:3 projectors; nothing scrolls. Day = white page,
    night = navy page; both in the conference navy, burgundy and gold. */
 .display {
-  --u: min(1vw, 1.778vh);
+  /* 1.6vh (not 16:9's 1.778) leaves ~15% spare height for other browsers, zoom and bars */
+  --u: min(1vw, 1.6vh);
 
   --d-bg: var(--white);
   /* (own copy of the day dots, so a visitor's night choice on other pages never changes the hall) */
@@ -26,9 +27,11 @@
 
   position: relative;
   height: 100dvh;
-  overflow: hidden;
-  display: grid;
-  place-items: center;
+  /* never cut anything off: if a window is too small it scrolls (scrollbar hidden) */
+  overflow: auto;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
   padding: calc(var(--u) * 1.6) calc(var(--u) * 3);
   background: var(--d-pattern), var(--d-bg);
   color: var(--d-ink);
@@ -82,6 +85,8 @@
 
 /* ---------- Stage ---------- */
 .d-stage {
+  /* auto margins centre it, and unlike place-items they never push the top off screen */
+  margin: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -158,7 +163,7 @@
 }
 
 .qr-box {
-  width: min(calc(var(--u) * 20), 36dvh);
+  width: min(calc(var(--u) * 20), 34dvh);
   aspect-ratio: 1;
 }
 

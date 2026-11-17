@@ -38,6 +38,8 @@ each runs inside BEGIN…ROLLBACK).
 ## Day/night (17 Nov night)
 - Hall screen mode is set by an admin: Admin → التحكم → "شاشة القاعة" (Automatic / Day / Night), stored in
   `site_settings.display_theme` (migration 14, test `tests/db/display_theme.sql`), sent with `get_display_counts`.
+- After any hall screen change run `node scripts/check-hall-fit.mjs` (18 window sizes, day and night: nothing cut off,
+  centred, column ≤ 90% of the height).
 - Every other page has a sun/moon button next to the language button (saved per device, `public/theme-boot.js`).
 - If the hall screen says it is "not connected to the database", that Vercel environment is missing
   `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (check Settings → Environment Variables → Preview).
