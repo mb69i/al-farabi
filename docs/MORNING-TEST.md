@@ -82,18 +82,16 @@ In the admin dashboard (your laptop) you can watch it live:
 | Uploading designs in the template studio, previews | Vercel server settings below |
 | Staff invitation **emails** | Resend SMTP in Supabase (use step 3 + 4 until then) |
 
-Vercel → project **al-farabi** → **Settings → Environment Variables** (you type these, never in chat):
+Already done (17 Nov): the database keeps the sender's address and its secret in the vault,
+the server reuses the site's own Supabase address, and nothing is sent (or used up) until the
+email settings exist. You only add these in Vercel → project **al-farabi** → **Settings →
+Environment Variables** (you type them, never in chat):
 
-| Name | Value |
-|---|---|
-| `SUPABASE_URL` | `https://kxwimaslalczappzngci.supabase.co` |
-| `SUPABASE_ANON_KEY` | the same publishable key as `VITE_SUPABASE_ANON_KEY` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API Keys → **secret** key |
-| `EVENT_SLUG` | `alfarabi-conf-2026` |
-| `SITE_URL` | `https://al-farabi-gilt.vercel.app` |
-| `RESEND_API_KEY` | from Resend (later) |
-| `MAIL_FROM` | e.g. `مؤتمر الفارابي <events@your-domain>` (later) |
-| `DELIVERY_SECRET` | any long random password you make up |
+| Name | Value | When |
+|---|---|---|
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API Keys → **secret** key | now |
+| `RESEND_API_KEY` | Resend → API Keys (after the domain shows *Verified*) | after buying the domain |
+| `MAIL_FROM` | e.g. `مؤتمر الفارابي <certificates@your-domain>` | after buying the domain |
 
 After adding them: Vercel → **Deployments** → latest → **Redeploy**.
 

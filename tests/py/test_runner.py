@@ -61,3 +61,9 @@ def test_run_stops_at_time_budget_and_still_releases():
     out = run(supa, FakeMailer(), clock=clock.now, sleep=clock.sleep, budget=5, interval=0.55)
     assert out["sent"] < 500
     assert supa.called("release_runner") == [{}]
+
+
+def test_run_waits_without_touching_queue_when_email_not_set_up():
+    supa, mailer, clock = QueueSupa(_rows(3)), FakeMailer(ready=False), Clock()
+    assert run(supa, mailer, clock=clock.now, sleep=clock.sleep) == {"skipped": "email not configured"}
+    assert supa.calls == [] and mailer.sent == []

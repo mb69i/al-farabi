@@ -41,7 +41,12 @@ def _guard(headers, deps, allowed):
 def handle_deliver(headers, raw, deps):
     secret = deps.get("secret") or ""
     given = bearer(headers)
-    if not secret or not hmac.compare_digest(given.encode(), secret.encode()):
+    if secret:
+        ok = hmac.compare_digest(given.encode(), secret.encode())
+    else:
+        # No secret in the Vercel settings: the database keeps it (vault) and checks it.
+        ok = bool(given) and deps["supa"].rpc("delivery_secret_ok", {"p_given": given}) is True
+    if not ok:
         return _json(401, {"error": "unauthorized"})
     return _json(200, deps["run"](deps["supa"], deps["mailer"]))
 

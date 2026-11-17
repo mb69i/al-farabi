@@ -35,3 +35,9 @@ def test_send_posts_resend_payload_with_idempotency_key():
 def test_send_raises_on_provider_error():
     with pytest.raises(MailError):
         Mailer("k", "s", Http(Res(503))).send("a@b.co", "S", "h", "t", [], "delivery-1")
+
+
+def test_mailer_is_ready_only_with_key_and_sender():
+    assert Mailer("re_key", "Conf <a@b.org>").ready
+    assert not Mailer("", "Conf <a@b.org>").ready
+    assert not Mailer("re_key", "").ready

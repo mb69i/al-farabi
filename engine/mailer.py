@@ -18,6 +18,11 @@ class Mailer:
         self.sender = sender
         self.http = http
 
+    @property
+    def ready(self) -> bool:
+        """True once both the Resend key and the sender address are set."""
+        return bool(self.api_key and self.sender)
+
     def send(self, to: str, subject: str, html: str, text: str,
              attachments: list[tuple[str, bytes, str]], idempotency_key: str) -> str:
         payload = {

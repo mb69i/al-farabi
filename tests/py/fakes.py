@@ -55,7 +55,8 @@ class FakeSupa:
 
 
 class FakeMailer:
-    def __init__(self, fail_for=()):
+    def __init__(self, fail_for=(), ready=True):
+        self.ready = ready
         self.fail_for = set(fail_for)
         self.sent = []
 

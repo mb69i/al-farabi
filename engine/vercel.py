@@ -14,8 +14,9 @@ def deps_from_env() -> dict:
     from engine.mailer import Mailer
     from engine.supa import Supa
 
-    url = os.environ.get("SUPABASE_URL", "")
-    anon = os.environ.get("SUPABASE_ANON_KEY", "")
+    # Falls back to the site's own (public) Supabase settings, so only secrets must be added.
+    url = os.environ.get("SUPABASE_URL") or os.environ.get("VITE_SUPABASE_URL", "")
+    anon = os.environ.get("SUPABASE_ANON_KEY") or os.environ.get("VITE_SUPABASE_ANON_KEY", "")
     return {
         "secret": os.environ.get("DELIVERY_SECRET", ""),
         "supa": Supa(url, os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")),

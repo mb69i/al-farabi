@@ -16,7 +16,7 @@ from engine.render import render, to_pdf, to_png
 
 
 def _site_url() -> str:
-    return os.environ.get("SITE_URL", "")
+    return os.environ.get("SITE_URL") or "https://al-farabi-gilt.vercel.app"
 
 
 def _make_one(supa, mailer, row: dict, formas: dict) -> None:
@@ -71,6 +71,9 @@ def run(supa, mailer, *, clock=time.monotonic, sleep=time.sleep,
     Another invocation holding the lease means this one exits at once; the
     holder keeps claiming until the queue is empty, so new rows are not missed.
     """
+    if not mailer.ready:
+        # Leave the queue untouched so no retries are used up before email is set up.
+        return {"skipped": "email not configured"}
     if not supa.rpc("acquire_runner", {"p_ttl_seconds": int(budget) + 30}):
         return {"skipped": True}
     total = {"claimed": 0, "sent": 0, "failed": 0}

@@ -116,3 +116,24 @@ def test_staff_invite_cannot_create_owner():
     body = json.dumps({"email": "x@x.org", "role": "owner", "display_name": "X"}).encode()
     status = handle_staff({"authorization": "Bearer t"}, body, deps(supa=InviteSupa([]), auth=owner))[0]
     assert status == 400
+
+
+class SecretSupa(FakeSupa):
+    def __init__(self, good):
+        super().__init__([])
+        self.good = good
+
+    def rpc(self, name, args=None):
+        self.calls.append((name, args))
+        if name == "delivery_secret_ok":
+            return args["p_given"] == self.good
+        return None
+
+
+def test_deliver_checks_database_secret_when_none_in_settings():
+    ran = []
+    d = deps(secret="", supa=SecretSupa("db-made"), run=lambda s, m: ran.append(1) or {"claimed": 0})
+    assert handle_deliver({"authorization": "Bearer db-made"}, b"", d)[0] == 200
+    assert handle_deliver({"authorization": "Bearer wrong"}, b"", d)[0] == 401
+    assert handle_deliver({"authorization": "Bearer "}, b"", d)[0] == 401
+    assert ran == [1]
