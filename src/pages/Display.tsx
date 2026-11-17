@@ -228,15 +228,14 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
   const people = n('male') + n('female');
   const malePct = people > 0 ? (n('male') / people) * 100 : 50;
   const night = mode.theme === 'night';
-  const todayPct = pct(n('present_today'), n('total'));
 
-  /** One number with its label, glow and "+N" badge (class names are what the tests read). */
+  /** One number in the strip, with its glow and "+N" badge (class names are what the tests read). */
   const stat = (key: CounterKey, label: string, extra: string, children?: ReactNode) => {
     const delta = bumps[key];
     return (
       <div className={`counter ${extra} ${delta ? 'counter--bump' : ''}`}>
-        <span className="counter-label">{label}</span>
         <span className="counter-value num">{counts ? <AnimatedNumber value={n(key)} animate={motion} /> : '—'}</span>
+        <span className="counter-label">{label}</span>
         {delta ? (
           <span key={`${key}-${n(key)}`} className="counter-delta" aria-hidden="true">
             <bdi dir="ltr">+{delta}</bdi>
@@ -249,78 +248,78 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
 
   return (
     <div className={`display ${motion ? '' : 'display--still'}`} data-theme={mode.theme}>
-      <header className="d-head">
-        <div className="d-brand">
-          <span className="d-crest">
-            <img src="/brand/crest-192.png" alt={t('brand.university')} />
+      {/* Small corner controls, out of the way of the stage */}
+      <div className="d-corner">
+        <span className="d-clock num" data-testid="clock">
+          {baghdadClock(now)}
+        </span>
+        {ago && (
+          <span className="d-last" data-testid="last-reg">
+            {t('display.lastReg', { when: ago })}
           </span>
-          <div className="d-titles">
-            <h1>{t('brand.conferenceLong')}</h1>
-            <p>
-              {t('brand.slogan')} · {t('brand.dates')}
-            </p>
-          </div>
+        )}
+        <button
+          type="button"
+          className="d-theme"
+          aria-label={night ? t('display.dayMode') : t('display.nightMode')}
+          title={night ? t('display.dayMode') : t('display.nightMode')}
+          onClick={toggleTheme}
+        >
+          {night ? <SunIcon /> : <MoonIcon />}
+        </button>
+      </div>
+
+      <main className="d-stage">
+        <span className="d-crest">
+          <img src="/brand/crest-192.png" alt={t('brand.university')} />
+        </span>
+        <p className="d-kicker">
+          {t('brand.university')} · {t('brand.edition')}
+        </p>
+        <h1 className="d-title">{t('brand.conferenceLong')}</h1>
+        <p className="d-chip">
+          <span>{t('brand.place')}</span>
+          <span aria-hidden="true">—</span>
+          <span>{t('brand.dates')}</span>
+        </p>
+
+        <div className={`d-qr-frame ${moment ? 'd-qr-frame--glow' : ''}`}>
+          <div
+            className="qr-box"
+            data-testid="qr"
+            data-target={target}
+            role="img"
+            aria-label={t('display.scan')}
+            dangerouslySetInnerHTML={{ __html: qr }}
+          />
         </div>
-        <div className="d-status">
-          {ago && (
-            <span className="d-last" data-testid="last-reg">
-              {t('display.lastReg', { when: ago })}
-            </span>
+        <p className="qr-caption">{t('display.scan')}</p>
+        <p className="qr-url num">{target.replace(/^https?:\/\//, '').replace(/\/$/, '')}</p>
+
+        <div className="d-moment-slot">
+          {moment && (
+            <div className="d-moment" data-testid="moment" role="status" key={moment.id}>
+              <span className="d-moment-spark" aria-hidden="true">✦</span>
+              {t('display.moment', { n: moment.n.toLocaleString('en-US') })}
+            </div>
           )}
+        </div>
+
+        <div className="d-strip">
           {offline ? (
-            <span className="d-pill d-pill--offline" role="status">
+            <span className="d-live d-live--offline" role="status">
               <span className="dot" aria-hidden="true" />
               {t('display.reconnecting')}
             </span>
           ) : (
-            <span className="d-pill d-pill--live">
+            <span className="d-live">
               <span className="dot" aria-hidden="true" />
               {t('display.live')}
             </span>
           )}
-          <span className="d-clock num" data-testid="clock">
-            {baghdadClock(now)}
-          </span>
-          <button
-            type="button"
-            className="d-theme"
-            aria-label={night ? t('display.dayMode') : t('display.nightMode')}
-            title={night ? t('display.dayMode') : t('display.nightMode')}
-            onClick={toggleTheme}
-          >
-            {night ? <SunIcon /> : <MoonIcon />}
-          </button>
-        </div>
-      </header>
-
-      <main className="d-body">
-        <section className="d-hero">
-          {stat('total', t('display.total'), 'counter--hero')}
-          <div className="d-moment-slot">
-            {moment && (
-              <div className="d-moment" data-testid="moment" role="status" key={moment.id}>
-                <span className="d-moment-spark" aria-hidden="true">✦</span>
-                {t('display.moment', { n: moment.n.toLocaleString('en-US') })}
-              </div>
-            )}
-          </div>
-          {stat(
-            'present_today',
-            t('display.today'),
-            'counter--today',
-            counts && n('total') > 0 ? (
-              <div className="d-meter">
-                <div className="d-meter-track" aria-hidden="true">
-                  <span style={{ width: `${todayPct}%` }} />
-                </div>
-                <span className="d-meter-text">{t('display.ofRegistered', { n: String(todayPct) })}</span>
-              </div>
-            ) : null,
-          )}
-        </section>
-
-        <section className="d-side">
-          <div className="d-tile d-gender">
+          {stat('total', t('display.total'), 'counter--main')}
+          {stat('present_today', t('display.today'), '')}
+          <div className="d-gender">
             <div className="d-gender-nums">
               {stat('male', t('display.male'), 'counter--male')}
               {stat('female', t('display.female'), 'counter--female')}
@@ -334,11 +333,11 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
               <span className="d-split-female" />
             </div>
           </div>
-          {stat('vip', t('display.vip'), 'd-tile counter--gold')}
+          {stat('vip', t('display.vip'), 'counter--gold')}
           {stat(
             'researchers_signed',
             t('display.researchers'),
-            'd-tile counter--burgundy',
+            'counter--burgundy',
             counts && n('researchers_total') > 0 ? (
               <div className="counter-progress-wrap">
                 <div
@@ -355,20 +354,7 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
               </div>
             ) : null,
           )}
-        </section>
-
-        <section className="d-qr">
-          <div
-            className="qr-box"
-            data-testid="qr"
-            data-target={target}
-            role="img"
-            aria-label={t('display.scan')}
-            dangerouslySetInnerHTML={{ __html: qr }}
-          />
-          <p className="qr-caption">{t('display.scan')}</p>
-          <p className="qr-url num">{target.replace(/^https?:\/\//, '').replace(/\/$/, '')}</p>
-        </section>
+        </div>
       </main>
     </div>
   );

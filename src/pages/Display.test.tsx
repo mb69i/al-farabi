@@ -235,3 +235,21 @@ describe('Display — day/night mode', () => {
     expect(screen.getByRole('img', { name: 'Male 198 · Female 176' })).toBeInTheDocument();
   });
 });
+
+describe('Display — centred layout like the previous event tool', () => {
+  it('puts the QR code in the middle, then one small strip with all the numbers under it', async () => {
+    setup(api(vi.fn(async () => COUNTS)));
+    await act(async () => {});
+    const stage = document.querySelector('.d-stage')!;
+    const qr = screen.getByTestId('qr');
+    const strip = document.querySelector('.d-strip')!;
+    expect(stage).toContainElement(qr);
+    expect(stage).toContainElement(strip as HTMLElement);
+    // the QR comes before the numbers
+    expect(qr.compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    for (const label of ['Registered', 'Present today', 'Male', 'Female', 'VIP guests', 'Researchers']) {
+      expect(strip).toContainElement(screen.getByText(label));
+    }
+    expect(screen.getByText('Scan to register your attendance')).toBeInTheDocument();
+  });
+});
