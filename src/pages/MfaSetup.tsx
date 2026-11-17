@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { Shell } from '../components/Shell';
@@ -12,12 +12,18 @@ export function MfaSetup({ client }: { client: SupabaseClient }) {
   const { session, role, aal, refresh } = useAuth();
   const [factorId, setFactorId] = useState<string | null>(null);
   const [qr, setQr] = useState<string | null>(null);
+  const [secret, setSecret] = useState<string | null>(null);
+  const started = useRef<string | null>(null);
+  const userId = session?.user.id ?? null;
   const [code, setCode] = useState('');
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!session) return;
+    // Run once per user: the session object is replaced on every tab switch, and re-running would
+    // throw away the authenticator the owner just scanned.
+    if (!userId || started.current === userId) return;
+    started.current = userId;
     let alive = true;
     (async () => {
       const { data } = await client.auth.mfa.listFactors();
@@ -34,12 +40,13 @@ export function MfaSetup({ client }: { client: SupabaseClient }) {
       if (alive && enrolled) {
         setFactorId(enrolled.id);
         setQr(enrolled.totp.qr_code);
+        setSecret(enrolled.totp.secret);
       }
     })().catch(() => undefined);
     return () => {
       alive = false;
     };
-  }, [client, session]);
+  }, [client, userId]);
 
   if (!session) return <Navigate to="/staff/login" replace />;
   if (aal === 'aal2' && (role === 'admin' || role === 'owner')) return <Navigate to="/admin" replace />;
@@ -65,6 +72,13 @@ export function MfaSetup({ client }: { client: SupabaseClient }) {
         <h1>{t('staff.mfaTitle')}</h1>
         <p className="staff-note">{qr ? t('staff.mfaSetup') : t('staff.mfaPrompt')}</p>
         {qr && <img className="mfa-qr" src={qr} alt="" width={200} height={200} />}
+        {secret && (
+          <p className="staff-note">
+            <span dir="ltr" className="num" style={{ userSelect: 'all', fontWeight: 700, letterSpacing: '0.08em' }}>
+              {secret}
+            </span>
+          </p>
+        )}
         <label htmlFor="s-code">{t('staff.mfaCode')}</label>
         <input
           id="s-code"

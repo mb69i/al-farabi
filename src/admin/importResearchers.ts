@@ -41,7 +41,20 @@ function gender(v: string): 'male' | 'female' | null {
 
 const text = (v: unknown) => String(v ?? '').replace(/\s+/g, ' ').trim();
 
-export function parseResearcherSheet(file: ArrayBuffer): { rows: ResearcherImportRow[]; errors: ImportError[] } {
+/** Excel stores '+989123456789' as the number 989123456789: put the '+' back for long foreign numbers. */
+function phoneFromCell(raw: string): string | null {
+  const digits = raw.replace(/\s+/g, '');
+  // 10-15 digits without a leading 0 or + is an international number; a 10-digit number starting
+  // with 7 stays an Iraqi local number without its 0 (normalizePhone handles that).
+  const candidate = /^[1-9]\d{9,14}$/.test(digits) && !digits.startsWith('7') ? '+' + digits : raw;
+  return normalizePhone(candidate);
+}
+
+export function parseResearcherSheet(file: ArrayBuffer): {
+  rows: ResearcherImportRow[];
+  errors: ImportError[];
+  warnings: ImportError[];
+} {
   const wb = XLSX.read(file, { type: 'array' });
   const sheet = wb.Sheets[wb.SheetNames[0]];
   const table = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, blankrows: true, defval: '' });
@@ -50,6 +63,7 @@ export function parseResearcherSheet(file: ArrayBuffer): { rows: ResearcherImpor
 
   const rows: ResearcherImportRow[] = [];
   const errors: ImportError[] = [];
+  const warnings: ImportError[] = [];
   data.forEach((cells, i) => {
     const rowNo = i + 2; // spreadsheet row number (header is row 1)
     const get = (c: Col) => {
@@ -64,8 +78,8 @@ export function parseResearcherSheet(file: ArrayBuffer): { rows: ResearcherImpor
     const email = normalizeEmail(get('email'));
     if (!email) return void errors.push({ row: rowNo, message: 'email' });
     const rawPhone = get('phone');
-    const phone = rawPhone ? normalizePhone(rawPhone) : null;
-    if (rawPhone && !phone) return void errors.push({ row: rowNo, message: 'phone' });
+    const phone = rawPhone ? phoneFromCell(rawPhone) : null;
+    if (rawPhone && !phone) warnings.push({ row: rowNo, message: 'phone' }); // phone is optional: keep the researcher
     const title = get('research_title');
     if (!title) return void errors.push({ row: rowNo, message: 'research_title' });
 
@@ -79,5 +93,5 @@ export function parseResearcherSheet(file: ArrayBuffer): { rows: ResearcherImpor
       research_title: title,
     });
   });
-  return { rows, errors };
+  return { rows, errors, warnings };
 }

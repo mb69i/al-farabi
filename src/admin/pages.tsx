@@ -233,7 +233,7 @@ export function AdminResearchers() {
   const [search, setSearch] = useState('');
   const [offset, setOffset] = useState(0);
   const { data, error, reload } = useLoad<Page<AdminResearcher>>(() => api.listResearchers(search, PAGE, offset), [api, search, offset]);
-  const [preview, setPreview] = useState<{ rows: ResearcherImportRow[]; errors: ImportError[] } | null>(null);
+  const [preview, setPreview] = useState<{ rows: ResearcherImportRow[]; errors: ImportError[]; warnings: ImportError[] } | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   async function onFile(f: File | undefined) {
@@ -267,8 +267,17 @@ export function AdminResearchers() {
           <div className="import-preview">
             <h2 className="admin-h2">{t('admin.importPreview')}</h2>
             <p className="num">
-              ✓ {preview.rows.length} · ✕ {preview.errors.length}
+              ✓ {preview.rows.length} · ✕ {preview.errors.length} · ⚠ {preview.warnings.length}
             </p>
+            {preview.warnings.length > 0 && (
+              <ul className="import-errors" style={{ color: 'var(--gold-soft)' }}>
+                {preview.warnings.map((w) => (
+                  <li key={`w${w.row}`}>
+                    <span className="num">#{w.row}</span> — {w.message} (saved without phone)
+                  </li>
+                ))}
+              </ul>
+            )}
             {preview.errors.length > 0 && (
               <ul className="import-errors">
                 {preview.errors.map((e) => (

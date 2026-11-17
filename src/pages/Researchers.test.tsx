@@ -68,13 +68,11 @@ describe('Researchers', () => {
     expect(signedRow.textContent).toContain('Signed');
   });
 
-  it('confirm disabled until two strokes', async () => {
+  it('confirm disabled until the first stroke', async () => {
     setup();
     await typeSearch('احمد');
     fireEvent.click((await screen.findByText('أحمد علي')).closest('button')!);
     const confirm = screen.getByRole('button', { name: 'Confirm signature' });
-    expect(confirm).toBeDisabled();
-    fireEvent.click(screen.getByText('draw stroke'));
     expect(confirm).toBeDisabled();
     fireEvent.click(screen.getByText('draw stroke'));
     expect(confirm).toBeEnabled();

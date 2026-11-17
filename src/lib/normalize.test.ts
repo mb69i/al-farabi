@@ -33,6 +33,10 @@ describe('normalizePhone', () => {
   it('rejects Iraqi local numbers with the wrong length', () => {
     expect(normalizePhone('07701234')).toBeNull();
   });
+  it('drops the local 0 after +964', () => {
+    expect(normalizePhone('+964 0770 123 4567')).toBe('+9647701234567');
+    expect(normalizePhone('00964 0770 123 4567')).toBe('+9647701234567');
+  });
   it('rejects empty input', () => {
     expect(normalizePhone('')).toBeNull();
   });
@@ -81,6 +85,9 @@ describe('normalizeArabicForSearch', () => {
   });
   it('removes tatweel', () => {
     expect(normalizeArabicForSearch('محـــمد')).toBe('محمد');
+  });
+  it('treats Persian ی and ک as Arabic ي and ك', () => {
+    expect(normalizeArabicForSearch('علی کریمی')).toBe(normalizeArabicForSearch('علي كريمي'));
   });
   it('lowercases English and collapses spaces', () => {
     expect(normalizeArabicForSearch('Ali  HASAN')).toBe('ali hasan');

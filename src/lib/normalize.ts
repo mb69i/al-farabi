@@ -18,6 +18,7 @@ export function normalizePhone(raw: string): string | null {
   if (!raw) return null;
   let s = westernDigits(raw).replace(/[^\d+]/g, '');
   if (s.startsWith('00')) s = '+' + s.slice(2);
+  if (s.startsWith('+9640')) s = '+964' + s.slice(5); // country code typed with the local 0
 
   if (s.startsWith('07')) {
     if (s.length !== 11) return null;
@@ -87,6 +88,8 @@ export function normalizeArabicForSearch(s: string): string {
     .replace(/ى/g, 'ي')
     .replace(/ؤ/g, 'و')
     .replace(/ئ/g, 'ي')
+    .replace(/ی/g, 'ي') // Persian yeh
+    .replace(/ک/g, 'ك') // Persian keheh
     .replace(/\s+/g, ' ')
     .trim();
 }

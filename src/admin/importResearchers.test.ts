@@ -77,9 +77,19 @@ describe('parseResearcherSheet', () => {
     ]);
   });
 
-  it('flags an invalid optional phone', () => {
-    const { errors } = parseResearcherSheet(book([['name_ar', 'email', 'phone', 'research_title'], ['علي', 'a@x.org', '123', 'T']]));
-    expect(errors).toEqual([{ row: 2, message: 'phone' }]);
+  it('keeps a researcher whose optional phone is invalid, with a warning', () => {
+    const { rows, errors, warnings } = parseResearcherSheet(book([['name_ar', 'email', 'phone', 'research_title'], ['علي', 'a@x.org', '123', 'T']]));
+    expect(errors).toEqual([]);
+    expect(rows[0].phone).toBeNull();
+    expect(warnings).toEqual([{ row: 2, message: 'phone' }]);
+  });
+
+  it('reads foreign numbers that Excel stored as plain numbers', () => {
+    const { rows, warnings } = parseResearcherSheet(
+      book([['name_ar', 'email', 'phone', 'research_title'], ['علي رضا', 'ar@x.ir', 989123456789, 'T'], ['سامي', 's@x.lb', 9613123456, 'T2']]),
+    );
+    expect(rows.map((r) => r.phone)).toEqual(['+989123456789', '+9613123456']);
+    expect(warnings).toEqual([]);
   });
 
   it('skips fully empty rows', () => {

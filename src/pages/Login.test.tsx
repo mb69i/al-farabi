@@ -41,6 +41,13 @@ describe('Login', () => {
     expect(await screen.findByText('researchers page')).toBeInTheDocument();
   });
 
+  it('a signed-in account without a staff role is told so and can sign out', async () => {
+    const auth = setup({ session: { user: { id: 'u' } } as AuthState['session'], role: null });
+    expect(await screen.findByText('You do not have access to this page')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    expect(auth.signOut).toHaveBeenCalled();
+  });
+
   it('a signed-in admin at aal1 goes to the authenticator step', async () => {
     setup({ session: { user: { id: 'u' } } as AuthState['session'], role: 'admin', aal: 'aal1' });
     expect(await screen.findByText('mfa page')).toBeInTheDocument();

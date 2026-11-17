@@ -55,7 +55,7 @@ export function Researchers({ search, submit }: Props) {
   }
 
   async function confirm() {
-    if (!picked || !getters.current || inFlight.current || strokes < 2) return;
+    if (!picked || !getters.current || inFlight.current || strokes < 1) return;
     inFlight.current = true;
     setSaving(true);
     setOutcome(null);
@@ -110,7 +110,7 @@ export function Researchers({ search, submit }: Props) {
           </p>
         )}
         {!done && (
-          <button type="button" className="btn-primary res-confirm" disabled={saving || strokes < 2} onClick={confirm}>
+          <button type="button" className="btn-primary res-confirm" disabled={saving || strokes < 1} onClick={confirm}>
             {saving ? t('res.saving') : t('res.confirm')}
           </button>
         )}

@@ -13,7 +13,7 @@ export function homeFor(role: string | null, aal: string): string {
 
 export function Login() {
   const { t } = useI18n();
-  const { session, role, aal, signIn } = useAuth();
+  const { session, role, aal, signIn, signOut } = useAuth();
   const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,6 +22,20 @@ export function Login() {
   const idle = new URLSearchParams(location.search).get('idle') === '1';
 
   if (session && role) return <Navigate to={homeFor(role, aal)} replace />;
+  if (session && !role) {
+    return (
+      <Shell variant="staff">
+        <div className="staff-card">
+          <p className="staff-error" role="alert">
+            {t('staff.noAccess')}
+          </p>
+          <button type="button" className="btn-primary" onClick={() => void signOut()}>
+            {t('staff.signOut')}
+          </button>
+        </div>
+      </Shell>
+    );
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault();

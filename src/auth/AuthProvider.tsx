@@ -60,9 +60,13 @@ export function AuthProvider({ client, children }: { client: SupabaseClient; chi
       if (alive) setLoading(false);
     });
     const { data: sub } = client.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
       // Defer the RPC: calling Supabase inside this callback can deadlock the auth lock.
-      setTimeout(() => void loadWho(s).catch(() => undefined), 0);
+      // The session is set only after the role is known, so screens never see a session without its role.
+      setTimeout(() => {
+        void loadWho(s)
+          .catch(() => undefined)
+          .then(() => setSession(s));
+      }, 0);
     });
     return () => {
       alive = false;
@@ -74,8 +78,8 @@ export function AuthProvider({ client, children }: { client: SupabaseClient; chi
     async (email: string, password: string) => {
       const { data, error } = await client.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
       if (error || !data.session) return { ok: false };
-      setSession(data.session);
       await loadWho(data.session);
+      setSession(data.session);
       return { ok: true };
     },
     [client, loadWho],
