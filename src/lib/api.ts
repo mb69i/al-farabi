@@ -17,20 +17,21 @@ export type GuestInput = {
   phone: string;
   email: string;
   gender: Gender;
-  guestType: GuestType;
+  /** No longer asked on the form; kept optional for old data. */
+  guestType?: GuestType;
   workplace: string;
   specialization: string;
   lang: 'ar' | 'en';
 };
 
 export type RegisterResult = {
-  status: 'created' | 'already_registered' | 'closed' | 'invalid';
+  status: 'created' | 'already_registered' | 'closed' | 'invalid' | 'rate_limited';
   serial?: string;
   field?: string;
   checked_in_today: boolean;
 };
 
-export type CheckinResult = { status: 'ok' | 'not_found' | 'closed'; checked_in_today: boolean };
+export type CheckinResult = { status: 'ok' | 'not_found' | 'closed' | 'rate_limited'; checked_in_today: boolean };
 
 export type PublicEvent = {
   slug?: string;
@@ -56,7 +57,10 @@ export type Api = {
   registerGuest: (input: GuestInput) => Promise<RegisterResult>;
   checkinGuest: (slug: string, serial: string, phone: string) => Promise<CheckinResult>;
   getDisplayCounts: (slug: string) => Promise<DisplayCounts>;
+  getSiteContact: () => Promise<SiteContact | null>;
 };
+
+export type SiteContact = { phone: string; email: string; location_ar: string; location_en: string };
 
 export class ApiError extends Error {
   constructor(
@@ -101,7 +105,7 @@ export function createApi(client: RpcClient, defaultSlug: string, opts: Opts = {
         p_phone: normalizePhone(g.phone) ?? g.phone.trim(),
         p_email: normalizeEmail(g.email) ?? g.email.trim(),
         p_gender: g.gender,
-        p_guest_type: g.guestType,
+        p_guest_type: g.guestType ?? null,
         p_workplace: g.workplace.trim(),
         p_specialization: g.specialization.trim(),
         p_lang: g.lang,
@@ -109,5 +113,6 @@ export function createApi(client: RpcClient, defaultSlug: string, opts: Opts = {
     checkinGuest: (slug, serial, phone) =>
       call<CheckinResult>('checkin_guest', { p_slug: slug || defaultSlug, p_serial: serial, p_phone: phone }),
     getDisplayCounts: (slug) => call<DisplayCounts>('get_display_counts', { p_slug: slug || defaultSlug }),
+    getSiteContact: () => call<SiteContact | null>('get_site_contact', {}),
   };
 }

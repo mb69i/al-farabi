@@ -18,7 +18,7 @@
   gap: 2px;
   padding: var(--space-3);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass);
   border: 1px solid var(--line-dark);
 }
 
@@ -41,7 +41,7 @@
 }
 
 .admin-who strong {
-  color: var(--gold);
+  color: var(--navy);
   font-size: var(--fs-sm);
 }
 
@@ -54,7 +54,7 @@
 }
 
 .admin-link:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass);
   color: var(--white);
 }
 
@@ -82,12 +82,12 @@
 .admin-error {
   padding: var(--space-3);
   border-radius: var(--radius-sm);
-  background: rgba(180, 35, 24, 0.2);
-  color: #FFB4AB;
+  background: rgba(180, 35, 24, 0.08);
+  color: var(--danger);
 }
 
 .admin-ok {
-  color: #A6EBC6;
+  color: var(--success);
   font-weight: 700;
 }
 
@@ -107,7 +107,7 @@
   gap: 4px;
   padding: var(--space-4);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass);
   border: 1px solid var(--line-dark);
 }
 
@@ -122,11 +122,11 @@
 }
 
 .stat--gold strong {
-  color: var(--gold);
+  color: var(--gold-ink);
 }
 
 .stat--burgundy {
-  background: rgba(163, 38, 43, 0.22);
+  background: rgba(163, 38, 43, 0.1);
 }
 
 .admin-search {
@@ -136,7 +136,7 @@
   padding: 0 var(--space-4);
   border-radius: var(--radius-sm);
   border: 1px solid var(--line-dark);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass);
 }
 
 .table-wrap {
@@ -163,7 +163,7 @@
   color: var(--text-on-dark-muted);
   font-weight: 500;
   white-space: nowrap;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--glass);
 }
 
 .admin-table tr:last-child td {
@@ -193,7 +193,7 @@
   padding: 0 var(--space-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--line-dark);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass);
   font-size: var(--fs-sm);
 }
 
@@ -204,7 +204,7 @@
   border-radius: var(--radius-sm);
   border: 1px solid rgba(194, 52, 58, 0.6);
   background: rgba(163, 38, 43, 0.25);
-  color: #FFD7D9;
+  color: var(--burgundy);
 }
 
 .pill {
@@ -213,23 +213,23 @@
   border-radius: 999px;
   font-size: var(--fs-xs);
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-strong);
 }
 
 .pill--sent {
-  background: rgba(31, 122, 77, 0.3);
-  color: #A6EBC6;
+  background: rgba(31, 122, 77, 0.12);
+  color: var(--success);
 }
 
 .pill--failed {
-  background: rgba(180, 35, 24, 0.3);
-  color: #FFB4AB;
+  background: rgba(180, 35, 24, 0.1);
+  color: var(--danger);
 }
 
 .pill--queued,
 .pill--sending {
-  background: rgba(242, 194, 48, 0.2);
-  color: var(--gold-soft);
+  background: rgba(242, 194, 48, 0.25);
+  color: var(--gold-ink);
 }
 
 .pager {
@@ -245,8 +245,8 @@
 }
 
 .chip-btn.is-active {
-  background: var(--navy-raised);
-  border-color: var(--gold);
+  background: var(--glass-strong);
+  border-color: var(--burgundy);
 }
 
 .admin-panel {
@@ -254,7 +254,7 @@
   gap: var(--space-3);
   padding: var(--space-4);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass);
   border: 1px solid var(--line-dark);
 }
 
@@ -270,7 +270,7 @@
   padding: 0 var(--space-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--line-dark);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--glass-strong);
 }
 
 .file-btn {
@@ -297,7 +297,7 @@
   max-height: 160px;
   overflow: auto;
   font-size: var(--fs-sm);
-  color: #FFB4AB;
+  color: var(--danger);
 }
 
 .switches {
@@ -313,7 +313,7 @@
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass);
   border: 1px solid var(--line-dark);
 }
 
@@ -332,7 +332,7 @@
   height: 36px;
   border-radius: 999px;
   border: 0;
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(20, 35, 75, 0.2);
   transition: background 0.2s var(--ease);
 }
 
@@ -365,7 +365,7 @@
   gap: var(--space-2);
   padding: var(--space-3);
   border-radius: var(--radius-sm);
-  background: rgba(163, 38, 43, 0.18);
+  background: rgba(163, 38, 43, 0.08);
 }
 
 .switch-confirm div {

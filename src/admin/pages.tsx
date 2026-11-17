@@ -3,6 +3,7 @@ import { useI18n } from '../i18n';
 import type { AdminResearcher, Delivery, Guest, Overview as OverviewData, Page } from './adminApi';
 import { Stat, useAdminApi } from './AdminLayout';
 import { parseResearcherSheet, type ImportError, type ResearcherImportRow } from './importResearchers';
+import { ContactForm } from './ContactForm';
 import { Switches, type SwitchState } from './Switches';
 
 const PAGE = 50;
@@ -139,7 +140,7 @@ export function Guests() {
                     </td>
                     <td className="num">{g.phone}</td>
                     <td dir="ltr">{g.email}</td>
-                    <td>{t(`reg.${g.guest_type}` as const)}</td>
+                    <td>{g.guest_type ? t(`reg.${g.guest_type}` as const) : '—'}</td>
                     <td>{g.workplace}</td>
                     <td>
                       <input
@@ -454,6 +455,7 @@ export function SwitchesPage() {
       <h1 className="admin-h1">{t('admin.switches')}</h1>
       <ErrorLine error={error} />
       {data && <Switches value={data} onSave={async (next) => setData(await api.setSwitches(next))} />}
+      <ContactForm load={api.getContact} save={api.setContact} />
     </>
   );
 }

@@ -36,12 +36,23 @@ function fill() {
   set(/workplace/i, 'Baghdad University');
   set(/specialisation/i, 'Engineering');
   fireEvent.click(screen.getByLabelText('Male'));
-  fireEvent.click(screen.getByLabelText('Visitor'));
 }
 
 beforeEach(() => localStorage.clear());
 
 describe('Register', () => {
+  it('does not ask "Attending as" and registers without it', async () => {
+    const api = fakeApi();
+    setup(api);
+    await screen.findByLabelText(/full name/i);
+    expect(screen.queryByText('Attending as')).toBeNull();
+    expect(screen.queryByLabelText('Visitor')).toBeNull();
+    fill();
+    fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
+    await waitFor(() => expect(api.registerGuest).toHaveBeenCalled());
+    expect((api.registerGuest as ReturnType<typeof vi.fn>).mock.calls[0][0]).not.toHaveProperty('guestType');
+  });
+
   it('shows field errors on blur', async () => {
     setup(fakeApi());
     const phone = await screen.findByLabelText(/phone number/i);
@@ -101,6 +112,16 @@ describe('Register', () => {
   it('closed shows closed panel', async () => {
     setup(fakeApi({ getPublicEvent: vi.fn(async () => ({ registration_open: false })) }));
     expect(await screen.findByText(/registration is closed/i)).toBeInTheDocument();
+  });
+
+  it('rate_limited result asks the guest to wait and keeps their answers', async () => {
+    setup(fakeApi({ registerGuest: vi.fn(async () => ({ status: 'rate_limited' as const, checked_in_today: false })) }));
+    await screen.findByLabelText(/full name/i);
+    fill();
+    fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
+    expect(await screen.findByText(/too many attempts/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+    expect((screen.getByLabelText(/full name/i) as HTMLInputElement).value).toBe('Ali Hasan');
   });
 
   it('closed result from the server also shows closed panel', async () => {

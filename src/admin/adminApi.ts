@@ -4,7 +4,7 @@ import type { SwitchState } from './Switches';
 
 export type Guest = {
   id: string; serial: string; full_name: string; phone: string; email: string; gender: 'male' | 'female';
-  guest_type: 'visitor' | 'student' | 'other'; workplace: string; specialization: string; lang: 'ar' | 'en';
+  guest_type: 'visitor' | 'student' | 'other' | null; workplace: string; specialization: string; lang: 'ar' | 'en';
   is_vip: boolean; created_at: string;
 };
 export type AdminResearcher = {
@@ -106,6 +106,9 @@ export function createAdminApi(client: SupabaseClient, slug: string) {
       rpc<{ forma_path: string; width: number; height: number; layout: unknown } | null>('admin_get_template', { p_slug: slug, p_kind: kind }),
     saveTemplate: (kind: 'card' | 'certificate', formaPath: string, width: number, height: number, layout: unknown) =>
       rpc<void>('admin_save_template', { p_slug: slug, p_kind: kind, p_forma_path: formaPath, p_width: width, p_height: height, p_layout: layout }),
+    getContact: () => rpc<{ phone: string; email: string; location_ar: string; location_en: string } | null>('get_site_contact'),
+    setContact: (c: { phone: string; email: string; location_ar: string; location_en: string }) =>
+      rpc<unknown>('admin_set_contact', { p_phone: c.phone, p_email: c.email, p_location_ar: c.location_ar, p_location_en: c.location_en }),
     listStaff: () => rpc<StaffMember[]>('owner_list_staff'),
     setStaff: (userId: string, role: StaffMember['role'], active: boolean) =>
       rpc<void>('owner_set_staff', { p_user_id: userId, p_role: role, p_active: active }),

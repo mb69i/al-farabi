@@ -8,6 +8,7 @@ export const demoApi: Api = {
     return { status: 'created', serial: 'ALF26-DEMO42', checked_in_today: true };
   },
   checkinGuest: async () => ({ status: 'ok', checked_in_today: true }),
+  getSiteContact: async () => ({ phone: '07700000000', email: 'info@example.org', location_ar: 'جامعة الفارابي — بغداد', location_en: 'Al-Farabi University — Baghdad' }),
   getDisplayCounts: async () => ({
     total: 412, present_today: 287, male: 198, female: 176, vip: 23, researchers_signed: 64, researchers_total: 121,
   }),

@@ -28,7 +28,7 @@
   height: 5.2vw;
   border-radius: 50%;
   background: var(--white);
-  box-shadow: 0 0 0 0.25vw rgba(242, 194, 48, 0.4);
+  box-shadow: 0 0 0 0.2vw var(--card-border);
 }
 
 .display-crest img {
@@ -43,7 +43,7 @@
 
 .display-brand h1 {
   font-size: 2vw;
-  color: var(--gold);
+  color: var(--navy);
 }
 
 .display-brand p {
@@ -64,7 +64,7 @@
   width: 0.7vw;
   height: 0.7vw;
   border-radius: 50%;
-  background: var(--gold);
+  background: var(--burgundy);
   animation: display-pulse 1.2s ease-in-out infinite;
 }
 
@@ -82,9 +82,12 @@
   gap: 1vw;
   padding: 2vw;
   border-radius: 1.6vw;
-  background: var(--white);
+  background: var(--glass);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  border: 2px solid var(--card-border);
   color: var(--ink);
-  border-top: 0.5vw solid var(--burgundy);
+  border-top-width: 0.5vw;
 }
 
 .qr-box {
@@ -122,8 +125,10 @@
   gap: 0.4vw;
   padding: 1.4vw 2vw;
   border-radius: 1.4vw;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--line-dark);
+  background: var(--glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 2px solid var(--card-border);
 }
 
 .counter-label {
@@ -139,16 +144,16 @@
 }
 
 .counter--gold {
-  border-color: rgba(242, 194, 48, 0.4);
+  border-color: var(--card-border);
 }
 
 .counter--gold .counter-value {
-  color: var(--gold);
+  color: var(--gold-ink);
 }
 
 .counter--burgundy {
-  background: rgba(163, 38, 43, 0.22);
-  border-color: rgba(194, 52, 58, 0.5);
+  background: rgba(163, 38, 43, 0.1);
+  border-color: var(--card-border);
 }
 
 @keyframes display-pulse {

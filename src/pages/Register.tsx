@@ -2,17 +2,17 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Shell } from '../components/Shell';
 import { ThanksRobot } from '../components/ThanksRobot';
 import { useI18n, type Key } from '../i18n';
-import type { Api, Gender, GuestType } from '../lib/api';
+import type { Api, Gender } from '../lib/api';
 import { normalizeEmail, normalizePhone, suggestEmailFix } from '../lib/normalize';
 import { clearPass, loadPass, savePass, type Pass } from '../lib/pass';
 import './Register.css';
 
-type Field = 'fullName' | 'phone' | 'email' | 'gender' | 'guestType' | 'workplace' | 'specialization';
+type Field = 'fullName' | 'phone' | 'email' | 'gender' | 'workplace' | 'specialization';
 type Values = Record<Field, string>;
-type View = 'loading' | 'form' | 'done' | 'closed' | 'error';
+type View = 'loading' | 'form' | 'done' | 'closed' | 'error' | 'busy';
 type Outcome = 'created' | 'already' | 'returning';
 
-const EMPTY: Values = { fullName: '', phone: '', email: '', gender: '', guestType: '', workplace: '', specialization: '' };
+const EMPTY: Values = { fullName: '', phone: '', email: '', gender: '', workplace: '', specialization: '' };
 
 function validate(field: Field, v: string): Key | null {
   const s = v.trim();
@@ -24,7 +24,6 @@ function validate(field: Field, v: string): Key | null {
     case 'email':
       return !s ? 'err.required' : normalizeEmail(s) ? null : 'err.email';
     case 'gender':
-    case 'guestType':
       return s ? null : 'err.choose';
     case 'workplace':
     case 'specialization':
@@ -32,10 +31,10 @@ function validate(field: Field, v: string): Key | null {
   }
 }
 
-const FIELDS: Field[] = ['fullName', 'phone', 'email', 'gender', 'guestType', 'workplace', 'specialization'];
+const FIELDS: Field[] = ['fullName', 'phone', 'email', 'gender', 'workplace', 'specialization'];
 const SERVER_FIELD: Record<string, Field> = {
   full_name: 'fullName', phone: 'phone', email: 'email', gender: 'gender',
-  guest_type: 'guestType', workplace: 'workplace', specialization: 'specialization',
+  workplace: 'workplace', specialization: 'specialization',
 };
 
 export function Register({ api, slug }: { api: Api; slug: string }) {
@@ -110,12 +109,12 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
         phone: values.phone,
         email: values.email,
         gender: values.gender as Gender,
-        guestType: values.guestType as GuestType,
         workplace: values.workplace,
         specialization: values.specialization,
         lang,
       });
       if (res.status === 'closed') return setView('closed');
+      if (res.status === 'rate_limited') return setView('busy');
       if (res.status === 'invalid') {
         const f = SERVER_FIELD[res.field ?? ''] ?? 'fullName';
         setErrors({ [f]: f === 'phone' ? 'err.phone' : f === 'email' ? 'err.email' : 'err.required' });
@@ -143,6 +142,7 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
       const res = await api.checkinGuest(slug, pass.serial, pass.phone);
       if (res.status === 'ok') setCheckedIn(true);
       else if (res.status === 'closed') setView('closed');
+      else if (res.status === 'rate_limited') setView('busy');
     } catch {
       /* keep the button; the guest can tap again */
     } finally {
@@ -194,6 +194,16 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
         <section className="reg-card reg-panel">
           <h2>{t('reg.closedTitle')}</h2>
           <p>{t('reg.closedBody')}</p>
+        </section>
+      )}
+
+      {view === 'busy' && (
+        <section className="reg-card reg-panel" role="alert">
+          <h2>{t('reg.busyTitle')}</h2>
+          <p>{t('reg.busyBody')}</p>
+          <button type="button" className="btn-primary" onClick={() => setView('form')}>
+            {t('reg.retry')}
+          </button>
         </section>
       )}
 
@@ -303,19 +313,6 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
             <input {...fieldProps('specialization')} maxLength={160} />
             <Err f="specialization" />
           </div>
-
-          <fieldset className={`field choice ${errors.guestType ? 'has-error' : ''}`} id="f-guestType" tabIndex={-1}>
-            <legend>{t('reg.type')}</legend>
-            <div className="choice-row">
-              {(['visitor', 'student', 'other'] as const).map((g) => (
-                <label key={g} className="chip">
-                  <input type="radio" name="guestType" value={g} checked={values.guestType === g} onChange={() => set('guestType', g)} />
-                  <span>{t(`reg.${g}` as Key)}</span>
-                </label>
-              ))}
-            </div>
-            <Err f="guestType" />
-          </fieldset>
 
           <div className="hp" aria-hidden="true">
             <label htmlFor="f-website">Website</label>

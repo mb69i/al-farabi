@@ -1,6 +1,5 @@
 import QRCode from 'qrcode';
 import { useEffect, useRef, useState } from 'react';
-import { ConferenceMark } from '../brand/ConferenceMark';
 import { useI18n, type Key } from '../i18n';
 import type { Api, DisplayCounts } from '../lib/api';
 import './Display.css';
@@ -84,7 +83,6 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
           <span className="display-crest">
             <img src="/brand/crest.png" alt={t('brand.university')} />
           </span>
-          <ConferenceMark size={84} title={t('brand.conference')} />
           <div>
             <h1>{t('brand.conferenceLong')}</h1>
             <p>

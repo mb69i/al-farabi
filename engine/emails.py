@@ -65,9 +65,8 @@ def build(kind: str, lang: str, values: dict, site_url: str) -> tuple[str, str, 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F5F8;padding:24px 0">
 <tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" dir="{direction}" style="max-width:600px;width:100%;background:#FFFFFF;border-radius:12px;overflow:hidden">
-<tr><td style="background:#0C1733;padding:24px;text-align:center">
+<tr><td style="background:#FFFFFF;padding:24px;text-align:center;border-bottom:1px solid #E3E1DA">
 <img src="{site}/brand/crest.png" alt="Al-Farabi University" height="64" style="height:64px;margin:0 8px">
-<img src="{site}/brand/conference-mark.png" alt="Al-Farabi Conference" height="64" style="height:64px;margin:0 8px">
 </td></tr>
 <tr><td style="height:4px;background:#A3262B"></td></tr>
 <tr><td style="padding:32px 28px;text-align:{align}">{paragraphs}

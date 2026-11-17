@@ -47,7 +47,7 @@ export function buildExport(data: AdminExport, lang: Lang): XLSX.WorkBook {
   const guests = [
     [...l.guests],
     ...data.guests.map((g) => [
-      g.full_name, g.serial, g.phone, g.email, l.gender[g.gender] ?? '', l.type[g.guest_type] ?? '',
+      g.full_name, g.serial, g.phone, g.email, l.gender[g.gender] ?? '', g.guest_type ? l.type[g.guest_type] : '',
       g.workplace, g.specialization, yn(g.is_vip), l.lang[g.lang] ?? '', when(g.created_at),
     ]),
   ];

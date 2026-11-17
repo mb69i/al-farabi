@@ -8,6 +8,7 @@ import { Display } from './pages/Display';
 import { Login } from './pages/Login';
 import { MfaSetup } from './pages/MfaSetup';
 import { Register } from './pages/Register';
+import { ContactProvider } from './components/SiteFooter';
 
 const Staff = lazy(() => import('./staffRoutes'));
 
@@ -18,6 +19,7 @@ function NeedsBackend({ children }: { children: ReactNode }) {
 
 export default function App() {
   return (
+    <ContactProvider load={api.getSiteContact}>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Register api={api} slug={EVENT_SLUG} />} />
@@ -51,5 +53,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+    </ContactProvider>
   );
 }

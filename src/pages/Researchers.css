@@ -7,7 +7,7 @@
 
 .res-search h1 {
   font-size: var(--fs-xl);
-  color: var(--gold);
+  color: var(--navy);
   margin-bottom: var(--space-4);
 }
 
@@ -17,15 +17,16 @@
   padding: 0 var(--space-5);
   border-radius: var(--radius);
   border: 2px solid transparent;
-  background: var(--paper);
+  background: var(--white);
   color: var(--ink);
   font-size: 1.25rem;
+  border-color: var(--card-border);
   box-shadow: var(--shadow-card);
 }
 
 .res-input:focus {
   outline: none;
-  border-color: var(--gold);
+  border-color: var(--burgundy);
 }
 
 .res-empty {
@@ -52,19 +53,23 @@
   padding-inline-end: 120px;
   border: 1px solid var(--line-dark);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass);
   text-align: start;
   transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
 }
 
 .res-row:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(242, 194, 48, 0.5);
+  background: var(--glass-strong);
+  border-color: var(--burgundy);
 }
 
+/* Already signed: clearly marked but still readable (no fading). */
 .res-row:disabled {
-  opacity: 0.55;
   cursor: not-allowed;
+  background: rgba(31, 122, 77, 0.05);
+  border-style: dashed;
+  border-color: rgba(31, 122, 77, 0.55);
+  color: var(--ink-muted);
 }
 
 .res-row-name {
@@ -86,7 +91,7 @@
   padding: 4px 12px;
   border-radius: 999px;
   background: rgba(31, 122, 77, 0.25);
-  color: #8FE0B5;
+  color: var(--success);
   font-size: var(--fs-xs);
   font-weight: 700;
 }
@@ -108,9 +113,12 @@
 .res-detail {
   padding: var(--space-5);
   border-radius: var(--radius-lg);
-  background: var(--paper);
+  background: var(--glass);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  border: 1.5px solid var(--card-border);
   color: var(--ink);
-  border-top: 4px solid var(--burgundy);
+  border-top-width: 4px;
 }
 
 .res-detail h2 {
@@ -191,10 +199,10 @@
 
 .res-outcome--ok {
   background: rgba(31, 122, 77, 0.2);
-  color: #A6EBC6;
+  color: var(--success);
 }
 
 .res-outcome--error {
   background: rgba(180, 35, 24, 0.2);
-  color: #FFB4AB;
+  color: var(--danger);
 }
