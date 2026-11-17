@@ -83,7 +83,7 @@ export function ThanksRobot({ message, label = 'Al-Farabi robot' }: Props) {
         <path d="M66 84 H154 L146 168 Q110 182 74 168 Z" fill="url(#rb-metal)" />
         <path d="M104 86 L110 94 L116 86 Z" fill="#1F2430" />
         <circle cx="110" cy="126" r="22" fill="#FFFFFF" stroke="#C9CED6" strokeWidth="2" />
-        <image href="/brand/crest.png" x="94" y="109" width="32" height="34" />
+        <image href="/brand/crest-192.png" x="94" y="109" width="32" height="34" />
 
         {/* waist + legs */}
         <rect x="88" y="168" width="44" height="24" rx="8" fill="#2A2F3A" />

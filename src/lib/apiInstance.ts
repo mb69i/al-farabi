@@ -1,9 +1,10 @@
-import { createApi, type Api, type RpcClient } from './api';
+import { createApi, type Api } from './api';
+import { EVENT_SLUG, hasBackend, SUPABASE_ANON_KEY, SUPABASE_URL } from './config';
 import { demoApi } from './demoApi';
-import { EVENT_SLUG, supabase } from './supabase';
+import { createFetchRpc } from './rpcFetch';
 
-export const api: Api = supabase
-  ? createApi(supabase as unknown as RpcClient, EVENT_SLUG)
+export const api: Api = hasBackend
+  ? createApi(createFetchRpc(SUPABASE_URL!, SUPABASE_ANON_KEY!), EVENT_SLUG)
   : import.meta.env.DEV
     ? demoApi
     : createApi({ rpc: async () => ({ data: null, error: { message: 'not configured' }, status: 500 }) }, EVENT_SLUG);

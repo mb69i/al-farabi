@@ -1,11 +1,9 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { hasBackend, SUPABASE_ANON_KEY, SUPABASE_URL } from './config';
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+export { EVENT_SLUG, hasBackend } from './config';
 
-export const EVENT_SLUG = (import.meta.env.VITE_EVENT_SLUG as string | undefined) || 'alfarabi-conf-2026';
-export const hasBackend = Boolean(url && anon);
-
+/** Full client with sign-in; only the staff screens (loaded on demand) import this. */
 export const supabase: SupabaseClient | null = hasBackend
-  ? createClient(url!, anon!, { auth: { persistSession: true, autoRefreshToken: true } })
+  ? createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, { auth: { persistSession: true, autoRefreshToken: true } })
   : null;

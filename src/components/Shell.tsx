@@ -26,7 +26,7 @@ export function Shell({ children, variant = 'public', actions }: Props) {
       <header className="shell-header">
         <div className="shell-logos">
           <span className="crest-badge">
-            <img className="crest" src="/brand/crest.png" alt={t('brand.university')} width={42} height={44} />
+            <img className="crest" src="/brand/crest-192.png" alt={t('brand.university')} width={42} height={44} />
           </span>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

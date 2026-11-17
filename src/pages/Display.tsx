@@ -81,7 +81,7 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
       <header className="display-head">
         <div className="display-brand">
           <span className="display-crest">
-            <img src="/brand/crest.png" alt={t('brand.university')} />
+            <img src="/brand/crest-192.png" alt={t('brand.university')} />
           </span>
           <div>
             <h1>{t('brand.conferenceLong')}</h1>
