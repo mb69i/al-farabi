@@ -41,6 +41,10 @@ describe.skipIf(!hasBrowser)('renderCertificate (Chromium)', () => {
     expect(pdf.startsWith('%PDF-')).toBe(true);
     expect(pdf).toMatch(/\/Width 3508\b/); // one full-resolution image, no live text
     expect(pdf).not.toMatch(/\/Font\b/);
+    // small enough to email: the PDF holds a high-quality JPEG, not a 4+ MB lossless image
+    expect(pdf).toMatch(/\/DCTDecode/);
+    expect(out.pdf.length).toBeLessThan(3_000_000);
+    expect([...out.jpg.subarray(0, 3)]).toEqual([0xff, 0xd8, 0xff]);
     expect(out.name).toEqual({ lines: expect.any(Number), fits: true });
   }, 60_000);
 

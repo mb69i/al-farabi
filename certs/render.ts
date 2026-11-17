@@ -13,11 +13,11 @@ const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const ORIGIN = 'https://cert.local';
 const CANVAS = { width: 1754, height: 1240 }; // css px; ×2 = 3508 × 2480 = A4 at 300 dpi
 const SCALE = 2;
-const TYPES: Record<string, string> = { '.ttf': 'font/ttf', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml' };
+const TYPES: Record<string, string> = { '.ttf': 'font/ttf', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml' };
 
 export type Sponsor = { name: string; logo?: string }; // logo: path under the repo, e.g. certs/sponsors/x.png
 export type RenderOptions = { sponsors?: Sponsor[]; template?: string };
-export type Rendered = { png: Buffer; pdf: Buffer; url: string; serial: string; name: { lines: number; fits: boolean } };
+export type Rendered = { png: Buffer; jpg: Buffer; pdf: Buffer; url: string; serial: string; name: { lines: number; fits: boolean } };
 
 let templateCache: string | null = null;
 const loadTemplate = async () => (templateCache ??= await readFile(resolve(ROOT, 'certs/template.html'), 'utf8'));
@@ -26,7 +26,7 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 
 function sponsorSlots(list: Sponsor[] | undefined): { html: string; files: Map<string, string> } {
   const files = new Map<string, string>();
-  const items = list?.length ? list : [1, 2, 3, 4].map(() => ({ name: '' }) as Sponsor);
+  const items = list?.length ? list : [1, 2, 3, 4].map(() => ({ name: '' }) as Sponsor); // empty slots until logos are given
   const html = items
     .map((s, i) => {
       if (!s.logo) return `<span class="sponsor sponsor--empty">${s.name ? esc(s.name) : 'شعار الراعي'}</span>`;
@@ -46,6 +46,7 @@ async function serve(page: Page, html: string, extra: Map<string, string>) {
     if (u.pathname === '/') return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html });
     const file = extra.get(u.pathname) ??
       (u.pathname.startsWith('/fonts/') ? resolve(ROOT, 'engine/fonts', u.pathname.slice(7))
+        : u.pathname.startsWith('/forma/') ? resolve(ROOT, 'certs/forma', u.pathname.slice(7))
         : u.pathname.startsWith('/brand/') ? resolve(ROOT, 'public/brand', u.pathname.slice(7)) : null);
     if (!file || /\.\./.test(u.pathname)) return route.fulfill({ status: 404, body: '' });
     try {
@@ -56,14 +57,20 @@ async function serve(page: Page, html: string, extra: Map<string, string>) {
   });
 }
 
-function decodeQr(png: PNG, box: { x: number; y: number; width: number; height: number }): string | null {
+type Box = { x: number; y: number; width: number; height: number };
+
+/** The QR area of a full-size image (in device pixels), with a margin for the quiet zone. */
+function qrCrop(box: Box, width: number, height: number) {
   const pad = 24;
   const x0 = Math.max(0, Math.floor((box.x - pad) * SCALE));
   const y0 = Math.max(0, Math.floor((box.y - pad) * SCALE));
-  const x1 = Math.min(png.width, Math.ceil((box.x + box.width + pad) * SCALE));
-  const y1 = Math.min(png.height, Math.ceil((box.y + box.height + pad) * SCALE));
-  const w = x1 - x0;
-  const h = y1 - y0;
+  const x1 = Math.min(width, Math.ceil((box.x + box.width + pad) * SCALE));
+  const y1 = Math.min(height, Math.ceil((box.y + box.height + pad) * SCALE));
+  return { x0, y0, w: x1 - x0, h: y1 - y0 };
+}
+
+function decodePngQr(png: PNG, box: Box): string | null {
+  const { x0, y0, w, h } = qrCrop(box, png.width, png.height);
   const out = new Uint8ClampedArray(w * h * 4);
   for (let y = 0; y < h; y++) {
     const from = ((y0 + y) * png.width + x0) * 4;
@@ -72,16 +79,36 @@ function decodeQr(png: PNG, box: { x: number; y: number; width: number; height: 
   return jsQR(out, w, h)?.data ?? null;
 }
 
-async function flatPdf(browser: Browser, png: Buffer): Promise<Buffer> {
+/**
+ * Flat PDF: one A4 page holding the JPEG (Chromium keeps it as DCTDecode, so it stays ~2 MB).
+ * The QR is decoded once more from that JPEG, the exact image that gets printed.
+ */
+async function flatPdf(browser: Browser, jpg: Buffer, box: Box): Promise<{ pdf: Buffer; decoded: string | null }> {
   const page = await browser.newPage();
   try {
     await page.route('**/*', (r) => (r.request().url().startsWith('data:') ? r.continue() : r.abort()));
     await page.setContent(
       `<!doctype html><style>@page{size:297mm 210mm;margin:0}html,body{margin:0}img{display:block;width:297mm;height:210mm}</style>` +
-        `<img src="data:image/png;base64,${png.toString('base64')}">`,
+        `<img id="cert" src="data:image/jpeg;base64,${jpg.toString('base64')}">`,
       { waitUntil: 'load' },
     );
-    return await page.pdf({ width: '297mm', height: '210mm', printBackground: true, pageRanges: '1' });
+    const raw = await page.evaluate(() => {
+      const img = document.getElementById('cert') as HTMLImageElement;
+      return { w: img.naturalWidth, h: img.naturalHeight };
+    });
+    const c = qrCrop(box, raw.w, raw.h);
+    const pixels = await page.evaluate(({ x0, y0, w, h }) => {
+      const img = document.getElementById('cert') as HTMLImageElement;
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, x0, y0, w, h, 0, 0, w, h);
+      return Array.from(ctx.getImageData(0, 0, w, h).data);
+    }, c);
+    const decoded = jsQR(Uint8ClampedArray.from(pixels), c.w, c.h)?.data ?? null;
+    const pdf = await page.pdf({ width: '297mm', height: '210mm', printBackground: true, pageRanges: '1' });
+    return { pdf, decoded };
   } finally {
     await page.close();
   }
@@ -102,17 +129,19 @@ export async function renderCertificate(browser: Browser, input: CertificateInpu
       .then((h) => h.jsonValue() as Promise<{ lines: number; fits: boolean; fonts: boolean; images: boolean; overflow: boolean }>);
     if (!state.fonts) throw new CertificateError('certificate fonts did not load');
     if (!state.images) throw new CertificateError('a logo did not load');
-    if (!state.fits) throw new CertificateError(`name too long to fit: ${input.name}`);
+    if (!state.fits) throw new CertificateError(`name or organisation too long to fit: ${input.name}`);
     if (state.overflow) throw new CertificateError('certificate text overflows the page');
 
     const png = await page.screenshot({ type: 'png', animations: 'disabled' });
     const box = await page.locator('#qr svg').boundingBox();
     if (!box) throw new CertificateError('QR missing from the page');
-    const decoded = decodeQr(PNG.sync.read(png), box);
+    const decoded = decodePngQr(PNG.sync.read(png), box);
     if (decoded !== url) throw new CertificateError(`QR check failed: decoded ${String(decoded)}, expected ${url}`);
 
-    const pdf = await flatPdf(browser, png);
-    return { png, pdf, url, serial: fields.SERIAL, name: { lines: state.lines, fits: state.fits } };
+    const jpg = await page.screenshot({ type: 'jpeg', quality: 95, animations: 'disabled' });
+    const flat = await flatPdf(browser, jpg, box);
+    if (flat.decoded !== url) throw new CertificateError(`QR check failed in the PDF image: decoded ${String(flat.decoded)}`);
+    return { png, jpg, pdf: flat.pdf, url, serial: fields.SERIAL, name: { lines: state.lines, fits: state.fits } };
   } finally {
     await context.close();
   }

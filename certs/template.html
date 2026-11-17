@@ -1,7 +1,8 @@
 <!doctype html>
 <!--
-  Al-Farabi conference certificate. A4 landscape drawn on a 1754 × 1240 px canvas and captured at 2x
-  (3508 × 2480 px = 300 dpi). Filled by certs/values.ts; every double-brace placeholder must get a value.
+  Al-Farabi conference certificate on the owner's forma (certs/forma/forma.pdf, cleaned by clean.py).
+  A4 landscape on a 1754 x 1240 px canvas, captured at 2x (3508 x 2480 px = 300 dpi). Positions are the
+  forma's own, in forma pixels / 2. Filled by certs/values.ts; every double-brace placeholder must get a value.
   Assets come from https://cert.local/ (served from disk by certs/render.ts; nothing leaves the machine).
 -->
 <html lang="ar" dir="rtl">
@@ -14,199 +15,124 @@
   @font-face { font-family: 'Plex Arabic'; font-weight: 400; src: url('/fonts/IBMPlexSansArabic-Regular.ttf') format('truetype'); }
   @font-face { font-family: 'Plex Arabic'; font-weight: 700; src: url('/fonts/IBMPlexSansArabic-Bold.ttf') format('truetype'); }
 
+  /* colours sampled from the forma */
   :root {
+    --ink: #1C2334;
     --navy: #14234B;
-    --navy-soft: #3B4A72;
     --burgundy: #A3262B;
-    --gold: #B8913A;
-    --line: #D9DDE8;
+    --blue: #1D5AA3;
+    --grey: #6B7285;
+    --serial: #14284A;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { width: 1754px; height: 1240px; background: #FFFFFF; overflow: hidden; }
+  html, body { width: 1754px; height: 1240px; overflow: hidden; }
   body {
-    font-family: 'Plex Arabic', sans-serif;
-    color: var(--navy);
+    background: #FFFEF9 url('/forma/background.jpg') 0 0 / 1754px 1240px no-repeat;
+    font-family: 'Amiri', serif; color: var(--ink); position: relative;
     -webkit-font-smoothing: antialiased;
-    position: relative;
   }
 
-  /* Frame: navy outer band, thin burgundy inner rule, star ornaments in the corners */
-  .frame { position: absolute; inset: 34px; border: 12px solid var(--navy); }
-  .frame::after { content: ''; position: absolute; inset: 14px; border: 2px solid var(--burgundy); }
-  .corner { position: absolute; width: 74px; height: 74px; }
-  .corner svg { width: 100%; height: 100%; display: block; }
-  .corner--tr { top: 62px; right: 62px; }
-  .corner--tl { top: 62px; left: 62px; }
-  .corner--br { bottom: 62px; right: 62px; }
-  .corner--bl { bottom: 62px; left: 62px; }
-
-  /* Faint crest behind the text */
-  .watermark {
-    position: absolute; left: 50%; top: 52%; width: 620px; transform: translate(-50%, -50%);
-    opacity: 0.035; filter: grayscale(1);
+  /* Name: sits on the gold rule (y 659) and grows upwards, below the diamond (y 552) */
+  .name-slot {
+    position: absolute; left: 447px; width: 860px; top: 558px; height: 96px;
+    display: flex; align-items: flex-end; justify-content: center;
   }
-
-  .page {
-    position: absolute; inset: 96px 132px 92px; display: flex; flex-direction: column; align-items: center;
-    text-align: center;
-  }
-
-  /* Header: ministry (right), university crest (centre), conference mark (left) */
-  .head { width: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
-  .head-side { display: flex; align-items: center; gap: 22px; }
-  .head-side--start { justify-content: flex-start; }
-  .head-side--end { justify-content: flex-end; }
-  .ministry { width: 112px; height: 112px; }
-  .head-text { text-align: right; font-size: 21px; line-height: 1.55; color: var(--navy-soft); }
-  .head-text b { color: var(--navy); font-weight: 700; }
-  .crest { width: 150px; }
-  .mark { width: 104px; height: 96px; border-radius: 12px; }
-  .head-text--end { text-align: left; }
-
-  .title {
-    margin-top: 22px; font-family: 'Amiri', serif; font-weight: 700; font-size: 104px; line-height: 1.05;
-    color: var(--burgundy);
-  }
-  .title-en {
-    margin-top: 6px; font-size: 19px; letter-spacing: 0.42em; color: var(--navy-soft); direction: ltr;
-  }
-
-  .lead { margin-top: 34px; font-size: 31px; color: var(--navy-soft); }
-
-  .name-box { margin-top: 10px; width: 1300px; }
   .name {
-    font-family: 'Amiri', serif; font-weight: 700; font-size: 90px; line-height: 1.3; color: var(--navy);
-    white-space: nowrap; overflow: hidden;
+    font-weight: 700; font-size: 62px; line-height: 1.3; color: var(--navy);
+    white-space: nowrap; text-align: center; max-width: 100%; overflow: hidden;
   }
-  .name.name--wrap { white-space: normal; overflow: visible; line-height: 1.22; text-wrap: balance; }
-  .rule { margin: 8px auto 0; display: flex; align-items: center; justify-content: center; gap: 16px; width: 560px; }
-  .rule span { flex: 1; height: 2px; background: linear-gradient(to left, transparent, var(--gold)); }
-  .rule span:last-child { background: linear-gradient(to right, transparent, var(--gold)); }
-  .rule i { width: 14px; height: 14px; background: var(--burgundy); transform: rotate(45deg); }
+  .name.name--wrap { white-space: normal; overflow: visible; line-height: 1.12; text-wrap: balance; }
 
-  .org { margin-top: 14px; font-size: 30px; color: var(--navy-soft); min-height: 1px; }
-  .org:empty { display: none; }
-
-  .statement {
-    margin-top: 26px; max-width: 1260px; font-size: 32px; line-height: 1.8; color: var(--navy); text-wrap: balance;
+  .org-slot {
+    position: absolute; left: 427px; width: 900px; top: 672px; height: 64px;
+    display: flex; align-items: flex-start; justify-content: center;
   }
+  .org { font-size: 30px; line-height: 1.5; color: var(--grey); white-space: nowrap; text-align: center; }
+  .org.org--wrap { white-space: normal; line-height: 1.25; text-wrap: balance; }
 
-  /* Bottom: two signatures and the verification QR between them */
-  .foot {
-    margin-top: auto; width: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: end;
+  /* The forma's paragraph, three lines as the designer broke them */
+  .para {
+    position: absolute; left: 377px; width: 1000px; top: 747px;
+    font-size: 33px; line-height: 66px; text-align: center; color: var(--ink);
   }
-  .sign { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-bottom: 24px; }
-  .sign-line { width: 330px; height: 2px; background: var(--navy); opacity: 0.55; }
-  .sign-title { font-size: 25px; font-weight: 700; color: var(--navy); }
-  .sign-sub { font-size: 20px; color: var(--navy-soft); }
+  .para b { font-weight: 700; }
+  .red { color: var(--burgundy); }
+  .blue { color: var(--blue); }
 
-  .verify { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  .qr { width: 176px; height: 176px; padding: 10px; background: #fff; border: 2px solid var(--line); border-radius: 10px; }
+  /* Bottom-left verification block, where the forma had its sample */
+  .qr { position: absolute; left: 124px; top: 1034px; width: 90px; height: 90px; }
   .qr svg { width: 100%; height: 100%; display: block; }
-  .verify-cap { font-size: 18px; color: var(--navy-soft); }
-  .serial { font-family: 'Plex Arabic', monospace; font-weight: 700; font-size: 21px; letter-spacing: 0.08em; direction: ltr; color: var(--navy); }
+  .cert-no {
+    position: absolute; left: 226px; top: 1045px; direction: ltr; text-align: left;
+    font-family: 'Plex Arabic', sans-serif; display: flex; flex-direction: column;
+  }
+  .cert-no .label { font-size: 14px; line-height: 21px; color: var(--grey); }
+  .cert-no .serial { font-size: 14px; line-height: 21px; font-weight: 700; color: var(--serial); }
+  .cert-no .scan { font-size: 14px; line-height: 21px; color: var(--grey); }
 
-  /* Sponsors band (variant "sponsors" only) */
-  .sponsors { display: none; width: 100%; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line);
-    align-items: center; justify-content: center; gap: 26px; }
-  .sponsors-label { font-size: 21px; font-weight: 700; color: var(--burgundy); }
-  .sponsor { width: 170px; height: 68px; display: flex; align-items: center; justify-content: center; }
-  .sponsor img { max-width: 100%; max-height: 100%; object-fit: contain; }
-  .sponsor--empty { border: 2px dashed var(--line); border-radius: 8px; font-size: 17px; color: #8A93AD; }
-
+  /* Sponsors (variant "sponsors" only): the free space between the QR block and the signature */
+  .sponsors {
+    display: none; position: absolute; left: 480px; width: 720px; top: 1030px; height: 96px;
+    align-items: center; justify-content: center; gap: 20px;
+  }
   body[data-variant='sponsors'] .sponsors { display: flex; }
-  body[data-variant='sponsors'] .page { inset: 88px 132px 76px; }
-  body[data-variant='sponsors'] .title { margin-top: 14px; font-size: 96px; }
-  body[data-variant='sponsors'] .lead { margin-top: 24px; }
-  body[data-variant='sponsors'] .statement { margin-top: 18px; line-height: 1.7; }
-  body[data-variant='sponsors'] .sign { padding-bottom: 12px; }
-  body[data-variant='sponsors'] .qr { width: 160px; height: 160px; }
+  .sponsors-label { font-weight: 700; font-size: 26px; color: var(--burgundy); }
+  .sponsor { width: 130px; height: 60px; display: flex; align-items: center; justify-content: center; }
+  .sponsor img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .sponsor--empty {
+    border: 2px dashed #D6CDB6; border-radius: 8px; font-family: 'Plex Arabic', sans-serif; font-size: 13px; color: #9A927C;
+  }
 </style>
 </head>
 <body data-variant="{{VARIANT}}">
-  <div class="frame"></div>
-  <!-- eight-point star, the corner ornament -->
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <defs>
-      <g id="star">
-        <rect x="17" y="17" width="40" height="40" fill="none" stroke="#14234B" stroke-width="3"/>
-        <rect x="17" y="17" width="40" height="40" fill="none" stroke="#14234B" stroke-width="3" transform="rotate(45 37 37)"/>
-        <circle cx="37" cy="37" r="7" fill="#A3262B"/>
-      </g>
-    </defs>
-  </svg>
-  <div class="corner corner--tr"><svg viewBox="0 0 74 74"><use href="#star"/></svg></div>
-  <div class="corner corner--tl"><svg viewBox="0 0 74 74"><use href="#star"/></svg></div>
-  <div class="corner corner--br"><svg viewBox="0 0 74 74"><use href="#star"/></svg></div>
-  <div class="corner corner--bl"><svg viewBox="0 0 74 74"><use href="#star"/></svg></div>
-  <img class="watermark" src="/brand/crest.png" alt="">
+  <div class="name-slot"><p class="name" id="name">{{NAME}}</p></div>
+  <div class="org-slot"><p class="org" id="org">{{ORG_LINE}}</p></div>
 
-  <main class="page">
-    <header class="head">
-      <div class="head-side head-side--start">
-        <img class="ministry" src="/brand/ministry.png" alt="">
-        <p class="head-text">جمهورية العراق<br>وزارة التعليم العالي والبحث العلمي<br><b>جامعة الفارابي</b></p>
-      </div>
-      <img class="crest" src="/brand/crest.png" alt="">
-      <div class="head-side head-side--end">
-        <p class="head-text head-text--end">مؤتمر الفارابي<br><b>النسخة الأولى</b><br>2026</p>
-        <img class="mark" src="/brand/conference-mark.png" alt="">
-      </div>
-    </header>
+  <p class="para" id="para">نثمّن حضوركم فعاليات <b class="red">مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل</b><br>المقام في رحاب <b class="blue">جامعة الفارابي</b>، بغداد، العراق {{DATE_PHRASE}}،<br>آملين لكم دوام التقدم العلمي والعطاء خدمةً لعراقنا الحبيب ودعماً لمسيرة العلم والمعرفة.</p>
 
-    <h1 class="title">شهادة مشاركة</h1>
-    <p class="title-en">CERTIFICATE OF PARTICIPATION</p>
+  <div class="qr" id="qr">{{QR}}</div>
+  <div class="cert-no">
+    <span class="label">Certificate No.</span>
+    <span class="serial">{{SERIAL}}</span>
+    <span class="scan">Scan to verify · <bdi dir="rtl">امسح للتحقق</bdi></span>
+  </div>
 
-    <p class="lead">تتشرّف جامعة الفارابي بمنح هذه الشهادة إلى</p>
-    <div class="name-box"><p class="name" id="name">{{NAME}}</p></div>
-    <div class="rule" aria-hidden="true"><span></span><i></i><span></span></div>
-    <p class="org">{{ORG_LINE}}</p>
-
-    <p class="statement">{{STATEMENT}} {{DATE_PHRASE}}، متمنّين لكم دوام التوفيق والنجاح.</p>
-
-    <footer class="foot">
-      <div class="sign">
-        <span class="sign-line"></span>
-        <span class="sign-title">رئيس الجامعة</span>
-        <span class="sign-sub">جامعة الفارابي</span>
-      </div>
-      <div class="verify">
-        <div class="qr" id="qr">{{QR}}</div>
-        <span class="verify-cap">امسح الرمز للتحقق من الشهادة</span>
-        <span class="serial">{{SERIAL}}</span>
-      </div>
-      <div class="sign">
-        <span class="sign-line"></span>
-        <span class="sign-title">رئيس اللجنة التحضيرية</span>
-        <span class="sign-sub">مؤتمر الفارابي</span>
-      </div>
-    </footer>
-
-    <div class="sponsors">
-      <span class="sponsors-label">برعاية</span>
-      {{SPONSORS}}
-    </div>
-  </main>
+  <div class="sponsors">
+    <span class="sponsors-label">برعاية</span>
+    {{SPONSORS}}
+  </div>
 
   <script>
-    // Fit the name: shrink to one line down to 60px, then let it take two lines.
+    // Fit the name on one line (62px down to 44px), else two lines at 40px; the organisation likewise.
     (async () => {
-      const faces = ['700 90px Amiri', '400 30px "Plex Arabic"', '700 30px "Plex Arabic"'];
-      await Promise.all(faces.map((f) => document.fonts.load(f, 'شهادة Ab')));
+      const faces = ['700 62px Amiri', '400 33px Amiri', '400 16px "Plex Arabic"', '700 16px "Plex Arabic"'];
+      await Promise.all(faces.map((f) => document.fonts.load(f, 'شهادة Ab1')));
       await Promise.all([...document.images].map((i) => (i.complete ? null : new Promise((r) => { i.onload = i.onerror = r; }))));
-      const el = document.getElementById('name');
-      let size = 90;
-      const over = () => el.scrollWidth > el.clientWidth + 1;
-      while (over() && size > 60) { size -= 2; el.style.fontSize = size + 'px'; }
-      if (over()) el.classList.add('name--wrap');
-      const lineHeight = parseFloat(getComputedStyle(el).lineHeight);
-      const lines = Math.round(el.getBoundingClientRect().height / lineHeight);
+      const bg = new Image();
+      bg.src = '/forma/background.jpg';
+      const bgOk = await bg.decode().then(() => bg.naturalWidth >= 3500, () => false);
+
+      const fit = (el, start, min, wrapSize, wrapClass) => {
+        let size = start;
+        const over = () => el.scrollWidth > el.clientWidth + 1 || el.scrollWidth > el.parentElement.clientWidth + 1;
+        el.style.fontSize = size + 'px';
+        while (over() && size > min) { size -= 2; el.style.fontSize = size + 'px'; }
+        if (over()) { el.classList.add(wrapClass); el.style.fontSize = wrapSize + 'px'; }
+        const lh = parseFloat(getComputedStyle(el).lineHeight);
+        return { lines: Math.round(el.getBoundingClientRect().height / lh), inside: el.offsetHeight <= el.parentElement.clientHeight + 1 };
+      };
+      const name = fit(document.getElementById('name'), 62, 44, 40, 'name--wrap');
+      const org = document.getElementById('org').textContent.trim()
+        ? fit(document.getElementById('org'), 30, 22, 22, 'org--wrap') : { lines: 0, inside: true };
+      const para = document.getElementById('para');
+      const paraLines = Math.round(para.getBoundingClientRect().height / 66);
+
       window.__cert = {
-        lines,
-        fits: lines <= 2 && el.scrollWidth <= el.clientWidth + 1,
+        lines: name.lines,
+        fits: name.lines <= 2 && name.inside && org.lines <= 2 && org.inside,
         fonts: faces.every((f) => document.fonts.check(f, 'شهادة')),
-        images: [...document.images].every((i) => i.complete && i.naturalWidth > 0),
-        overflow: document.querySelector('.page').scrollHeight > document.querySelector('.page').clientHeight + 1,
+        images: bgOk && [...document.images].every((i) => i.complete && i.naturalWidth > 0),
+        overflow: paraLines !== 3,
       };
     })();
   </script>

@@ -11,7 +11,7 @@ export type CertificateInput = {
   name: string;
   /** Workplace (guests) or institution (researchers); printed in brackets under the name. */
   org?: string | null;
-  role: Role;
+  role: Role; // the owner's forma uses one wording for everyone; kept for the batch and the database
   dateFrom: string; // YYYY-MM-DD
   dateTo: string;
   serial: string; // from issue_certificate()
@@ -20,18 +20,10 @@ export type CertificateInput = {
 };
 
 /** Placeholders template.html must contain (QR and SPONSORS are filled with markup by the renderer). */
-export const REQUIRED_PLACEHOLDERS = ['NAME', 'ORG_LINE', 'DATE_PHRASE', 'SERIAL', 'QR', 'VARIANT', 'STATEMENT', 'SPONSORS'] as const;
+export const REQUIRED_PLACEHOLDERS = ['NAME', 'ORG_LINE', 'DATE_PHRASE', 'SERIAL', 'QR', 'VARIANT', 'SPONSORS'] as const;
 
 // Same shape as public.new_certificate_serial(): ALF26- and three groups of 4 from a 32-letter alphabet.
 const SERIAL = /^[A-Z]{3}\d{2}-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/;
-
-const CONFERENCE = 'مؤتمر الفارابي للبحوث التطبيقية في التحول الرقمي الشامل';
-
-// Draft wording for the owner to approve. Gender-neutral (noun forms), so it fits everyone.
-const STATEMENTS: Record<Role, string> = {
-  attendee: `تقديراً للمشاركة الفاعلة في أعمال «${CONFERENCE}» بنسخته الأولى، المنعقد في جامعة الفارابي – بغداد`,
-  researcher: `تقديراً للمشاركة ببحث علمي في أعمال «${CONFERENCE}» بنسخته الأولى، المنعقد في جامعة الفارابي – بغداد`,
-};
 
 const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -88,7 +80,6 @@ export function buildValues(input: CertificateInput) {
       DATE_PHRASE: escapeHtml(certificateDatePhrase(input.dateFrom, input.dateTo)),
       SERIAL: serial,
       VARIANT: input.variant,
-      STATEMENT: escapeHtml(STATEMENTS[input.role]),
     },
   };
 }

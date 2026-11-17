@@ -36,10 +36,11 @@ try {
     const r = await renderCertificate(browser, { ...s, serial: serial(), verifyBase });
     await writeFile(resolve(out, `${file}.png`), r.png);
     await writeFile(resolve(out, `${file}.pdf`), r.pdf);
+    await writeFile(resolve(out, `${file}.jpg`), r.jpg);
     // small copy for a phone screen
     await preview.setContent(`<style>html,body{margin:0}img{width:1170px;height:827px;display:block}</style><img src="data:image/png;base64,${r.png.toString('base64')}">`);
     await writeFile(resolve(out, `${file}-preview.jpg`), await preview.screenshot({ type: 'jpeg', quality: 88 }));
-    console.log(`${file}: ${r.serial} name lines ${r.name.lines}, QR ok, png ${(r.png.length / 1e6).toFixed(1)} MB, pdf ${(r.pdf.length / 1e6).toFixed(1)} MB`);
+    console.log(`${file}: ${r.serial} name lines ${r.name.lines}, QR ok, jpg ${(r.jpg.length / 1e6).toFixed(1)} MB, pdf ${(r.pdf.length / 1e6).toFixed(1)} MB`);
   }
 } finally {
   await browser.close();

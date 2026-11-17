@@ -39,16 +39,10 @@ describe('buildValues', () => {
     expect(v.fields.DATE_PHRASE).toBe('للفترة من 21 – 22 تشرين الثاني 2026');
     expect(v.fields.SERIAL).toBe('ALF26-7KQ2-M9XA-C4RT');
     expect(v.fields.VARIANT).toBe('plain');
-    expect(v.fields.STATEMENT).toContain('للمشاركة');
   });
 
   it('a trailing slash on the site address does not double up', () => {
     expect(buildValues({ ...base, verifyBase: 'https://example.org/' }).url).toBe('https://example.org/verify?s=ALF26-7KQ2-M9XA-C4RT');
-  });
-
-  it('researchers get the research wording', () => {
-    expect(buildValues({ ...base, role: 'researcher' }).fields.STATEMENT).toContain('ببحث');
-    expect(buildValues(base).fields.STATEMENT).not.toContain('ببحث');
   });
 
   it('no organisation means no brackets line; extra spaces and brackets are tidied', () => {
@@ -82,6 +76,13 @@ describe('fillTemplate', () => {
 
   it('the template has every placeholder the engine fills', () => {
     for (const key of REQUIRED_PLACEHOLDERS) expect(template).toContain(`{{${key}}}`);
+  });
+
+  it('is drawn on the owner forma, with its own wording around the date', () => {
+    expect(template).toContain('/forma/background.jpg');
+    expect(template).toContain('نثمّن حضوركم فعاليات');
+    expect(template).toContain('بغداد، العراق {{DATE_PHRASE}}،');
+    expect(template).toContain('آملين لكم دوام التقدم العلمي والعطاء خدمةً لعراقنا الحبيب ودعماً لمسيرة العلم والمعرفة.');
   });
 
   it('replaces all placeholders, the QR as raw SVG', () => {
