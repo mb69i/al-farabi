@@ -6,6 +6,7 @@ import os
 from http.server import BaseHTTPRequestHandler
 
 MAX_BODY = 16 * 1024 * 1024
+DEFAULT_SENDER = "مؤتمر الفارابي <certificates@mb-ai.org>"
 
 
 def deps_from_env() -> dict:
@@ -20,7 +21,7 @@ def deps_from_env() -> dict:
     return {
         "secret": os.environ.get("DELIVERY_SECRET", ""),
         "supa": Supa(url, os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")),
-        "mailer": Mailer(os.environ.get("RESEND_API_KEY", ""), os.environ.get("MAIL_FROM", "")),
+        "mailer": Mailer(os.environ.get("RESEND_API_KEY", ""), os.environ.get("MAIL_FROM") or DEFAULT_SENDER),
         "event_slug": os.environ.get("EVENT_SLUG", "alfarabi-conf-2026"),
         "auth": lambda token, allowed: require_role(token, allowed, url=url, anon_key=anon),
         "run": run,

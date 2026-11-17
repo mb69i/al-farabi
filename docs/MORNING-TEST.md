@@ -91,7 +91,7 @@ Environment Variables** (you type them, never in chat):
 |---|---|---|
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API Keys → **secret** key | now |
 | `RESEND_API_KEY` | Resend → API Keys (after the domain shows *Verified*) | after buying the domain |
-| `MAIL_FROM` | e.g. `مؤتمر الفارابي <certificates@your-domain>` | after buying the domain |
+| `MAIL_FROM` | optional — defaults to `مؤتمر الفارابي <certificates@mb-ai.org>` | only to change the sender |
 
 After adding them: Vercel → **Deployments** → latest → **Redeploy**.
 

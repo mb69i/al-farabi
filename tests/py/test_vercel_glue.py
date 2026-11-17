@@ -50,3 +50,9 @@ def test_site_url_defaults_to_live_site(monkeypatch):
     from engine.jobs import _site_url
     monkeypatch.delenv("SITE_URL", raising=False)
     assert _site_url() == "https://al-farabi-gilt.vercel.app"
+
+
+def test_sender_defaults_to_the_conference_domain(monkeypatch):
+    from engine.vercel import deps_from_env
+    monkeypatch.delenv("MAIL_FROM", raising=False)
+    assert deps_from_env()["mailer"].sender == "مؤتمر الفارابي <certificates@mb-ai.org>"
