@@ -41,7 +41,7 @@
 }
 
 .admin-who strong {
-  color: var(--navy);
+  color: var(--heading);
   font-size: var(--fs-sm);
 }
 
@@ -204,7 +204,7 @@
   border-radius: var(--radius-sm);
   border: 1px solid rgba(194, 52, 58, 0.6);
   background: rgba(163, 38, 43, 0.25);
-  color: var(--burgundy);
+  color: var(--accent-ink);
 }
 
 .pill {
@@ -332,7 +332,7 @@
   height: 36px;
   border-radius: 999px;
   border: 0;
-  background: rgba(20, 35, 75, 0.2);
+  background: var(--switch-off);
   transition: background 0.2s var(--ease);
 }
 
@@ -404,7 +404,7 @@
   padding: 2px 6px;
   border: 1.5px dashed rgba(163, 38, 43, 0.7);
   background: rgba(163, 38, 43, 0.12);
-  color: var(--burgundy);
+  color: var(--accent-ink);
   font-size: 11px;
   font-weight: 700;
   text-align: center;
@@ -429,3 +429,63 @@
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-card);
 }
+
+/* Hall screen day/night: three pill buttons (real radio inputs underneath) */
+.hall-theme {
+  margin: 0;
+  min-width: 0;
+}
+
+.hall-theme > legend {
+  float: inline-start;
+  width: 100%;
+  padding: 0;
+}
+
+.hall-theme > legend + * {
+  clear: both;
+}
+
+.hall-theme-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.admin-panel .hall-theme-options .hall-theme-option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border-radius: 999px;
+  border: 1.5px solid var(--line-dark);
+  background: var(--surface);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.admin-panel .hall-theme-options .hall-theme-option input[type='radio'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.admin-panel .hall-theme-options .hall-theme-option.is-on {
+  background: var(--chip-on);
+  border-color: var(--chip-on);
+  color: var(--white);
+}
+
+.hall-theme-option:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+

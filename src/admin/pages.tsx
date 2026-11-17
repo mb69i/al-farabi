@@ -4,6 +4,7 @@ import type { AdminResearcher, Delivery, Guest, Overview as OverviewData, Page }
 import { Stat, useAdminApi } from './AdminLayout';
 import { parseResearcherSheet, type ImportError, type ResearcherImportRow } from './importResearchers';
 import { ContactForm } from './ContactForm';
+import { HallTheme, type HallThemeValue } from './HallTheme';
 import { Switches, type SwitchState } from './Switches';
 
 const PAGE = 50;
@@ -450,11 +451,13 @@ export function SwitchesPage() {
   const { t } = useI18n();
   const api = useAdminApi();
   const { data, error, setData } = useLoad<SwitchState>(async () => (await api.overview()).switches, [api]);
+  const hall = useLoad<HallThemeValue>(async () => (await api.overview()).theme ?? 'auto', [api]);
   return (
     <>
       <h1 className="admin-h1">{t('admin.switches')}</h1>
       <ErrorLine error={error} />
       {data && <Switches value={data} onSave={async (next) => setData(await api.setSwitches(next))} />}
+      {hall.data && <HallTheme value={hall.data} onSave={(v) => api.setDisplayTheme(v)} />}
       <ContactForm load={api.getContact} save={api.setContact} />
     </>
   );

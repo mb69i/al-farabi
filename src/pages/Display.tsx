@@ -1,18 +1,17 @@
 import QRCode from 'qrcode';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useI18n } from '../i18n';
-import type { Api, DisplayCounts } from '../lib/api';
+import { ApiError, type Api, type DisplayCounts } from '../lib/api';
 import './Display.css';
 
 type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean };
 
-type CounterKey = Exclude<keyof DisplayCounts, 'researchers_total'>;
+type CounterKey = Exclude<keyof DisplayCounts, 'researchers_total' | 'theme'>;
 type Theme = 'day' | 'night';
 
 const KEYS: CounterKey[] = ['total', 'present_today', 'male', 'female', 'vip', 'researchers_signed'];
 const BUMP_MS = 2200; // how long a number glows after it goes up
 const MOMENT_MS = 6000; // how long "Welcome, guest no. N" stays up
-const THEME_KEY = 'display-theme';
 
 /** Hour of day in Baghdad (UTC+3 all year, no daylight saving). */
 const baghdadHour = (now: number) => (new Date(now).getUTCHours() + 3) % 24;
@@ -24,24 +23,6 @@ const baghdadClock = (now: number) => {
   const d = new Date(now + 3 * 3600_000);
   return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
 };
-
-function readStored(): Theme | null {
-  try {
-    const v = localStorage.getItem(THEME_KEY);
-    return v === 'day' || v === 'night' ? v : null;
-  } catch {
-    return null;
-  }
-}
-
-/** Link (?theme=) wins, then this screen's saved choice, then the time of day in Baghdad. */
-function initialTheme(): { theme: Theme; chosen: boolean } {
-  const q = new URLSearchParams(window.location.search).get('theme');
-  if (q === 'day' || q === 'night') return { theme: q, chosen: true };
-  const stored = readStored();
-  if (stored) return { theme: stored, chosen: true };
-  return { theme: autoTheme(Date.now()), chosen: false };
-}
 
 function usePrefersReducedMotion(): boolean {
   const query = '(prefers-reduced-motion: reduce)';
@@ -84,23 +65,6 @@ function AnimatedNumber({ value, animate }: { value: number; animate: boolean })
   return <>{shown.toLocaleString('en-US')}</>;
 }
 
-function SunIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="4.5" />
-      <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" />
-    </svg>
-  );
-}
-
-function MoonIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" />
-    </svg>
-  );
-}
-
 export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
   const { t, setLang } = useI18n();
   const reduced = usePrefersReducedMotion();
@@ -110,11 +74,11 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
   const [moment, setMoment] = useState<{ n: number; id: number } | null>(null);
   const [lastRegAt, setLastRegAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
-  const [mode, setMode] = useState(initialTheme);
   const prev = useRef<DisplayCounts | null>(null);
   const bumpTimer = useRef<number>();
   const momentTimer = useRef<number>();
   const [offline, setOffline] = useState(false);
+  const [notConfigured, setNotConfigured] = useState(false);
   const [qr, setQr] = useState('');
   const target = `${window.location.origin}/`;
 
@@ -139,6 +103,7 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
         prev.current = c;
         setCounts(c);
         setOffline(false);
+        setNotConfigured(false);
         if (!before) return;
         // Which numbers went up since the last poll (aggregates only, never who).
         const up: Partial<Record<CounterKey, number>> = {};
@@ -158,8 +123,11 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
           window.clearTimeout(momentTimer.current);
           momentTimer.current = window.setTimeout(() => setMoment(null), MOMENT_MS);
         }
-      } catch {
-        if (alive) setOffline(true);
+      } catch (e) {
+        if (!alive) return;
+        setOffline(true);
+        // A build without the database settings can never connect: say so instead of "reconnecting".
+        setNotConfigured(e instanceof ApiError && e.message === 'not configured');
       }
     };
     poll();
@@ -172,30 +140,13 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
     };
   }, [api, slug, pollMs]);
 
-  // Clock, "N min ago", and the automatic day/night switch (only when nobody chose a mode).
+  // Clock, "N min ago", and the automatic day/night switch.
   useEffect(() => {
-    const id = window.setInterval(() => {
-      const t0 = Date.now();
-      setNow(t0);
-      setMode((m) => (m.chosen || autoTheme(t0) === m.theme ? m : { theme: autoTheme(t0), chosen: false }));
-    }, 5_000);
+    const id = window.setInterval(() => setNow(Date.now()), 5_000);
     return () => window.clearInterval(id);
   }, []);
 
-  const toggleTheme = () =>
-    setMode((m) => {
-      const theme: Theme = m.theme === 'night' ? 'day' : 'night';
-      try {
-        localStorage.setItem(THEME_KEY, theme);
-      } catch {
-        /* private window: still switches for this visit */
-      }
-      return { theme, chosen: true };
-    });
-  const toggleRef = useRef(toggleTheme);
-  toggleRef.current = toggleTheme;
-
-  // Staff shortcuts on the projector PC: F or double-click = full screen, N = day/night.
+  // Staff shortcut on the projector PC: F or double-click = full screen. Day/night is set by an admin.
   useEffect(() => {
     const fullscreen = () => {
       if (document.fullscreenElement) void document.exitFullscreen?.();
@@ -203,9 +154,7 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
-      const k = e.key.toLowerCase();
-      if (k === 'f') fullscreen();
-      if (k === 'n') toggleRef.current();
+      if (e.key.toLowerCase() === 'f') fullscreen();
     };
     window.addEventListener('keydown', onKey);
     window.addEventListener('dblclick', fullscreen);
@@ -223,11 +172,11 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
     return t('display.hoursAgo', { n: String(Math.floor(mins / 60)) });
   })();
 
-  const n = (k: keyof DisplayCounts) => Number(counts?.[k]) || 0;
+  const n = (k: CounterKey | 'researchers_total') => Number(counts?.[k]) || 0;
   const pct = (a: number, b: number) => (b > 0 ? Math.min(100, Math.round((a / b) * 100)) : 0);
   const people = n('male') + n('female');
   const malePct = people > 0 ? (n('male') / people) * 100 : 50;
-  const night = mode.theme === 'night';
+  const theme: Theme = counts?.theme === 'day' || counts?.theme === 'night' ? counts.theme : autoTheme(now);
 
   /** One number in the strip, with its glow and "+N" badge (class names are what the tests read). */
   const stat = (key: CounterKey, label: string, extra: string, children?: ReactNode) => {
@@ -247,7 +196,7 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
   };
 
   return (
-    <div className={`display ${motion ? '' : 'display--still'}`} data-theme={mode.theme}>
+    <div className={`display ${motion ? '' : 'display--still'}`} data-theme={theme}>
       {/* Small corner controls, out of the way of the stage */}
       <div className="d-corner">
         <span className="d-clock num" data-testid="clock">
@@ -258,15 +207,6 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
             {t('display.lastReg', { when: ago })}
           </span>
         )}
-        <button
-          type="button"
-          className="d-theme"
-          aria-label={night ? t('display.dayMode') : t('display.nightMode')}
-          title={night ? t('display.dayMode') : t('display.nightMode')}
-          onClick={toggleTheme}
-        >
-          {night ? <SunIcon /> : <MoonIcon />}
-        </button>
       </div>
 
       <main className="d-stage">
@@ -305,6 +245,11 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
           )}
         </div>
 
+        {notConfigured && (
+          <p className="d-config" role="alert">
+            {t('display.notConfigured')}
+          </p>
+        )}
         <div className="d-strip">
           {offline ? (
             <span className="d-live d-live--offline" role="status">

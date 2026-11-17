@@ -22,6 +22,14 @@
   --line-light: #D9DCE4;
   --text-on-dark: #14234B;
   --text-on-dark-muted: #4A5570;
+  /* Roles that change between day and night */
+  --surface: #FFFFFF; /* inputs, chips, bubbles */
+  --heading: #14234B;
+  --accent-ink: #A3262B;
+  --focus: #14234B;
+  --chip-on: #14234B;
+  --suggest-bg: #FFF6D6;
+  --switch-off: rgba(20, 35, 75, 0.2);
   --danger: #B42318;
   --success: #1F7A4D;
 
@@ -53,4 +61,36 @@
   --dots:
     radial-gradient(circle, rgba(163, 38, 43, 0.22) 1.6px, transparent 2px) 13px 13px / 104px 104px,
     radial-gradient(circle, rgba(20, 35, 75, 0.06) 1.1px, transparent 1.5px) 0 0 / 26px 26px;
+}
+
+/* Night mode for the public and staff pages (button next to the language switch).
+   Same conference colours: navy page, gold and burgundy accents. The hall screen has its own,
+   set by an admin. */
+:root[data-theme='night'] {
+  color-scheme: dark;
+  --page: #0C1733;
+  --paper: rgba(255, 255, 255, 0.06);
+  --glass: rgba(255, 255, 255, 0.06);
+  --glass-strong: rgba(255, 255, 255, 0.12);
+  --card-border: #C2343A;
+  --gold-ink: #F2C230;
+  --ink: #F2F4FA;
+  --ink-muted: #AEB8D3;
+  --line-dark: rgba(242, 194, 48, 0.32);
+  --line-light: rgba(255, 255, 255, 0.18);
+  --text-on-dark: #F2F4FA;
+  --text-on-dark-muted: #AEB8D3;
+  --surface: #13224A;
+  --heading: #FFFFFF;
+  --accent-ink: #F7D873;
+  --focus: #F2C230;
+  --chip-on: #A3262B;
+  --suggest-bg: rgba(242, 194, 48, 0.16);
+  --switch-off: rgba(255, 255, 255, 0.25);
+  --danger: #FF7A6E;
+  --success: #46C98D;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 36px -20px rgba(0, 0, 0, 0.7);
+  --dots:
+    radial-gradient(circle, rgba(242, 194, 48, 0.16) 1.6px, transparent 2px) 13px 13px / 104px 104px,
+    radial-gradient(circle, rgba(255, 255, 255, 0.05) 1.1px, transparent 1.5px) 0 0 / 26px 26px;
 }

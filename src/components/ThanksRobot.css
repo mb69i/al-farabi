@@ -17,7 +17,7 @@
   min-height: 3.4em;
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius);
-  background: var(--white);
+  background: var(--surface);
   border: 1.5px solid var(--card-border);
   color: var(--ink);
   font-weight: 500;
@@ -35,7 +35,7 @@
   inset-inline-start: 50%;
   width: 18px;
   height: 18px;
-  background: var(--white);
+  background: var(--surface);
   transform: translateX(-50%) rotate(45deg);
   border-radius: 3px;
 }

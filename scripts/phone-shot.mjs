@@ -1,10 +1,13 @@
 // Phone-size screenshots of the app for review.
 // Usage: node scripts/phone-shot.mjs <scenario> <out.png> [baseUrl]
-// Scenarios: form, busy, thanks, display, display-live (day), display-night, verify-ok, verify-missing, login
+// Scenarios: form, busy, thanks, display, display-live (day), display-night, display-phone, <page>-night, verify-ok, verify-missing, login
 // Needs PLAYWRIGHT_BROWSERS_PATH pointing at the installed Chromium.
 import { chromium, devices } from '@playwright/test';
 
-const [, , scenario = 'form', out = 'shot.png', base = 'http://127.0.0.1:5175'] = process.argv;
+const [, , rawScenario = 'form', out = 'shot.png', base = 'http://127.0.0.1:5175'] = process.argv;
+// "<page>-night" (not the hall screen) = that page with the visitor's night button pressed.
+const nightSite = rawScenario.endsWith('-night') && !rawScenario.startsWith('display');
+const scenario = nightSite ? rawScenario.slice(0, -'-night'.length) : rawScenario;
 
 // Screenshot-only fake staff session (never sent to the real database: every call it makes is mocked).
 const REF = 'kxwimaslalczappzngci';
@@ -23,7 +26,7 @@ const fakeRpc = {
   footer: { get_site_contact: SAMPLE_CONTACT },
   controls: { whoami: { role: 'owner', aal: 'aal2', email: 'owner@example.org' }, get_site_contact: SAMPLE_CONTACT,
     admin_overview: { total: 0, present_today: 0, male: 0, female: 0, vip: 0, researchers_signed: 0, researchers_total: 0,
-      switches: { registration_open: true, cards_enabled: false, certificates_enabled: false }, deliveries: [] } },
+      switches: { registration_open: true, cards_enabled: false, certificates_enabled: false }, theme: 'auto', deliveries: [] } },
   'verify-ok': { verify_certificate: { status: 'valid', serial: 'ALF26-K7Q2-MXH4-P9TB', name: 'محمد الباقر علي', role: 'attendee',
     event_ar: 'مؤتمر الفارابي للبحوث التطبيقية في التحول الرقمي الشامل', event_en: 'Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation',
     date_from: '2026-11-21', date_to: '2026-11-22' } },
@@ -53,14 +56,15 @@ async function fillForm(page) {
 }
 
 const browser = await chromium.launch();
-const isDisplay = scenario.startsWith('display');
-const isLive = scenario === 'display-live' || scenario === 'display-night';
+const isDisplay = scenario.startsWith('display') && scenario !== 'display-phone';
+const isLive = ['display-live', 'display-night', 'display-phone'].includes(scenario);
 const ctx = await browser.newContext(
   isDisplay
     ? { viewport: { width: 1280, height: 720 }, locale: 'ar-IQ' }
     : { ...devices['iPhone 13'], deviceScaleFactor: 2, locale: 'ar-IQ' },
 );
 const page = await ctx.newPage();
+if (nightSite) await ctx.addInitScript(() => localStorage.setItem('site-theme', 'night'));
 for (const [fn, body] of Object.entries(fakeRpc[scenario] ?? {})) {
   await page.route(`**/rest/v1/rpc/${fn}`, (r) =>
     r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) }),
@@ -74,7 +78,8 @@ if (isLive) {
   const base0 = { total: 412, present_today: 287, male: 198, female: 176, vip: 23, researchers_signed: 64, researchers_total: 121 };
   await page.route('**/rest/v1/rpc/get_display_counts', (r) => {
     calls += 1;
-    const body = calls <= 4 ? base0 : { ...base0, total: 413, present_today: 288, female: 177 };
+    const theme = scenario === 'display-night' ? 'night' : 'day';
+    const body = { ...(calls <= 4 ? base0 : { ...base0, total: 413, present_today: 288, female: 177 }), theme };
     return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
   });
 }
@@ -87,7 +92,7 @@ if (scenario === 'researchers' || scenario === 'admin' || scenario === 'controls
   await page.route('**/auth/v1/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(session.user) }));
 }
 
-const path = { display: '/display', 'display-live': '/display?theme=day', 'display-night': '/display?theme=night', login: '/staff/login', researchers: '/researchers', admin: '/admin', controls: '/admin/switches', 'verify-ok': '/verify?s=ALF26-K7Q2-MXH4-P9TB', 'verify-missing': '/verify?s=ALF26-ZZZZ-ZZZZ-ZZZZ' }[scenario] ?? '/';
+const path = { display: '/display', 'display-live': '/display', 'display-night': '/display', 'display-phone': '/display', login: '/staff/login', researchers: '/researchers', admin: '/admin', controls: '/admin/switches', 'verify-ok': '/verify?s=ALF26-K7Q2-MXH4-P9TB', 'verify-missing': '/verify?s=ALF26-ZZZZ-ZZZZ-ZZZZ' }[scenario] ?? '/';
 if (!['researchers', 'admin', 'controls'].includes(scenario)) {
   await page.goto(base + path, { waitUntil: 'networkidle' });
   await page.evaluate(() => { try { localStorage.clear(); } catch {} });

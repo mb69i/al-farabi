@@ -139,6 +139,34 @@ button {
   border-color: var(--card-border);
 }
 
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--line-dark);
+  background: var(--glass);
+  color: var(--ink);
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.theme-toggle:hover {
+  background: var(--glass-strong);
+  border-color: var(--card-border);
+  transform: rotate(-12deg);
+}
+
+.theme-toggle svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  fill-opacity: 0.2;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
 .shell-main {
   flex: 1;
   width: 100%;

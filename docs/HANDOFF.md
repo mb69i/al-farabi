@@ -35,6 +35,13 @@ each runs inside BEGIN…ROLLBACK).
 | 8 | Public `/verify?s=SERIAL` page + read-only `verify_certificate(serial)` (name, event, date, role only), rate-limited; consider longer printed serials | **Done** (preview; migration 13 applied) — `certificates` table, serials `ALF26-XXXX-XXXX-XXXX`, `issue_certificate()` server-only, limits `verify_ip` 30/min, `verify_global` 3000/10 min; test `tests/db/verify.sql` |
 | 9 | Certificate engine from the owner's `engine-template` folder (template.html with {{NAME}}, {{ORG_LINE}}, {{DATE_PHRASE}}, {{SERIAL}}, {{QR}}, {{VARIANT}}); Playwright/Chromium render; flat 300 dpi PDF; fresh per-person QR to `<VERIFY_BASE_URL>/verify?s=<serial>` verified by decoding; fail on missing name/date/URL; sponsors and no-sponsors variants; show samples (short/long name, one-day/multi-day date) first | **Waiting** — the `engine-template` folder is not on this PC; asked the owner for it (17 Nov evening). Engine should call `issue_certificate()` for the serial and `src/lib/datePhrase.ts` rules for DATE_PHRASE |
 
+## Day/night (17 Nov night)
+- Hall screen mode is set by an admin: Admin → التحكم → "شاشة القاعة" (Automatic / Day / Night), stored in
+  `site_settings.display_theme` (migration 14, test `tests/db/display_theme.sql`), sent with `get_display_counts`.
+- Every other page has a sun/moon button next to the language button (saved per device, `public/theme-boot.js`).
+- If the hall screen says it is "not connected to the database", that Vercel environment is missing
+  `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (check Settings → Environment Variables → Preview).
+
 ## Notes from items 6–8
 - Public pages talk to the database through `src/lib/rpcFetch.ts` (no supabase-js); staff screens load
   `src/staffApp.tsx` on demand. Keep `npm run build && node scripts/check-bundle.mjs` passing.

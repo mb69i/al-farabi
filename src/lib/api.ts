@@ -50,6 +50,8 @@ export type DisplayCounts = {
   vip: number;
   researchers_signed: number;
   researchers_total: number;
+  /** Hall screen mode chosen by an admin. */
+  theme?: 'auto' | 'day' | 'night';
 };
 
 export type VerifyResult =

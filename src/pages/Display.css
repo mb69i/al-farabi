@@ -6,7 +6,10 @@
   --u: min(1vw, 1.778vh);
 
   --d-bg: var(--white);
-  --d-pattern: var(--dots);
+  /* (own copy of the day dots, so a visitor's night choice on other pages never changes the hall) */
+  --d-pattern:
+    radial-gradient(circle, rgba(163, 38, 43, 0.22) 1.6px, transparent 2px) 13px 13px / 104px 104px,
+    radial-gradient(circle, rgba(20, 35, 75, 0.06) 1.1px, transparent 1.5px) 0 0 / 26px 26px;
   --d-ink: var(--navy);
   --d-muted: #4a5570;
   --d-accent: var(--burgundy);
@@ -75,43 +78,6 @@
 
 .d-last {
   font-size: calc(var(--u) * 0.95);
-}
-
-.d-theme {
-  display: grid;
-  place-items: center;
-  width: calc(var(--u) * 2.4);
-  height: calc(var(--u) * 2.4);
-  border-radius: 50%;
-  border: 1px solid var(--d-line);
-  background: var(--d-glass);
-  color: var(--d-ink);
-  cursor: pointer;
-  opacity: 0.7;
-  transition:
-    opacity 0.2s var(--ease),
-    transform 0.2s var(--ease);
-}
-
-.d-theme:hover,
-.d-theme:focus-visible {
-  opacity: 1;
-  transform: rotate(-12deg);
-}
-
-.d-theme svg {
-  width: 55%;
-  height: 55%;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-}
-
-.d-theme svg circle,
-.d-theme svg path:only-child {
-  fill: currentColor;
-  fill-opacity: 0.18;
 }
 
 /* ---------- Stage ---------- */
@@ -241,6 +207,18 @@
 .d-moment-spark {
   color: var(--burgundy);
   animation: d-spin 1.6s var(--ease) infinite;
+}
+
+.d-config {
+  max-width: calc(var(--u) * 60);
+  margin-bottom: calc(var(--u) * 1);
+  padding: calc(var(--u) * 0.5) calc(var(--u) * 1.2);
+  border-radius: calc(var(--u) * 0.6);
+  background: rgba(180, 35, 24, 0.12);
+  border: 1px solid rgba(180, 35, 24, 0.5);
+  color: var(--d-accent);
+  font-size: calc(var(--u) * 1);
+  font-weight: 700;
 }
 
 /* ---------- One small strip of numbers ---------- */
@@ -488,6 +466,43 @@
 @keyframes d-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Phones and portrait screens: bigger unit, the strip wraps, the page may scroll. */
+@media (max-aspect-ratio: 1/1) {
+  .display {
+    --u: min(2.9vw, 1.3vh);
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+    padding-top: calc(var(--u) * 5);
+  }
+  .d-corner {
+    inset-inline: 0;
+    justify-content: center;
+  }
+  .qr-box {
+    width: min(calc(var(--u) * 26), 70vw);
+  }
+  .d-strip {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: calc(var(--u) * 1.6);
+    max-width: 94vw;
+  }
+  .d-strip > * + * {
+    border-inline-start: 0;
+  }
+  .d-live {
+    flex-basis: 100%;
+    justify-content: center;
+  }
+  .counter-value {
+    font-size: calc(var(--u) * 2.6);
+  }
+  .counter-label {
+    font-size: calc(var(--u) * 1.05);
   }
 }
 

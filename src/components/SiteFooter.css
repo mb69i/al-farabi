@@ -19,7 +19,7 @@
 
 .site-footer-contact h2 {
   font-size: var(--fs-md);
-  color: var(--navy);
+  color: var(--heading);
   margin-bottom: var(--space-3);
 }
 
@@ -44,7 +44,7 @@
 }
 
 .site-footer-contact a {
-  color: var(--burgundy);
+  color: var(--accent-ink);
   font-weight: 700;
   text-decoration: none;
 }

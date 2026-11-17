@@ -7,7 +7,7 @@
 
 .res-search h1 {
   font-size: var(--fs-xl);
-  color: var(--navy);
+  color: var(--heading);
   margin-bottom: var(--space-4);
 }
 
@@ -17,7 +17,7 @@
   padding: 0 var(--space-5);
   border-radius: var(--radius);
   border: 2px solid transparent;
-  background: var(--white);
+  background: var(--surface);
   color: var(--ink);
   font-size: 1.25rem;
   border-color: var(--card-border);
@@ -181,7 +181,7 @@
   padding: 0 var(--space-4);
   border-radius: 999px;
   border: 1px solid var(--line-light);
-  background: var(--white);
+  background: var(--surface);
   color: var(--ink);
 }
 

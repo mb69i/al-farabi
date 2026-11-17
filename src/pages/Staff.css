@@ -30,13 +30,13 @@
   padding: 10px 14px;
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--line-light);
-  background: var(--white);
+  background: var(--surface);
   font-size: 1rem;
 }
 
 .staff-card input:focus {
   outline: none;
-  border-color: var(--navy);
+  border-color: var(--focus);
   box-shadow: 0 0 0 4px rgba(20, 35, 75, 0.12);
 }
 

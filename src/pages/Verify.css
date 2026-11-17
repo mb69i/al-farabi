@@ -82,7 +82,7 @@
 .verify-name {
   font-size: var(--fs-lg);
   font-weight: 700 !important;
-  color: var(--navy);
+  color: var(--heading);
 }
 
 .verify-serial {

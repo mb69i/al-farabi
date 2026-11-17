@@ -20,6 +20,7 @@ export type Overview = {
   total: number; present_today: number; male: number; female: number; vip: number;
   researchers_signed: number; researchers_total: number;
   switches: SwitchState;
+  theme?: 'auto' | 'day' | 'night';
   deliveries: Array<{ kind: string; status: string; count: number }>;
 };
 export type Page<T> = { rows: T[]; total: number };
@@ -69,6 +70,7 @@ export function createAdminApi(client: SupabaseClient, slug: string) {
     },
     setVip: (kind: 'guest' | 'researcher', id: string, value: boolean) =>
       rpc<void>('admin_set_vip', { p_kind: kind, p_id: id, p_value: value }),
+    setDisplayTheme: (theme: 'auto' | 'day' | 'night') => rpc<string>('admin_set_display_theme', { p_theme: theme }),
     setSwitches: (s: SwitchState) =>
       rpc<SwitchState>('admin_set_switches', {
         p_slug: slug, p_registration_open: s.registration_open, p_cards_enabled: s.cards_enabled,

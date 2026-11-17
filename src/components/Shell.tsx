@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useI18n } from '../i18n';
 import { SiteFooter } from './SiteFooter';
+import { ThemeToggle } from './ThemeToggle';
 
 type Props = { children: ReactNode; variant?: 'public' | 'staff'; actions?: ReactNode };
 
@@ -31,6 +32,7 @@ export function Shell({ children, variant = 'public', actions }: Props) {
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {actions}
+          <ThemeToggle />
           <LanguageToggle />
         </div>
       </header>
