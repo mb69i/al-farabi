@@ -136,3 +136,11 @@ def test_outputs_are_png_and_pdf():
 
 def test_font_path_resolves_bundled_font():
     assert font_path(ARABIC_FONT).endswith(ARABIC_FONT)
+
+
+def test_pdf_bytes_are_stable_for_the_same_image():
+    import time
+    img = Image.new("RGB", (120, 80), "white")
+    first = to_pdf(img)
+    time.sleep(1.1)
+    assert to_pdf(img) == first

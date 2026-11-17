@@ -37,7 +37,7 @@ def test_one_bad_row_does_not_stop_batch():
 def test_idempotency_key_uses_delivery_id():
     supa, mailer = FakeSupa(_rows(1)), FakeMailer()
     process_batch(supa, mailer)
-    assert mailer.sent[0]["key"] == "delivery-d0"
+    assert mailer.sent[0]["key"] == "delivery-d0-0"
 
 
 def test_certificate_attaches_pdf_and_png():
@@ -64,3 +64,9 @@ def test_error_message_is_truncated_to_500_chars():
 
 def test_empty_queue_returns_zero_summary():
     assert process_batch(FakeSupa([]), FakeMailer()) == {"claimed": 0, "sent": 0, "failed": 0}
+
+
+def test_resend_uses_new_idempotency_key():
+    supa, mailer = FakeSupa([({"id": "d9", "kind": "card", "event_id": "e", "resend_count": 2}, context(9))]), FakeMailer()
+    process_batch(supa, mailer)
+    assert mailer.sent[0]["key"] == "delivery-d9-2"

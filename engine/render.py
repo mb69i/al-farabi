@@ -8,6 +8,7 @@ Coordinates are in forma pixels, or in reference_size pixels when given.
 from __future__ import annotations
 
 import io
+import time
 
 from PIL import Image, ImageDraw
 
@@ -60,9 +61,15 @@ def to_png(img: Image.Image) -> bytes:
     return buf.getvalue()
 
 
+# Fixed PDF dates so the same certificate always gives the same bytes: a retried send with the
+# same email idempotency key is then recognised by Resend instead of rejected as a conflict.
+PDF_DATE = time.gmtime(1795219200)  # 2026-11-21 00:00 UTC
+
+
 def to_pdf(img: Image.Image) -> bytes:
     buf = io.BytesIO()
-    img.convert("RGB").save(buf, "PDF", resolution=PDF_DPI)
+    img.convert("RGB").save(buf, "PDF", resolution=PDF_DPI, creationDate=PDF_DATE, modDate=PDF_DATE,
+                            title="Al-Farabi Conference")
     return buf.getvalue()
 
 

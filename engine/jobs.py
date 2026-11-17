@@ -43,7 +43,7 @@ def _make_one(supa, mailer, row: dict, formas: dict) -> None:
 
     subject, html, text = build(kind, ctx["lang"], ctx["values"], _site_url())
     provider_id = mailer.send(ctx["to_email"], subject, html, text, attachments,
-                              idempotency_key=f"delivery-{row['id']}")
+                              idempotency_key=f"delivery-{row['id']}-{row.get('resend_count', 0)}")
     file_path = base + (".pdf" if kind == "certificate" else ".png")
     supa.rpc("complete_delivery", {"p_id": row["id"], "p_provider_id": provider_id, "p_file_path": file_path})
 
