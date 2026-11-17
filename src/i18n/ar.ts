@@ -62,6 +62,13 @@ export const ar = {
   'display.total': 'المسجّلون',
   'display.today': 'الحضور اليوم',
   'display.reconnecting': 'جارٍ إعادة الاتصال',
+  'display.live': 'مباشر',
+  'display.moment': 'أهلاً بالضيف رقم {n}',
+  'display.lastReg': 'آخر تسجيل: {when}',
+  'display.justNow': 'الآن',
+  'display.minAgo': 'قبل {n} دقيقة',
+  'display.hoursAgo': 'قبل {n} ساعة',
+  'display.ofTotal': 'من {n}',
 
   'staff.login': 'دخول الكادر',
   'staff.email': 'البريد الإلكتروني',

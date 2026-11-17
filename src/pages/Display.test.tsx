@@ -77,3 +77,89 @@ describe('Display', () => {
     expect(screen.getByTestId('qr').getAttribute('data-target')).toBe(`${window.location.origin}/`);
   });
 });
+
+describe('Display — live feel (item 7)', () => {
+  const card = (label: string) => screen.getByText(label).closest('.counter')!;
+
+  async function twoPolls(next: Partial<DisplayCounts>) {
+    const fn = vi.fn().mockResolvedValueOnce(COUNTS).mockResolvedValue({ ...COUNTS, ...next });
+    setup(api(fn));
+    await act(async () => {});
+    await act(async () => {
+      vi.advanceTimersByTime(5000);
+    });
+    return fn;
+  }
+
+  it('pulses a counter and shows +N when its number goes up, then settles', async () => {
+    await twoPolls({ total: 414, male: 200 });
+    expect(value('Registered')).toBe('414');
+    expect(card('Registered')).toHaveClass('counter--bump');
+    expect(card('Registered').querySelector('.counter-delta')?.textContent).toBe('+2');
+    expect(card('Male')).toHaveClass('counter--bump');
+    expect(card('Female')).not.toHaveClass('counter--bump');
+    await act(async () => {
+      vi.advanceTimersByTime(2500);
+    });
+    expect(card('Registered')).not.toHaveClass('counter--bump');
+  });
+
+  it('celebrates a new registration with the guest number only (no names), not on first load', async () => {
+    const fn = vi.fn().mockResolvedValueOnce(COUNTS).mockResolvedValue({ ...COUNTS, total: 413 });
+    setup(api(fn));
+    await act(async () => {});
+    expect(screen.queryByTestId('moment')).toBeNull();
+    await act(async () => {
+      vi.advanceTimersByTime(5000);
+    });
+    expect(screen.getByTestId('moment')).toHaveTextContent('Welcome, guest no. 413');
+    await act(async () => {
+      vi.advanceTimersByTime(7000);
+    });
+    expect(screen.queryByTestId('moment')).toBeNull();
+  });
+
+  it('shows how long ago the last registration was', async () => {
+    await twoPolls({ total: 413 });
+    expect(screen.getByTestId('last-reg')).toHaveTextContent('Last registration: just now');
+    await act(async () => {
+      vi.advanceTimersByTime(125_000);
+    });
+    expect(screen.getByTestId('last-reg')).toHaveTextContent('Last registration: 2 min ago');
+  });
+
+  it('shows a live badge and researcher progress (signed of total)', async () => {
+    setup(api(vi.fn(async () => COUNTS)));
+    await act(async () => {});
+    expect(screen.getByText('Live')).toBeInTheDocument();
+    const bar = screen.getByRole('progressbar');
+    expect(bar).toHaveAttribute('aria-valuenow', '64');
+    expect(bar).toHaveAttribute('aria-valuemax', '121');
+    expect(card('Researchers')).toHaveTextContent('of 121');
+  });
+
+  it('counts up from zero on start, but jumps straight to the number with reduced motion', async () => {
+    const mm = (reduce: boolean) =>
+      vi.fn((q: string) => ({ matches: reduce && q.includes('reduce'), media: q, addEventListener() {}, removeEventListener() {} }));
+    const original = window.matchMedia;
+    const run = async (reduce: boolean) => {
+      window.matchMedia = mm(reduce) as unknown as typeof window.matchMedia;
+      window.history.pushState({}, '', '/display?lang=en');
+      const r = render(
+        <I18nProvider initial="en">
+          <Display api={api(vi.fn(async () => COUNTS))} slug="s" />
+        </I18nProvider>,
+      );
+      await act(async () => {});
+      const shown = value('Male');
+      r.unmount();
+      return shown;
+    };
+    try {
+      expect(await run(false)).toBe('0');
+      expect(await run(true)).toBe('198');
+    } finally {
+      window.matchMedia = original;
+    }
+  });
+});

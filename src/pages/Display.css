@@ -161,3 +161,227 @@
     opacity: 0.3;
   }
 }
+
+/* ---- Live feel (item 7): glow + "+N" when a number rises, a welcome moment, live badge. ---- */
+.display {
+  position: relative;
+}
+
+.display-status {
+  display: flex;
+  align-items: center;
+  gap: 1.6vw;
+}
+
+.display-last {
+  font-size: 1.15vw;
+  color: var(--text-on-dark-muted);
+}
+
+.display-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6vw;
+  padding: 0.45vw 1.1vw;
+  border-radius: 999px;
+  border: 2px solid var(--card-border);
+  background: rgba(163, 38, 43, 0.08);
+  color: var(--burgundy);
+  font-size: 1.15vw;
+  font-weight: 700;
+}
+
+.display-live .dot {
+  position: relative;
+  width: 0.75vw;
+  height: 0.75vw;
+  border-radius: 50%;
+  background: var(--burgundy-bright);
+}
+
+.display-live .dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--burgundy-bright);
+  animation: display-ring 1.8s var(--ease) infinite;
+}
+
+.counter {
+  position: relative;
+  transition:
+    transform 0.4s var(--ease),
+    box-shadow 0.4s var(--ease),
+    background-color 0.4s var(--ease);
+}
+
+.counter-value {
+  transition: color 0.4s var(--ease);
+}
+
+.counter--bump {
+  transform: scale(1.035);
+  background: rgba(242, 194, 48, 0.16);
+  box-shadow:
+    0 0 0 0.25vw rgba(242, 194, 48, 0.75),
+    0 1.2vw 2.4vw -1vw rgba(163, 38, 43, 0.45);
+  animation: display-bump 0.7s var(--ease);
+}
+
+.counter--bump .counter-value {
+  color: var(--burgundy);
+}
+
+.counter-delta {
+  position: absolute;
+  inset-inline-end: 1.6vw;
+  top: 1.1vw;
+  padding: 0.2vw 0.9vw;
+  border-radius: 999px;
+  background: var(--burgundy);
+  color: var(--white);
+  font-size: 1.6vw;
+  font-weight: 700;
+  animation: display-float 2.2s var(--ease) forwards;
+}
+
+.counter-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 1vw;
+  margin-top: 0.4vw;
+}
+
+.counter-progress {
+  flex: 1;
+  height: 0.7vw;
+  border-radius: 999px;
+  background: rgba(163, 38, 43, 0.15);
+  overflow: hidden;
+}
+
+.counter-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--burgundy), var(--burgundy-bright));
+  transition: width 1.2s var(--ease);
+}
+
+.counter-sub {
+  font-size: 1.15vw;
+  color: var(--text-on-dark-muted);
+  white-space: nowrap;
+}
+
+.qr-foot {
+  display: grid;
+  place-items: center;
+  min-height: 4.6vw;
+}
+
+.display-moment {
+  display: inline-flex;
+  align-items: center;
+  gap: 1vw;
+  padding: 0.9vw 2.2vw;
+  border-radius: 999px;
+  background: var(--navy-deep);
+  color: var(--white);
+  font-size: 1.9vw;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow:
+    0 0 0 0.3vw var(--gold),
+    0 2vw 4vw -1.5vw rgba(12, 23, 51, 0.6);
+  animation: display-moment 6s var(--ease) forwards;
+}
+
+.display-moment-spark {
+  color: var(--gold);
+  animation: display-spin 1.6s var(--ease) infinite;
+}
+
+@keyframes display-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+@keyframes display-bump {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1.035);
+  }
+}
+
+@keyframes display-float {
+  0% {
+    opacity: 0;
+    transform: translateY(0.8vw) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1.08);
+  }
+  25% {
+    transform: translateY(0) scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-1.4vw);
+  }
+}
+
+@keyframes display-moment {
+  0% {
+    opacity: 0;
+    transform: translateY(1.2vw) scale(0.9);
+  }
+  8%,
+  88% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0.6vw) scale(0.98);
+  }
+}
+
+@keyframes display-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reduced motion: same information, no movement (glow and badges just appear). */
+@media (prefers-reduced-motion: reduce) {
+  .display *,
+  .display *::before,
+  .display *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .counter--bump {
+    transform: none;
+  }
+}
+
+.display--still .counter--bump {
+  transform: none;
+}

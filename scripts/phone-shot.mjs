@@ -1,6 +1,6 @@
 // Phone-size screenshots of the app for review.
 // Usage: node scripts/phone-shot.mjs <scenario> <out.png> [baseUrl]
-// Scenarios: form, busy, thanks, display, verify-ok, verify-missing, login
+// Scenarios: form, busy, thanks, display, display-live, verify-ok, verify-missing, login
 // Needs PLAYWRIGHT_BROWSERS_PATH pointing at the installed Chromium.
 import { chromium, devices } from '@playwright/test';
 
@@ -49,7 +49,7 @@ async function fillForm(page) {
 }
 
 const browser = await chromium.launch();
-const isDisplay = scenario === 'display';
+const isDisplay = scenario === 'display' || scenario === 'display-live';
 const ctx = await browser.newContext(
   isDisplay
     ? { viewport: { width: 1280, height: 720 }, locale: 'ar-IQ' }
@@ -62,6 +62,18 @@ for (const [fn, body] of Object.entries(fakeRpc[scenario] ?? {})) {
   );
 }
 
+if (scenario === 'display-live') {
+  // Hall screen just after a new registration: the first poll after load returns higher numbers
+  // (dev StrictMode calls twice on mount, and the page is opened twice).
+  let calls = 0;
+  const base0 = { total: 412, present_today: 287, male: 198, female: 176, vip: 23, researchers_signed: 64, researchers_total: 121 };
+  await page.route('**/rest/v1/rpc/get_display_counts', (r) => {
+    calls += 1;
+    const body = calls <= 4 ? base0 : { ...base0, total: 413, present_today: 288, female: 177 };
+    return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+  });
+}
+
 if (scenario === 'researchers' || scenario === 'admin' || scenario === 'controls') {
   const session = { access_token: fakeJwt(scenario === 'researchers' ? 'aal1' : 'aal2'), token_type: 'bearer', expires_in: 3600, expires_at: 4102444800,
     refresh_token: 'x', user: { id: 'u1', aud: 'authenticated', role: 'authenticated', email: 'doctor@example.org',
@@ -70,7 +82,7 @@ if (scenario === 'researchers' || scenario === 'admin' || scenario === 'controls
   await page.route('**/auth/v1/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(session.user) }));
 }
 
-const path = { display: '/display', login: '/staff/login', researchers: '/researchers', admin: '/admin', controls: '/admin/switches', 'verify-ok': '/verify?s=ALF26-K7Q2MX', 'verify-missing': '/verify?s=ALF26-ZZZZZZ' }[scenario] ?? '/';
+const path = { display: '/display', 'display-live': '/display', login: '/staff/login', researchers: '/researchers', admin: '/admin', controls: '/admin/switches', 'verify-ok': '/verify?s=ALF26-K7Q2MX', 'verify-missing': '/verify?s=ALF26-ZZZZZZ' }[scenario] ?? '/';
 if (!['researchers', 'admin', 'controls'].includes(scenario)) {
   await page.goto(base + path, { waitUntil: 'networkidle' });
   await page.evaluate(() => { try { localStorage.clear(); } catch {} });
@@ -86,6 +98,7 @@ if (scenario === 'busy' || scenario === 'thanks') {
   await page.waitForTimeout(scenario === 'thanks' ? 3500 : 800);
 }
 if (isDisplay || scenario === 'admin' || scenario === 'controls') await page.waitForTimeout(2000);
+if (scenario === 'display-live') await page.waitForTimeout(3600); // second poll + bump in progress
 if (scenario === 'footer') { await page.waitForTimeout(800); await page.locator('footer').scrollIntoViewIfNeeded(); }
 
 await page.screenshot({ path: out, fullPage: ['form', 'admin', 'controls'].includes(scenario) });

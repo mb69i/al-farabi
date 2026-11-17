@@ -64,6 +64,13 @@ export const en: Record<Key, string> = {
   'display.total': 'Registered',
   'display.today': 'Present today',
   'display.reconnecting': 'Reconnecting',
+  'display.live': 'Live',
+  'display.moment': 'Welcome, guest no. {n}',
+  'display.lastReg': 'Last registration: {when}',
+  'display.justNow': 'just now',
+  'display.minAgo': '{n} min ago',
+  'display.hoursAgo': '{n} h ago',
+  'display.ofTotal': 'of {n}',
 
   'staff.login': 'Staff sign-in',
   'staff.email': 'Email',
