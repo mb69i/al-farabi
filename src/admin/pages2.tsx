@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type MouseEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type MouseEvent } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n';
 import type { AuditEntry, Page, StaffMember } from './adminApi';
@@ -253,6 +253,29 @@ export function StaffPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => void load(), [api]);
 
+  const [gEmail, setGEmail] = useState('');
+  const [gName, setGName] = useState('');
+  const [gRole, setGRole] = useState<'doctor' | 'admin'>('doctor');
+  const [gMsg, setGMsg] = useState<string | null>(null);
+
+  async function grant(e: FormEvent) {
+    e.preventDefault();
+    setGMsg(null);
+    try {
+      const r = await api.grantStaff(gEmail.trim(), gRole, gName.trim());
+      if (r.status === 'no_account') {
+        setGMsg(t('admin.noAccount'));
+        return;
+      }
+      setGEmail('');
+      setGName('');
+      setGMsg(t('admin.granted'));
+      await load();
+    } catch (err) {
+      setGMsg((err as Error).message);
+    }
+  }
+
   async function invite() {
     setMsg(null);
     try {
@@ -269,6 +292,29 @@ export function StaffPage() {
   return (
     <>
       <h1 className="admin-h1">{t('admin.staff')}</h1>
+      <form className="admin-panel" style={{ maxWidth: 520 }} aria-label={t('admin.grantTitle')} onSubmit={(e) => void grant(e)}>
+        <h2 className="admin-h2">{t('admin.grantTitle')}</h2>
+        <p className="admin-count">{t('admin.grantHint')}</p>
+        <label>
+          {t('staff.email')}
+          <input type="email" name="email" dir="ltr" required value={gEmail} onChange={(e) => setGEmail(e.target.value)} />
+        </label>
+        <label>
+          {t('reg.fullName')}
+          <input name="display_name" value={gName} onChange={(e) => setGName(e.target.value)} />
+        </label>
+        <label>
+          {t('admin.role')}
+          <select value={gRole} onChange={(e) => setGRole(e.target.value as 'doctor' | 'admin')}>
+            <option value="doctor">{t('admin.doctor')}</option>
+            <option value="admin">{t('admin.adminRole')}</option>
+          </select>
+        </label>
+        <button type="submit" className="btn-primary" disabled={!gEmail.includes('@')}>
+          {t('admin.grant')}
+        </button>
+        {gMsg && <p className="admin-count" role="status">{gMsg}</p>}
+      </form>
       <div className="admin-panel" style={{ maxWidth: 520 }}>
         <h2 className="admin-h2">{t('admin.invite')}</h2>
         <label>

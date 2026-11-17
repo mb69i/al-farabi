@@ -113,6 +113,10 @@ export function createAdminApi(client: SupabaseClient, slug: string) {
       const res = await authed('/api/staff', { email, role, display_name: displayName });
       if (!res.ok) throw new Error(`invite ${res.status}`);
     },
+    grantStaff: (email: string, role: 'admin' | 'doctor', displayName: string) =>
+      rpc<{ status: 'ok' | 'no_account'; user_id?: string }>('owner_grant_staff_by_email', {
+        p_email: email, p_role: role, p_display_name: displayName,
+      }),
     audit: (limit: number, offset: number) => rpc<Page<AuditEntry>>('owner_audit', { p_limit: limit, p_offset: offset }),
   };
 }
