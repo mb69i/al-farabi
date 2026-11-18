@@ -3,7 +3,6 @@ import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n';
 import type { AuditEntry, Page, StaffMember } from './adminApi';
 import { useAdminApi } from './AdminLayout';
-import { downloadExport } from './exportSheet';
 
 type Kind = 'card' | 'certificate';
 type FieldCfg = {
@@ -212,7 +211,12 @@ export function ExportPage() {
     setBusy(true);
     setError(null);
     try {
-      downloadExport(await api.exportAll(), lang);
+      // the Excel library loads only now; signatures come as pictures through short-lived signed links
+      const [{ downloadExport }, data] = await Promise.all([import('./exportSheet'), api.exportAll()]);
+      await downloadExport(data, lang, async (path) => {
+        const res = await fetch(await api.signatureUrl(path));
+        return res.ok ? new Uint8Array(await res.arrayBuffer()) : null;
+      });
     } catch (e) {
       setError((e as Error).message);
     } finally {
