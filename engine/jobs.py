@@ -20,27 +20,21 @@ def _site_url() -> str:
     return os.environ.get("SITE_URL") or "https://al-farabi-gilt.vercel.app"
 
 
-def _send_premade(supa, mailer, row: dict, ctx: dict, path: str, drawn_here: bool = False) -> None:
-    """A certificate drawn by the Chromium engine (certs/) and stored in 'outputs': email it as is.
-
-    drawn_here: drawn for this send by the site function -> deleted once emailed, so storage stays small
-    with 500+ guests (a resend simply draws it again, with the same serial). Hand-made files are kept.
-    """
-    if not path.endswith(".pdf") or ".." in path:
-        raise RuntimeError("pre-made certificate must be a PDF in outputs")
-    pdf = supa.download("outputs", path)
+def _send_pdf(supa, mailer, row: dict, ctx: dict, pdf: bytes, file_path: str | None) -> None:
     if not pdf.startswith(b"%PDF-"):
-        raise RuntimeError("pre-made certificate is not a PDF")
+        raise RuntimeError("certificate is not a PDF")
     subject, html, text = build(ctx["kind"], ctx["lang"], ctx["values"], _site_url())
     provider_id = mailer.send(ctx["to_email"], subject, html, text,
                               [("al-farabi-certificate.pdf", pdf, "application/pdf")],
                               idempotency_key=f"delivery-{row['id']}-{row.get('resend_count', 0)}")
-    supa.rpc("complete_delivery", {"p_id": row["id"], "p_provider_id": provider_id, "p_file_path": path})
-    if drawn_here:
-        try:
-            supa.delete("outputs", path)
-        except Exception:  # noqa: BLE001 — the email went out; a leftover file is harmless
-            pass
+    supa.rpc("complete_delivery", {"p_id": row["id"], "p_provider_id": provider_id, "p_file_path": file_path})
+
+
+def _send_premade(supa, mailer, row: dict, ctx: dict, path: str) -> None:
+    """A certificate made by hand on the laptop (certs/render-one.ts) and put in 'outputs': email it as is."""
+    if not path.endswith(".pdf") or ".." in path:
+        raise RuntimeError("pre-made certificate must be a PDF in outputs")
+    _send_pdf(supa, mailer, row, ctx, supa.download("outputs", path), path)
 
 
 def _needs_drawing(ctx) -> bool:
@@ -49,7 +43,7 @@ def _needs_drawing(ctx) -> bool:
 
 def _draw_all(certs, rows: list, contexts: dict) -> dict:
     """Draws every new certificate of the batch at the same time (each is its own serverless call).
-    Returns {delivery_id: path or the exception}."""
+    Returns {delivery_id: PDF bytes or the exception}."""
     ids = [r["id"] for r in rows if _needs_drawing(contexts.get(r["id"]))]
     if not ids or certs is None or not getattr(certs, "ready", False):
         return {}
@@ -79,7 +73,8 @@ def _make_one(supa, mailer, row: dict, formas: dict, certs=None, ctx=None, drawn
             drawn = certs.make(row["id"])
         if isinstance(drawn, Exception):
             raise drawn
-        return _send_premade(supa, mailer, row, ctx, drawn, drawn_here=True)
+        # drawn by the site function and emailed straight away: never stored in Supabase (owner, 18 Nov)
+        return _send_pdf(supa, mailer, row, ctx, drawn, None)
     tpl = (ctx or {}).get("template")
     if not tpl or not tpl.get("forma_path"):
         raise RuntimeError("template missing")

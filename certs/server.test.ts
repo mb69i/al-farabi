@@ -16,7 +16,6 @@ function deps(over = {}) {
     serviceKey: KEY,
     verifyBase: 'https://al-farabi-gilt.vercel.app',
     rpc: vi.fn(async () => JOB),
-    upload: vi.fn(async () => undefined),
     render: vi.fn(async () => ({ pdf: Buffer.from('%PDF-1.4 x'), serial: JOB.serial })),
     ...over,
   };
@@ -30,16 +29,15 @@ describe('render token', () => {
 });
 
 describe('handleCertificateRequest', () => {
-  it('draws, stores and returns the PDF path for one delivery', async () => {
+  it('draws and hands the PDF straight back (nothing is stored in Supabase)', async () => {
     const d = deps();
     const out = await handleCertificateRequest(req(), d);
-    expect(out).toEqual({ status: 200, body: { path: `${JOB.event_id}/certificate/${DID}.pdf`, serial: JOB.serial } });
+    expect(out).toEqual({ status: 200, body: { serial: JOB.serial, pdf: Buffer.from('%PDF-1.4 x').toString('base64') } });
     expect(d.rpc).toHaveBeenCalledWith('certificate_job', { p_delivery_id: DID });
     expect(d.render).toHaveBeenCalledWith({
       name: JOB.name, org: JOB.org, role: 'attendee', dateFrom: '2026-11-21', dateTo: '2026-11-22',
       serial: JOB.serial, verifyBase: 'https://al-farabi-gilt.vercel.app', variant: 'plain',
     });
-    expect(d.upload).toHaveBeenCalledWith('outputs', `${JOB.event_id}/certificate/${DID}.pdf`, Buffer.from('%PDF-1.4 x'), 'application/pdf');
   });
 
   it('refuses anything without the right token, and works only when the server has its key', async () => {
@@ -56,19 +54,17 @@ describe('handleCertificateRequest', () => {
     expect(d.rpc).not.toHaveBeenCalled();
   });
 
-  it('unknown delivery is 404; a certificate that cannot be drawn is 422 and nothing is stored', async () => {
+  it('unknown delivery is 404; a certificate that cannot be drawn is 422', async () => {
     expect((await handleCertificateRequest(req(), deps({ rpc: vi.fn(async () => null) }))).status).toBe(404);
     const d = deps({ render: vi.fn(async () => { throw new CertificateError('missing name'); }) });
     expect(await handleCertificateRequest(req(), d)).toEqual({ status: 422, body: { error: 'missing name' } });
-    expect(d.upload).not.toHaveBeenCalled();
   });
 
-  it('a drawing failure is reported with its reason (to the sender only), and nothing is stored', async () => {
+  it('a drawing failure is reported with its reason (to the sender only)', async () => {
     const d = deps({ render: vi.fn(async () => { throw new Error('Failed to launch the browser process: libnss3.so missing'); }) });
     const out = await handleCertificateRequest(req(), d);
     expect(out.status).toBe(500);
     expect(out.body.error).toMatch(/^render failed: Failed to launch the browser process/);
-    expect(d.upload).not.toHaveBeenCalled();
     // an unauthenticated caller never gets that far
     expect((await handleCertificateRequest(req({ headers: {} }), d)).body).toEqual({ error: 'unauthorized' });
   });

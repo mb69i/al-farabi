@@ -26,13 +26,6 @@ async function rpc(name, args) {
   return text ? JSON.parse(text) : null;
 }
 
-async function upload(bucket, path, data, contentType) {
-  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${path.split('/').map(encodeURIComponent).join('/')}`, {
-    method: 'POST', headers: headers({ 'Content-Type': contentType, 'x-upsert': 'true' }), body: data,
-  });
-  if (!res.ok) throw new Error(`upload ${bucket}/${path}: ${res.status} ${(await res.text()).slice(0, 200)}`);
-}
-
 // A fresh browser per certificate: the serverless Chromium runs single-process, and a browser left over from
 // an earlier (possibly failed) request is the most common cause of "Target ... has been closed" errors.
 async function renderOnce(input) {
@@ -49,7 +42,7 @@ export default async function handler(req, res) {
   try {
     const out = await handleCertificateRequest(
       { method: req.method, headers: req.headers, body: req.body },
-      { serviceKey: SERVICE_KEY, verifyBase: VERIFY_BASE, rpc, upload, render: renderOnce },
+      { serviceKey: SERVICE_KEY, verifyBase: VERIFY_BASE, rpc, render: renderOnce },
     );
     res.status(out.status).json(out.body);
   } catch (e) {

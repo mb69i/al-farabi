@@ -26,15 +26,23 @@ def test_token_matches_the_node_function():
     assert render_token("test-service-key") == TOKEN
 
 
-def test_make_asks_the_site_function_and_returns_the_path():
-    http = Http(Res(200, {"path": "e/certificate/d1.pdf", "serial": "ALF26-AAAA-BBBB-CCCC"}))
+def test_make_asks_the_site_function_and_returns_the_pdf_itself():
+    import base64
+    pdf = b"%PDF-1.4 certificate"
+    http = Http(Res(200, {"serial": "ALF26-AAAA-BBBB-CCCC", "pdf": base64.b64encode(pdf).decode()}))
     certs = RemoteCertificates("https://site.example/", "test-service-key", http=http)
-    assert certs.make("d1") == "e/certificate/d1.pdf"
+    assert certs.make("d1") == pdf  # straight back: nothing stored in Supabase
     url, kw = http.calls[0]
     assert url == "https://site.example/api/certificate"
     assert kw["json"] == {"delivery_id": "d1"}
     assert kw["headers"]["X-Render-Token"] == TOKEN
     assert "test-service-key" not in str(kw)  # the key itself never travels
+
+
+def test_an_answer_without_a_pdf_is_an_error():
+    certs = RemoteCertificates("https://s", "k", http=Http(Res(200, {"serial": "x", "pdf": "bm90IGEgcGRm"})))
+    with pytest.raises(RuntimeError, match="PDF"):
+        certs.make("d1")
 
 
 def test_errors_become_exceptions_with_the_reason():

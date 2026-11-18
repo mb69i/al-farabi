@@ -48,7 +48,7 @@ def test_certificate_never_uses_an_old_pillow_template():
 
         def make(self, delivery_id):
             self.made.append(delivery_id)
-            return f"e/certificate/{delivery_id}.pdf"
+            return b"%PDF-1.4 drawn"
 
     certs = Certs()
     supa, mailer = FakeSupa(_rows(1, kind="certificate")), FakeMailer()
@@ -108,12 +108,12 @@ def test_premade_file_that_is_not_a_pdf_fails_the_row():
 class FakeCerts:
     ready = True
 
-    def __init__(self, path="e/certificate/d6.pdf"):
-        self.path, self.made = path, []
+    def __init__(self):
+        self.made = []
 
     def make(self, delivery_id):
         self.made.append(delivery_id)
-        return self.path
+        return b"%PDF-1.4 drawn " + delivery_id.encode()
 
 
 def _new_cert():
@@ -127,9 +127,10 @@ def test_new_certificate_is_drawn_by_the_site_function_then_emailed():
     supa, mailer, certs = FakeSupa(_new_cert()), FakeMailer(), FakeCerts()
     assert process_batch(supa, mailer, certs=certs) == {"claimed": 1, "sent": 1, "failed": 0}
     assert certs.made == ["d6"]
-    assert supa.downloaded == [("outputs", "e/certificate/d6.pdf")]
-    assert mailer.sent[0]["attachments"][0][0] == "al-farabi-certificate.pdf"
-    assert supa.called("complete_delivery")[0]["p_file_path"] == "e/certificate/d6.pdf"
+    assert mailer.sent[0]["attachments"] == [("al-farabi-certificate.pdf", b"%PDF-1.4 drawn d6", "application/pdf")]
+    # nothing stored in Supabase: no upload, no download, no file path
+    assert supa.uploads == {} and supa.downloaded == [] and supa.deleted == []
+    assert supa.called("complete_delivery")[0]["p_file_path"] is None
 
 
 def test_new_certificate_without_the_site_function_fails_and_retries_later():
@@ -169,7 +170,7 @@ class SlowCerts:
             self.active -= 1
         if delivery_id in self.fail:
             raise RuntimeError("certificate function 500: render failed")
-        return f"e/certificate/{delivery_id}.pdf"
+        return b"%PDF-1.4 " + delivery_id.encode()
 
 
 def test_certificates_in_a_batch_are_drawn_at_the_same_time():
@@ -187,10 +188,11 @@ def test_a_failed_drawing_only_fails_its_own_row():
     assert supa.called("fail_delivery")[0]["p_id"] == "d2"
 
 
-def test_a_drawn_pdf_is_deleted_once_emailed_to_keep_storage_small():
+def test_a_drawn_certificate_never_touches_supabase_storage():
     supa, mailer = FakeSupa(_new_certs([4])), FakeMailer()
     process_batch(supa, mailer, certs=SlowCerts())
-    assert supa.deleted == [("outputs", "e/certificate/d4.pdf")]
+    assert supa.uploads == {} and supa.downloaded == [] and supa.deleted == []
+    assert mailer.sent[0]["attachments"][0][1] == b"%PDF-1.4 d4"
 
 
 def test_a_hand_made_pdf_is_kept():

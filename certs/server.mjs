@@ -1,6 +1,7 @@
 // Core of the site's certificate function (api/certificate.mjs), kept free of HTTP and Chromium for tests.
 // The email sender (Python, api/deliver.py) calls it with one delivery id; this issues the serial, draws the
-// certificate on the owner's forma, stores the PDF in the private 'outputs' bucket and returns its path.
+// certificate on the owner's forma and hands the PDF straight back (owner, 18 Nov: nothing stored in Supabase;
+// the backup laptops keep each certificate's serial, name and dates, enough to redraw it identically).
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { CertificateError } from './values.mjs';
 
@@ -19,7 +20,6 @@ function tokenOk(given, serviceKey) {
 /**
  * @param {{ method: string, headers: Record<string, string | undefined>, body: any }} req
  * @param {{ serviceKey: string, verifyBase: string, rpc: (name: string, args: object) => Promise<any>,
- *           upload: (bucket: string, path: string, data: Buffer, type: string) => Promise<void>,
  *           render: (input: import('./values.mjs').CertificateInput) => Promise<{ pdf: Buffer, serial: string }> }} deps
  */
 export async function handleCertificateRequest(req, deps) {
@@ -42,7 +42,5 @@ export async function handleCertificateRequest(req, deps) {
     // Only an authenticated caller (the sender) gets here; it saves the reason on the delivery for staff.
     return { status: 500, body: { error: `render failed: ${String(e?.message ?? e).slice(0, 300)}` } };
   }
-  const path = `${job.event_id}/certificate/${id}.pdf`;
-  await deps.upload('outputs', path, out.pdf, 'application/pdf');
-  return { status: 200, body: { path, serial: out.serial } };
+  return { status: 200, body: { serial: out.serial, pdf: Buffer.from(out.pdf).toString('base64') } };
 }
