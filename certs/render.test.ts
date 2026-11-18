@@ -46,6 +46,7 @@ describe.skipIf(!hasBrowser)('renderCertificate (Chromium)', () => {
     expect(out.pdf.length).toBeLessThan(3_000_000);
     expect([...out.jpg.subarray(0, 3)]).toEqual([0xff, 0xd8, 0xff]);
     expect(out.name).toEqual({ lines: expect.any(Number), fits: true });
+    expect(out.signature).toBe(true); // drawn above the signatory line, clear of the paragraph text
   }, 60_000);
 
   it('uses a single browser context (the serverless Chromium runs single-process; a second context can crash it)', async () => {

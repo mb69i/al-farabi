@@ -61,6 +61,10 @@
 
   /* Bottom-left verification block, where the forma had its sample */
   .qr { position: absolute; left: 124px; top: 1034px; width: 90px; height: 90px; }
+
+  /* The signatory's pen signature (owner, 18 Nov), in near-black ink, sitting on the signature line (y 1023)
+     above أ.د. مازن سمير علي الحكيم and clear of the paragraph; checked on every render. */
+  .signature { position: absolute; left: 1364px; top: 840px; width: 270px; height: auto; }
   .qr svg { width: 100%; height: 100%; display: block; }
   .cert-no {
     position: absolute; left: 226px; top: 1045px; direction: ltr; text-align: left;
@@ -88,6 +92,7 @@
   <div class="name-slot"><p class="name" id="name">{{NAME}}</p></div>
   <div class="org-slot"><p class="org" id="org">{{ORG_LINE}}</p></div>
 
+  <img class="signature" id="signature" src="/forma/signature.png" alt="">
   <p class="para" id="para">نثمّن حضوركم فعاليات <b class="red">مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل</b><br>المقام في رحاب <b class="blue">جامعة الفارابي</b>، بغداد، العراق {{DATE_PHRASE}}،<br>آملين لكم دوام التقدم العلمي والعطاء خدمةً لعراقنا الحبيب ودعماً لمسيرة العلم والمعرفة.</p>
 
   <div class="qr" id="qr">{{QR}}</div>
@@ -133,6 +138,15 @@
         fonts: faces.every((f) => document.fonts.check(f, 'شهادة')),
         images: bgOk && [...document.images].every((i) => i.complete && i.naturalWidth > 0),
         overflow: paraLines !== 3,
+        // the signature stays above the signatory line and right of the paragraph's last letter
+        signatureBox: (() => {
+          const sig = document.getElementById('signature').getBoundingClientRect();
+          const range = document.createRange();
+          range.selectNodeContents(para);
+          // text lines beside the signature (same height) must end at least 4px before it
+          const hits = [...range.getClientRects()].filter((r) => r.width > 0 && r.bottom > sig.top && r.top < sig.bottom && r.right > sig.left - 4);
+          return { bottom: Math.round(sig.bottom), left: Math.round(sig.left), width: Math.round(sig.width), hits: hits.length };
+        })(),
       };
     })();
   </script>

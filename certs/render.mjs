@@ -134,6 +134,9 @@ export async function renderCertificate(browser, input, opts = {}) {
     if (!state.images) throw new CertificateError('a logo did not load');
     if (!state.fits) throw new CertificateError(`name or organisation too long to fit: ${input.name}`);
     if (state.overflow) throw new CertificateError('certificate text overflows the page');
+    const sb = state.signatureBox;
+    const signatureOk = sb && sb.bottom <= 1022 && sb.hits === 0 && sb.width > 100;
+    if (!signatureOk) throw new CertificateError(`the signature would overlap the text or the signatory line: ${JSON.stringify(sb)}`);
 
     const png = await page.screenshot({ type: 'png', animations: 'disabled' });
     const box = await page.locator('#qr svg').boundingBox();
@@ -144,7 +147,7 @@ export async function renderCertificate(browser, input, opts = {}) {
     const jpg = await page.screenshot({ type: 'jpeg', quality: 95, animations: 'disabled' });
     const flat = await flatPdf(context, jpg, box);
     if (flat.decoded !== url) throw new CertificateError(`QR check failed in the PDF image: decoded ${String(flat.decoded)}`);
-    return { png, jpg, pdf: flat.pdf, url, serial: fields.SERIAL, name: { lines: state.lines, fits: state.fits } };
+    return { png, jpg, pdf: flat.pdf, url, serial: fields.SERIAL, name: { lines: state.lines, fits: state.fits }, signature: signatureOk };
   } finally {
     // never let a failed clean-up hide the real error (e.g. a crashed browser)
     await context.close().catch(() => {});
