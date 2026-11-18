@@ -15,7 +15,7 @@
   --u: min(1vw, 1.6vh);
 
   /* the counters strip and the sponsors bar share this width, so their edges line up (owner, 18 Nov) */
-  --d-block: min(calc(var(--u) * 84), calc(100vw - var(--u) * 6));
+  --d-block: min(calc(var(--u) * 74), calc(100vw - var(--u) * 6));
 
   --d-bg: var(--white);
   /* (own copy of the day dots, so a visitor's night choice on other pages never changes the hall) */
@@ -628,10 +628,6 @@
   }
   .qr-box {
     width: min(calc(var(--u) * 26), 70vw);
-  }
-  .display {
-    --d-block: 94vw;
-    padding-inline: 3vw; /* 3vw + 94vw + 3vw: nothing wider than the phone */
   }
   .d-strip {
     flex-wrap: wrap;
