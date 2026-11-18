@@ -79,8 +79,9 @@ function decodePngQr(png, box) {
  * Flat PDF: one A4 page holding the JPEG (Chromium keeps it as DCTDecode, so it stays ~2 MB).
  * The QR is decoded once more from that JPEG, the exact image that gets printed.
  */
-async function flatPdf(browser, jpg, box) {
-  const page = await browser.newPage();
+async function flatPdf(context, jpg, box) {
+  // same context as the drawing: the serverless Chromium runs single-process, where a second context can crash it
+  const page = await context.newPage();
   try {
     await page.route('**/*', (r) => (r.request().url().startsWith('data:') ? r.continue() : r.abort()));
     await page.setContent(
@@ -106,7 +107,7 @@ async function flatPdf(browser, jpg, box) {
     const pdf = await page.pdf({ width: '297mm', height: '210mm', printBackground: true, pageRanges: '1' });
     return { pdf, decoded };
   } finally {
-    await page.close();
+    await page.close().catch(() => {});
   }
 }
 
@@ -141,10 +142,11 @@ export async function renderCertificate(browser, input, opts = {}) {
     if (decoded !== url) throw new CertificateError(`QR check failed: decoded ${String(decoded)}, expected ${url}`);
 
     const jpg = await page.screenshot({ type: 'jpeg', quality: 95, animations: 'disabled' });
-    const flat = await flatPdf(browser, jpg, box);
+    const flat = await flatPdf(context, jpg, box);
     if (flat.decoded !== url) throw new CertificateError(`QR check failed in the PDF image: decoded ${String(flat.decoded)}`);
     return { png, jpg, pdf: flat.pdf, url, serial: fields.SERIAL, name: { lines: state.lines, fits: state.fits } };
   } finally {
-    await context.close();
+    // never let a failed clean-up hide the real error (e.g. a crashed browser)
+    await context.close().catch(() => {});
   }
 }

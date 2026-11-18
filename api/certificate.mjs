@@ -33,14 +33,15 @@ async function upload(bucket, path, data, contentType) {
   if (!res.ok) throw new Error(`upload ${bucket}/${path}: ${res.status} ${(await res.text()).slice(0, 200)}`);
 }
 
-// One browser per warm function instance.
-let browserPromise = null;
-async function browser() {
-  const current = browserPromise && (await browserPromise.catch(() => null));
-  if (current && current.isConnected()) return current;
-  browserPromise = (async () =>
-    playwright.launch({ executablePath: await chromium.executablePath(), args: chromium.args, headless: true }))();
-  return browserPromise;
+// A fresh browser per certificate: the serverless Chromium runs single-process, and a browser left over from
+// an earlier (possibly failed) request is the most common cause of "Target ... has been closed" errors.
+async function renderOnce(input) {
+  const browser = await playwright.launch({ executablePath: await chromium.executablePath(), args: chromium.args, headless: true });
+  try {
+    return await renderCertificate(browser, input);
+  } finally {
+    await browser.close().catch(() => {});
+  }
 }
 
 export default async function handler(req, res) {
@@ -48,7 +49,7 @@ export default async function handler(req, res) {
   try {
     const out = await handleCertificateRequest(
       { method: req.method, headers: req.headers, body: req.body },
-      { serviceKey: SERVICE_KEY, verifyBase: VERIFY_BASE, rpc, upload, render: async (input) => renderCertificate(await browser(), input) },
+      { serviceKey: SERVICE_KEY, verifyBase: VERIFY_BASE, rpc, upload, render: renderOnce },
     );
     res.status(out.status).json(out.body);
   } catch (e) {

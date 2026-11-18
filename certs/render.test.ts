@@ -3,7 +3,7 @@
 import jsQR from 'jsqr';
 import { PNG } from 'pngjs';
 import { chromium, type Browser } from 'playwright';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { renderCertificate } from './render.mjs';
 
 const hasBrowser = Boolean(process.env.PLAYWRIGHT_BROWSERS_PATH);
@@ -46,6 +46,16 @@ describe.skipIf(!hasBrowser)('renderCertificate (Chromium)', () => {
     expect(out.pdf.length).toBeLessThan(3_000_000);
     expect([...out.jpg.subarray(0, 3)]).toEqual([0xff, 0xd8, 0xff]);
     expect(out.name).toEqual({ lines: expect.any(Number), fits: true });
+  }, 60_000);
+
+  it('uses a single browser context (the serverless Chromium runs single-process; a second context can crash it)', async () => {
+    const newContext = vi.spyOn(browser, 'newContext');
+    const newPage = vi.spyOn(browser, 'newPage');
+    await renderCertificate(browser, input);
+    expect(newContext).toHaveBeenCalledTimes(1);
+    expect(newPage).not.toHaveBeenCalled(); // browser.newPage() would open another context
+    newContext.mockRestore();
+    newPage.mockRestore();
   }, 60_000);
 
   it('a missing name never reaches the browser', async () => {
