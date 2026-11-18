@@ -136,3 +136,64 @@ def test_new_certificate_without_the_site_function_fails_and_retries_later():
     supa, mailer = FakeSupa(_new_cert()), FakeMailer()
     assert process_batch(supa, mailer)["failed"] == 1
     assert "renderer" in supa.called("fail_delivery")[0]["p_error"]
+
+
+# ---------- 500+ guests: draw several certificates at once; don't keep PDFs after sending ----------
+import threading  # noqa: E402
+import time  # noqa: E402
+
+
+def _new_certs(ids):
+    rows = []
+    for i in ids:
+        ctx = context(i, kind="certificate")
+        ctx["template"], ctx["prerendered"] = None, None
+        ctx["to_email"] = f"p{i}@example.com"
+        rows.append(({"id": f"d{i}", "kind": "certificate", "event_id": "e"}, ctx))
+    return rows
+
+
+class SlowCerts:
+    """Draws take 0.2 s; records how many were being drawn at the same time."""
+    ready = True
+
+    def __init__(self, fail=()):
+        self.fail, self.active, self.peak, self.lock = set(fail), 0, 0, threading.Lock()
+
+    def make(self, delivery_id):
+        with self.lock:
+            self.active += 1
+            self.peak = max(self.peak, self.active)
+        time.sleep(0.2)
+        with self.lock:
+            self.active -= 1
+        if delivery_id in self.fail:
+            raise RuntimeError("certificate function 500: render failed")
+        return f"e/certificate/{delivery_id}.pdf"
+
+
+def test_certificates_in_a_batch_are_drawn_at_the_same_time():
+    certs = SlowCerts()
+    supa, mailer = FakeSupa(_new_certs([1, 2, 3])), FakeMailer()
+    start = time.monotonic()
+    assert process_batch(supa, mailer, limit=3, certs=certs) == {"claimed": 3, "sent": 3, "failed": 0}
+    assert certs.peak >= 2 and time.monotonic() - start < 0.5  # not 3 x 0.2 s one after another
+    assert [m["to"] for m in mailer.sent] == ["p1@example.com", "p2@example.com", "p3@example.com"]
+
+
+def test_a_failed_drawing_only_fails_its_own_row():
+    supa, mailer = FakeSupa(_new_certs([1, 2, 3])), FakeMailer()
+    assert process_batch(supa, mailer, limit=3, certs=SlowCerts(fail={"d2"})) == {"claimed": 3, "sent": 2, "failed": 1}
+    assert supa.called("fail_delivery")[0]["p_id"] == "d2"
+
+
+def test_a_drawn_pdf_is_deleted_once_emailed_to_keep_storage_small():
+    supa, mailer = FakeSupa(_new_certs([4])), FakeMailer()
+    process_batch(supa, mailer, certs=SlowCerts())
+    assert supa.deleted == [("outputs", "e/certificate/d4.pdf")]
+
+
+def test_a_hand_made_pdf_is_kept():
+    supa, mailer = FakeSupa(_premade()), FakeMailer()
+    process_batch(supa, mailer)
+    assert supa.deleted == []

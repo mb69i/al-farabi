@@ -30,7 +30,7 @@ function setup(api: Api) {
 function fill() {
   const set = (label: RegExp, value: string) =>
     fireEvent.change(screen.getByLabelText(label), { target: { value } });
-  set(/full name/i, 'Ali Hasan');
+  set(/full name/i, 'Ali Hasan Kareem');
   set(/phone number/i, '07701234567');
   set(/^email/i, 'ali@gmail.com');
   set(/workplace/i, 'Baghdad University');
@@ -122,7 +122,7 @@ describe('Register', () => {
     fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
     expect(await screen.findByText(/too many attempts/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
-    expect((screen.getByLabelText(/full name/i) as HTMLInputElement).value).toBe('Ali Hasan');
+    expect((screen.getByLabelText(/full name/i) as HTMLInputElement).value).toBe('Ali Hasan Kareem');
   });
 
   it('closed result from the server also shows closed panel', async () => {
@@ -141,6 +141,22 @@ describe('Register', () => {
     expect(await screen.findByText('Did you mean ali@gmail.com?')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /use this/i }));
     expect((email as HTMLInputElement).value).toBe('ali@gmail.com');
+  });
+
+  it('asks for the three-part name (first, father, grandfather) and refuses two words', async () => {
+    const api = fakeApi();
+    setup(api);
+    await screen.findByLabelText(/full name/i);
+    fill();
+    for (const two of ['Ali Hasan', 'علي حسن', 'Dr. Ali Hasan', 'Ali  H  K']) {
+      fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: two } });
+      fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
+      expect(await screen.findByText('Enter your full name: three names (first, father and grandfather)')).toBeInTheDocument();
+    }
+    expect(api.registerGuest).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'علي حسن كريم' } });
+    fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
+    await waitFor(() => expect(api.registerGuest).toHaveBeenCalled());
   });
 
   it('honeypot filled shows the success card without calling the API', async () => {
@@ -169,6 +185,6 @@ describe('Register', () => {
     fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
     expect(await screen.findByText(/could not be completed/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
-    expect((screen.getByLabelText(/full name/i) as HTMLInputElement).value).toBe('Ali Hasan');
+    expect((screen.getByLabelText(/full name/i) as HTMLInputElement).value).toBe('Ali Hasan Kareem');
   });
 });

@@ -13,11 +13,19 @@ type Outcome = 'created' | 'already' | 'returning';
 
 const EMPTY: Values = { fullName: '', phone: '', email: '', gender: '', workplace: '', specialization: '' };
 
+/**
+ * Words that count towards the three-part name (first, father, grandfather): at least two letters,
+ * and not an abbreviation such as "Dr." or "د.". Must match public.name_word_count() in the database.
+ */
+export function nameWords(s: string): number {
+  return s.trim().split(/\s+/).filter((w) => !w.endsWith('.') && (w.match(/\p{L}/gu) ?? []).length >= 2).length;
+}
+
 function validate(field: Field, v: string): Key | null {
   const s = v.trim();
   switch (field) {
     case 'fullName':
-      return s.length < 3 || s.length > 120 ? 'err.name' : null;
+      return s.length > 120 || nameWords(s) < 3 ? 'err.name' : null;
     case 'phone':
       return !s ? 'err.required' : normalizePhone(s) ? null : 'err.phone';
     case 'email':

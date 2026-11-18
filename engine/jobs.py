@@ -8,6 +8,7 @@ from __future__ import annotations
 import io
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 from PIL import Image
 
@@ -19,8 +20,12 @@ def _site_url() -> str:
     return os.environ.get("SITE_URL") or "https://al-farabi-gilt.vercel.app"
 
 
-def _send_premade(supa, mailer, row: dict, ctx: dict, path: str) -> None:
-    """A certificate already drawn by the Chromium engine (certs/) and stored in 'outputs': email it as is."""
+def _send_premade(supa, mailer, row: dict, ctx: dict, path: str, drawn_here: bool = False) -> None:
+    """A certificate drawn by the Chromium engine (certs/) and stored in 'outputs': email it as is.
+
+    drawn_here: drawn for this send by the site function -> deleted once emailed, so storage stays small
+    with 500+ guests (a resend simply draws it again, with the same serial). Hand-made files are kept.
+    """
     if not path.endswith(".pdf") or ".." in path:
         raise RuntimeError("pre-made certificate must be a PDF in outputs")
     pdf = supa.download("outputs", path)
@@ -31,19 +36,50 @@ def _send_premade(supa, mailer, row: dict, ctx: dict, path: str) -> None:
                               [("al-farabi-certificate.pdf", pdf, "application/pdf")],
                               idempotency_key=f"delivery-{row['id']}-{row.get('resend_count', 0)}")
     supa.rpc("complete_delivery", {"p_id": row["id"], "p_provider_id": provider_id, "p_file_path": path})
+    if drawn_here:
+        try:
+            supa.delete("outputs", path)
+        except Exception:  # noqa: BLE001 — the email went out; a leftover file is harmless
+            pass
 
 
-def _make_one(supa, mailer, row: dict, formas: dict, certs=None) -> None:
-    ctx = supa.rpc("delivery_context", {"p_id": row["id"]})
+def _needs_drawing(ctx) -> bool:
+    return bool(ctx) and ctx.get("kind") == "certificate" and not ctx.get("prerendered")
+
+
+def _draw_all(certs, rows: list, contexts: dict) -> dict:
+    """Draws every new certificate of the batch at the same time (each is its own serverless call).
+    Returns {delivery_id: path or the exception}."""
+    ids = [r["id"] for r in rows if _needs_drawing(contexts.get(r["id"]))]
+    if not ids or certs is None or not getattr(certs, "ready", False):
+        return {}
+
+    def draw(delivery_id):
+        try:
+            return certs.make(delivery_id)
+        except Exception as exc:  # noqa: BLE001 — reported for that row only
+            return exc
+
+    with ThreadPoolExecutor(max_workers=min(4, len(ids))) as pool:
+        return dict(zip(ids, pool.map(draw, ids)))
+
+
+def _make_one(supa, mailer, row: dict, formas: dict, certs=None, ctx=None, drawn=None) -> None:
+    if ctx is None:
+        ctx = supa.rpc("delivery_context", {"p_id": row["id"]})
     if ctx and ctx.get("kind") == "certificate":
         # Certificates are drawn on the owner's forma by the site's Chromium function (api/certificate.mjs),
         # unless one was already made (prerendered).
         path = ctx.get("prerendered")
-        if not path:
+        if path:
+            return _send_premade(supa, mailer, row, ctx, path)
+        if drawn is None:
             if certs is None or not getattr(certs, "ready", False):
                 raise RuntimeError("certificate renderer not configured")
-            path = certs.make(row["id"])
-        return _send_premade(supa, mailer, row, ctx, path)
+            drawn = certs.make(row["id"])
+        if isinstance(drawn, Exception):
+            raise drawn
+        return _send_premade(supa, mailer, row, ctx, drawn, drawn_here=True)
     tpl = (ctx or {}).get("template")
     if not tpl or not tpl.get("forma_path"):
         raise RuntimeError("template missing")
@@ -75,11 +111,18 @@ def process_batch(supa, mailer, limit: int = 10, before_send=None, formas: dict 
     rows = supa.rpc("claim_deliveries", {"p_limit": limit}) or []
     summary = {"claimed": len(rows), "sent": 0, "failed": 0}
     formas = {} if formas is None else formas
+    contexts = {}
+    for row in rows:
+        try:
+            contexts[row["id"]] = supa.rpc("delivery_context", {"p_id": row["id"]})
+        except Exception:  # noqa: BLE001 — _make_one asks again and reports the failure
+            pass
+    drawn = _draw_all(certs, rows, contexts)  # all new certificates of the batch in parallel
     for row in rows:
         if before_send:
             before_send()
         try:
-            _make_one(supa, mailer, row, formas, certs)
+            _make_one(supa, mailer, row, formas, certs, ctx=contexts.get(row["id"]), drawn=drawn.get(row["id"]))
             summary["sent"] += 1
         except Exception as exc:  # noqa: BLE001 — every failure must reach fail_delivery
             summary["failed"] += 1
@@ -88,13 +131,13 @@ def process_batch(supa, mailer, limit: int = 10, before_send=None, formas: dict 
 
 
 def run(supa, mailer, *, certs=None, clock=time.monotonic, sleep=time.sleep,
-        budget: float = 30.0, interval: float = 0.55, batch: int = 1) -> dict:
+        budget: float = 30.0, interval: float = 0.55, batch: int = 3) -> dict:
     """Single runner: drains the queue at <= 1/interval sends per second within budget.
 
     Another invocation holding the lease means this one exits at once; the
     holder keeps claiming until the queue is empty, so new rows are not missed.
-    One row per claim and a 30 s budget: drawing a certificate can take up to ~25 s, and the
-    function must finish (and release the lease) within its 60 s limit.
+    Three rows per claim, their certificates drawn at the same time, and a 30 s budget: one round of
+    drawing takes up to ~25 s, and the function must finish (and release the lease) within its 60 s limit.
     """
     if not mailer.ready:
         # Leave the queue untouched so no retries are used up before email is set up.

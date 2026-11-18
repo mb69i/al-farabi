@@ -52,3 +52,8 @@ class Supa:
                              timeout=60)
         if not 200 <= res.status_code < 300:
             raise SupaError(f"upload {bucket}/{path}: {res.status_code} {res.text[:200]}")
+
+    def delete(self, bucket: str, path: str) -> None:
+        res = self.http.delete(f"{self.url}/storage/v1/object/{bucket}/{quote(path)}", headers=self._headers(), timeout=30)
+        if not 200 <= res.status_code < 300:
+            raise SupaError(f"delete {bucket}/{path}: {res.status_code} {res.text[:200]}")
