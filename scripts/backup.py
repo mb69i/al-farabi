@@ -1,10 +1,12 @@
-"""Keeps an up-to-date local copy of all registrations on a backup laptop.
+"""Keeps an up-to-date local copy of all registrations on a backup laptop or PC.
 
-First time on each laptop:
-    python scripts/backup.py init --label laptop-1
-    -> prints one SQL line; run it in the Supabase SQL Editor (it contains only a hash).
-Then every few minutes (Windows Task Scheduler, see docs/BACKUP.md):
-    python scripts/backup.py run
+Set up from the dashboard (Admin -> Backup devices -> Add device), then on that PC, once:
+    python backup.py pair ABCD-EFGH
+    -> pairs this PC, takes the first backup and schedules one every 5 minutes (Windows Task Scheduler).
+The owner can switch the device off/on or delete it in the dashboard; a switched-off device skips quietly.
+Older way (still works): python backup.py init --label laptop-1  (prints one SQL line for the SQL Editor).
+Every few minutes (done for you by `pair`):
+    python backup.py run
 
 Files land in the backup folder (default D:\\alfarabi-backups):
     backup-YYYYmmdd-HHMMSS.json   full copy, newest N kept
@@ -22,6 +24,7 @@ import io
 import json
 import os
 import secrets
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -29,6 +32,7 @@ from pathlib import Path
 SUPABASE_URL = "https://kxwimaslalczappzngci.supabase.co"
 PUBLISHABLE_KEY = "sb_publishable_w6HsSyij-2N2xwSNwGa84w_mqNcAuIO"  # public by design
 DEFAULT_DIR = r"D:\alfarabi-backups"
+TASK_NAME = "AlFarabi Backup"
 DEFAULT_KEEP = 288  # one day at one copy every 5 minutes
 CONFIG = Path(os.environ.get("APPDATA", Path.home())) / "alfarabi-backup" / "config.json"
 
@@ -50,6 +54,46 @@ def make_token() -> str:
 
 def token_hash(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def default_dir(exists=os.path.exists, home: Path | None = None) -> str:
+    """D:\\alfarabi-backups when the PC has a D: drive, else Documents\\alfarabi-backups."""
+    if exists("D:\\"):
+        return DEFAULT_DIR
+    return str((home or Path.home()) / "Documents" / "alfarabi-backups")
+
+
+def pair_device(url: str, key: str, code: str, token: str, http=None) -> str:
+    """Binds this PC to the device the owner added in the dashboard. Sends only the token's SHA-256."""
+    if http is None:
+        import requests as http  # noqa: N813
+    res = http.post(f"{url.rstrip('/')}/rest/v1/rpc/backup_pair",
+                    json={"p_code": code, "p_token_hash": token_hash(token)},
+                    headers={"apikey": key, "Content-Type": "application/json"}, timeout=60)
+    if res.status_code != 200:
+        raise BackupError("the pairing code was not accepted (wrong, already used, or older than 30 minutes); "
+                          "make a new code in the dashboard")
+    return res.json()
+
+
+def schedule_command(python: str, script: str) -> list[str]:
+    return ["schtasks", "/Create", "/SC", "MINUTE", "/MO", "5", "/TN", TASK_NAME,
+            "/TR", f'"{python}" "{script}" run', "/F"]
+
+
+def schedule() -> bool:
+    """Windows: run every 5 minutes with this Python and this script. Elsewhere: print how to schedule."""
+    if os.name != "nt":
+        print(f"Schedule this every 5 minutes (cron): {sys.executable} {Path(__file__).resolve()} run")
+        return False
+    cmd = schedule_command(sys.executable, str(Path(__file__).resolve()))
+    done = subprocess.run(cmd, capture_output=True, text=True)
+    if done.returncode != 0:
+        print(f"Could not schedule automatically ({done.stderr.strip()}). Run this yourself:\n  "
+              f"{subprocess.list2cmdline(cmd)}")
+        return False
+    print(f"Scheduled: a backup every 5 minutes (task '{TASK_NAME}').")
+    return True
 
 
 def fetch_export(url: str, key: str, token: str, http=None) -> dict:
@@ -113,13 +157,20 @@ def cmd_init(args) -> int:
 
 def cmd_run(_args) -> int:
     if not CONFIG.exists():
-        print("Not set up. Run: python scripts/backup.py init --label laptop-1", file=sys.stderr)
+        print("Not set up. Add this PC in the dashboard (Admin -> Backup devices), then run: "
+              "python backup.py pair CODE", file=sys.stderr)
         return 1
     cfg = json.loads(CONFIG.read_text(encoding="utf-8"))
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     try:
         data = fetch_export(SUPABASE_URL, PUBLISHABLE_KEY, cfg["token"])
-        path = write_backup(data, Path(cfg.get("out_dir") or DEFAULT_DIR), stamp)
+        path = write_backup(data, Path(cfg.get("out_dir") or default_dir()), stamp)
+    except BackupError as exc:
+        if "paused" in str(exc):
+            print(f"{stamp} paused by the owner in the dashboard; skipped (the last copy is kept)")
+            return 0
+        print(f"{stamp} BACKUP FAILED: {exc}", file=sys.stderr)
+        return 1
     except Exception as exc:  # noqa: BLE001 — log and keep the previous copy
         print(f"{stamp} BACKUP FAILED: {exc}", file=sys.stderr)
         return 1
@@ -127,16 +178,44 @@ def cmd_run(_args) -> int:
     return 0
 
 
+def cmd_pair(args) -> int:
+    if CONFIG.exists() and not args.force:
+        print(f"This PC is already set up ({CONFIG}). Use --force to pair it again.", file=sys.stderr)
+        return 1
+    token = make_token()
+    try:
+        label = pair_device(SUPABASE_URL, PUBLISHABLE_KEY, args.code, token)
+    except Exception as exc:  # noqa: BLE001
+        print(f"PAIRING FAILED: {exc}", file=sys.stderr)
+        return 1
+    out_dir = args.dir or default_dir()
+    CONFIG.parent.mkdir(parents=True, exist_ok=True)
+    CONFIG.write_text(json.dumps({"label": label, "token": token, "out_dir": out_dir}, indent=1), encoding="utf-8")
+    print(f"Paired as '{label}'. Backups go to {out_dir}")
+    rc = cmd_run(args)
+    if not args.no_schedule:
+        schedule()
+    return rc
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
     i = sub.add_parser("init")
     i.add_argument("--label", required=True)
-    i.add_argument("--dir", default=DEFAULT_DIR)
+    i.add_argument("--dir", default=None)
     i.add_argument("--force", action="store_true")
+    pr = sub.add_parser("pair", help="pair this PC with a code from the dashboard")
+    pr.add_argument("code")
+    pr.add_argument("--dir", default=None, help="backup folder (default D:\\alfarabi-backups, else Documents)")
+    pr.add_argument("--no-schedule", action="store_true")
+    pr.add_argument("--force", action="store_true")
     sub.add_parser("run")
     args = p.parse_args(argv)
-    return cmd_init(args) if args.cmd == "init" else cmd_run(args)
+    if args.cmd == "init":
+        args.dir = args.dir or default_dir()
+        return cmd_init(args)
+    return cmd_pair(args) if args.cmd == "pair" else cmd_run(args)
 
 
 if __name__ == "__main__":

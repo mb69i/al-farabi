@@ -26,6 +26,13 @@ export type Overview = {
 export type Page<T> = { rows: T[]; total: number };
 export type StaffMember = { user_id: string; email: string; role: 'owner' | 'admin' | 'doctor'; display_name: string | null; active: boolean };
 export type AuditEntry = { id: number; at: string; actor_email: string | null; action: string; target: string | null; details: unknown };
+/** A laptop/PC that keeps a backup copy (scripts/backup.py). Owner only. */
+export type BackupDevice = {
+  id: string; label: string; enabled: boolean; paired: boolean;
+  pair_expires_at: string | null; last_seen_at: string | null; created_at: string;
+};
+/** One-time pairing code for a device (shown once; valid 30 minutes). */
+export type BackupCode = { id: string; label: string; code: string; expires_at: string };
 export type AdminExport = {
   guests: Guest[];
   researchers: AdminResearcher[];
@@ -52,6 +59,11 @@ export function createAdminApi(client: SupabaseClient, slug: string) {
 
   return {
     overview: () => rpc<Overview>('admin_overview', { p_slug: slug }),
+    listBackupDevices: () => rpc<BackupDevice[]>('admin_list_backup_devices'),
+    addBackupDevice: (label: string) => rpc<BackupCode>('admin_add_backup_device', { p_label: label }),
+    newBackupCode: (id: string) => rpc<BackupCode>('admin_new_backup_code', { p_id: id }),
+    setBackupDevice: (id: string, enabled: boolean) => rpc<void>('admin_set_backup_device', { p_id: id, p_enabled: enabled }),
+    deleteBackupDevice: (id: string) => rpc<void>('admin_delete_backup_device', { p_id: id }),
     listGuests: (search: string, limit: number, offset: number) =>
       rpc<Page<Guest>>('admin_list_guests', { p_slug: slug, p_search: search, p_limit: limit, p_offset: offset }),
     updateGuest: (id: string, patch: Partial<Guest>) => rpc<Guest>('admin_update_guest', { p_id: id, p_patch: patch }),

@@ -489,3 +489,85 @@
   outline-offset: 2px;
 }
 
+/* ---------- Backup devices (owner) ---------- */
+.backup-add {
+  max-width: 520px;
+}
+
+.backup-pair {
+  max-width: 640px;
+  border-color: var(--gold, #f2c230);
+}
+
+.backup-code {
+  margin: 4px 0 6px;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--heading, var(--navy));
+}
+
+.backup-steps {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding-inline-start: 22px;
+  line-height: 1.6;
+}
+
+.backup-cmd {
+  display: block;
+  width: fit-content;
+  margin-top: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--navy, #14234b);
+  color: #fff;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 15px;
+  user-select: all;
+}
+
+.backup-late {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger);
+}
+
+/* Phones: each device becomes a card (name + switch on top, then last backup, pairing, delete) */
+@media (max-width: 640px) {
+  .backup-table thead {
+    display: none;
+  }
+  .backup-table,
+  .backup-table tbody {
+    display: block;
+  }
+  .backup-table tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line, rgba(20, 35, 75, 0.12));
+  }
+  .backup-table td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+  .backup-table td:not(.backup-name):not(.backup-on) {
+    grid-column: 1 / -1;
+  }
+  .backup-table .backup-actions {
+    justify-self: start;
+  }
+}
+
+.backup-waiting {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted, #5a6378);
+}

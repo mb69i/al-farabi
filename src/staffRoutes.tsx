@@ -4,6 +4,7 @@ import { createAdminApi } from './admin/adminApi';
 import { AdminApiProvider, AdminLayout } from './admin/AdminLayout';
 import { AdminResearchers, Deliveries, Guests, Overview, SwitchesPage } from './admin/pages';
 import { AuditPage, ExportPage, StaffPage, TemplateStudio } from './admin/pages2';
+import { BackupDevicesPage } from './admin/BackupDevices';
 import { useAuth } from './auth/AuthProvider';
 import { Shell } from './components/Shell';
 import { useI18n } from './i18n';
@@ -47,6 +48,7 @@ export default function StaffRoutes({ area }: { area: 'researchers' | 'admin' })
             <Route path="templates" element={<TemplateStudio />} />
             <Route path="export" element={<ExportPage />} />
             {role === 'owner' && <Route path="staff" element={<StaffPage />} />}
+            {role === 'owner' && <Route path="backups" element={<BackupDevicesPage />} />}
             {role === 'owner' && <Route path="audit" element={<AuditPage />} />}
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>

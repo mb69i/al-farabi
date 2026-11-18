@@ -22,6 +22,7 @@ const LINKS: Array<{ to: string; label: Key; ownerOnly?: boolean }> = [
   { to: '/admin/templates', label: 'admin.templates' },
   { to: '/admin/export', label: 'admin.export' },
   { to: '/admin/staff', label: 'admin.staff', ownerOnly: true },
+  { to: '/admin/backups', label: 'admin.backups', ownerOnly: true },
   { to: '/admin/audit', label: 'admin.audit', ownerOnly: true },
 ];
 

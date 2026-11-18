@@ -19,10 +19,26 @@ Folder `D:\alfarabi-backups` (change with `--dir` at setup):
 
 A failed run never overwrites the last good copy.
 
-## Setup
+## Setup from the dashboard (any laptop or PC) — recommended
+
+Owner only, signed in with the authenticator: **Admin → Backup devices (أجهزة النسخ الاحتياطي)**.
+
+1. Type a name for the PC (e.g. "Reception PC") → **Add device**. A one-time code appears (valid 30 minutes).
+2. On that PC: install Python 3.12+ from python.org (tick "Add to PATH"), then `pip install requests`.
+3. Download **backup.py** from the link on the same screen (it is `/backup/backup.py` on the site).
+4. In Command Prompt, in the folder with the file: `python backup.py pair ABCD-EFGH` (the code shown).
+   It pairs the PC, takes the first backup and schedules one every 5 minutes ("AlFarabi Backup" task).
+   Backups go to `D:\alfarabi-backups`, or `Documents\alfarabi-backups` when the PC has no D: drive.
+
+On the same screen: switch a device **off/on** (a switched-off PC skips quietly and keeps its last copy),
+see its **last backup** time (flagged "late" after 15 minutes), give a waiting device a **new code**, or
+**delete** it (its access stops at once; files already on it stay). Every change is in the audit log.
+The PC never shows or sends its secret: it sends only a fingerprint (SHA-256) when pairing.
+
+## Setup the old way (SQL line)
 
 **Laptop 1 (this PC): already done** — token label `laptop-1`, folder `D:\alfarabi-backups`.
-Only the scheduling step below is left.
+Only the scheduling step below is left. It appears in the dashboard list too.
 
 **Laptop 2:**
 1. Install Python 3.12+ from python.org (tick "Add to PATH").

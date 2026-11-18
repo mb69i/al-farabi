@@ -31,6 +31,15 @@ const fakeRpc = {
     event_ar: 'مؤتمر الفارابي للبحوث التطبيقية في التحول الرقمي الشامل', event_en: 'Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation',
     date_from: '2026-11-21', date_to: '2026-11-22' } },
   'verify-missing': { verify_certificate: { status: 'not_found' } },
+  backups: {
+    whoami: { role: 'owner', aal: 'aal2', email: 'owner@example.org' },
+    admin_list_backup_devices: [
+      { id: 'd1', label: 'laptop-1', enabled: true, paired: true, pair_expires_at: null, last_seen_at: new Date(Date.now() - 2 * 60000).toISOString(), created_at: '2026-11-17T08:00:00Z' },
+      { id: 'd2', label: 'حاسوب الاستقبال', enabled: true, paired: true, pair_expires_at: null, last_seen_at: new Date(Date.now() - 40 * 60000).toISOString(), created_at: '2026-11-18T08:00:00Z' },
+      { id: 'd3', label: 'لابتوب العمادة', enabled: false, paired: false, pair_expires_at: new Date(Date.now() + 20 * 60000).toISOString(), last_seen_at: null, created_at: '2026-11-18T09:00:00Z' },
+    ],
+    admin_add_backup_device: { id: 'd9', label: 'حاسوب المكتبة', code: 'K7Q2-MXH4', expires_at: new Date(Date.now() + 30 * 60000).toISOString() },
+  },
   busy: { register_guest: { status: 'rate_limited', checked_in_today: false } },
   thanks: { register_guest: { status: 'created', serial: 'ALF26-K7Q2MX', checked_in_today: true } },
   researchers: { whoami: { role: 'doctor', aal: 'aal1', email: 'doctor@example.org' }, search_researchers: RESEARCHERS },
@@ -84,7 +93,7 @@ if (isLive) {
   });
 }
 
-if (scenario === 'researchers' || scenario === 'admin' || scenario === 'controls') {
+if (scenario === 'researchers' || scenario === 'admin' || scenario === 'controls' || scenario === 'backups') {
   const session = { access_token: fakeJwt(scenario === 'researchers' ? 'aal1' : 'aal2'), token_type: 'bearer', expires_in: 3600, expires_at: 4102444800,
     refresh_token: 'x', user: { id: 'u1', aud: 'authenticated', role: 'authenticated', email: 'doctor@example.org',
       app_metadata: {}, user_metadata: {}, created_at: '2026-11-17T00:00:00Z' } };
@@ -92,8 +101,8 @@ if (scenario === 'researchers' || scenario === 'admin' || scenario === 'controls
   await page.route('**/auth/v1/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(session.user) }));
 }
 
-const path = { display: '/display', 'display-live': '/display', 'display-night': '/display', 'display-phone': '/display', login: '/staff/login', researchers: '/researchers', admin: '/admin', controls: '/admin/switches', 'verify-ok': '/verify?s=ALF26-K7Q2-MXH4-P9TB', 'verify-missing': '/verify?s=ALF26-ZZZZ-ZZZZ-ZZZZ' }[scenario] ?? '/';
-if (!['researchers', 'admin', 'controls'].includes(scenario)) {
+const path = { display: '/display', 'display-live': '/display', 'display-night': '/display', 'display-phone': '/display', login: '/staff/login', researchers: '/researchers', admin: '/admin', controls: '/admin/switches', backups: '/admin/backups', 'verify-ok': '/verify?s=ALF26-K7Q2-MXH4-P9TB', 'verify-missing': '/verify?s=ALF26-ZZZZ-ZZZZ-ZZZZ' }[scenario] ?? '/';
+if (!['researchers', 'admin', 'controls', 'backups'].includes(scenario)) {
   await page.goto(base + path, { waitUntil: 'networkidle' });
   await page.evaluate(() => { try { localStorage.clear(); } catch {} });
 }
@@ -107,10 +116,15 @@ if (scenario === 'busy' || scenario === 'thanks') {
   await fillForm(page);
   await page.waitForTimeout(scenario === 'thanks' ? 3500 : 800);
 }
-if (isDisplay || scenario === 'admin' || scenario === 'controls') await page.waitForTimeout(2000);
+if (isDisplay || scenario === 'admin' || scenario === 'controls' || scenario === 'backups') await page.waitForTimeout(2000);
+if (scenario === 'backups') {
+  await page.getByRole('form').locator('input').fill('حاسوب المكتبة');
+  await page.getByRole('form').getByRole('button').click();
+  await page.waitForTimeout(800);
+}
 if (isLive) await page.waitForTimeout(3600); // second poll + bump in progress
 if (scenario === 'footer') { await page.waitForTimeout(800); await page.locator('footer').scrollIntoViewIfNeeded(); }
 
-await page.screenshot({ path: out, fullPage: ['form', 'admin', 'controls'].includes(scenario) });
+await page.screenshot({ path: out, fullPage: ['form', 'admin', 'controls', 'backups'].includes(scenario) });
 await browser.close();
 console.log('saved', out);

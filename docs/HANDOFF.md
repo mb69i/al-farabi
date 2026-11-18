@@ -54,8 +54,8 @@ each runs inside BEGIN…ROLLBACK).
 
 ## This PC (18 Nov)
 - Drive C: was full (29 MB). The project's tool caches now live on D: and were moved there (C: back to ~6.8 GB free):
-  npm cache `D:ntigravity\.npm-cache` (`npm config get cache`), pip cache `D:ntigravity\.pip-cache` (user pip.ini),
-  Playwright browsers `D:ntigravity\.pw-browsers` (user env `PLAYWRIGHT_BROWSERS_PATH`). The project itself was already on D:.
+  npm cache `D:\antigravity\.npm-cache` (`npm config get cache`), pip cache `D:\antigravity\.pip-cache` (user pip.ini),
+  Playwright browsers `D:\antigravity\.pw-browsers` (user env `PLAYWRIGHT_BROWSERS_PATH`). The project itself was already on D:.
 - Certificates on the server: `@sparticuz/chromium` 131 runs `--single-process`, so the renderer uses ONE browser context and
   `api/certificate.mjs` starts a fresh browser per certificate. Verified live 18 Nov (Resend 01a1edfc-1758-736c-8ef3-e9fca1e0bd9e).
 
