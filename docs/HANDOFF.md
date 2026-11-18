@@ -52,6 +52,13 @@ each runs inside BEGIN…ROLLBACK).
   owner's sponsors certificate (`certs/forma/forma-sponsors.pdf`, 18 Nov) → `public/brand/sponsors-band.webp`, set in
   `src/pages/sponsors.ts` (null = four marked empty slots). The certificate itself stays the no-sponsors forma.
 
+## This PC (18 Nov)
+- Drive C: was full (29 MB). The project's tool caches now live on D: and were moved there (C: back to ~6.8 GB free):
+  npm cache `D:ntigravity\.npm-cache` (`npm config get cache`), pip cache `D:ntigravity\.pip-cache` (user pip.ini),
+  Playwright browsers `D:ntigravity\.pw-browsers` (user env `PLAYWRIGHT_BROWSERS_PATH`). The project itself was already on D:.
+- Certificates on the server: `@sparticuz/chromium` 131 runs `--single-process`, so the renderer uses ONE browser context and
+  `api/certificate.mjs` starts a fresh browser per certificate. Verified live 18 Nov (Resend 01a1edfc-1758-736c-8ef3-e9fca1e0bd9e).
+
 ## Notes from items 6–8
 - Public pages talk to the database through `src/lib/rpcFetch.ts` (no supabase-js); staff screens load
   `src/staffApp.tsx` on demand. Keep `npm run build && node scripts/check-bundle.mjs` passing.
