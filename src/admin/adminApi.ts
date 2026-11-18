@@ -4,7 +4,8 @@ import type { SwitchState } from './Switches';
 
 export type Guest = {
   id: string; serial: string; full_name: string; phone: string; email: string; gender: 'male' | 'female';
-  guest_type: 'visitor' | 'student' | 'other' | null; workplace: string; specialization: string; lang: 'ar' | 'en';
+  guest_type: 'visitor' | 'student' | 'other' | null; workplace: string; specialization: string;
+  /** null for guests registered before 19 Nov */ governorate?: string | null; lang: 'ar' | 'en';
   is_vip: boolean; created_at: string;
 };
 export type AdminResearcher = {

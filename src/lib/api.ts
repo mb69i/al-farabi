@@ -21,6 +21,8 @@ export type GuestInput = {
   guestType?: GuestType;
   workplace: string;
   specialization: string;
+  /** Governorate code from src/lib/governorates.ts (asked from 19 Nov). */
+  governorate?: string;
   lang: 'ar' | 'en';
 };
 
@@ -125,6 +127,7 @@ export function createApi(client: RpcClient, defaultSlug: string, opts: Opts = {
         p_workplace: g.workplace.trim(),
         p_specialization: g.specialization.trim(),
         p_lang: g.lang,
+        p_governorate: g.governorate ?? null,
       }),
     checkinGuest: (slug, serial, phone) =>
       call<CheckinResult>('checkin_guest', { p_slug: slug || defaultSlug, p_serial: serial, p_phone: phone }),

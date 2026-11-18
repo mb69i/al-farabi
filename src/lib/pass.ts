@@ -24,6 +24,33 @@ export function loadPass(slug: string): Pass | null {
   }
 }
 
+/**
+ * One phone may register up to 3 people (owner, 19 Nov): enough to fix a mistake or help a companion,
+ * without one phone signing up a whole hall. Counted on the phone itself; "already registered" does not count.
+ */
+export const DEVICE_LIMIT = 3;
+const countKey = (slug: string) => `alfarabi-device-count:${slug}`;
+
+export function deviceCount(slug: string): number {
+  try {
+    const n = Number(localStorage.getItem(countKey(slug)));
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/** Records one more new registration from this phone and returns the new total. */
+export function countDeviceRegistration(slug: string): number {
+  const n = deviceCount(slug) + 1;
+  try {
+    localStorage.setItem(countKey(slug), String(n));
+  } catch {
+    /* storage unavailable: nothing is counted */
+  }
+  return n;
+}
+
 export function clearPass(slug: string): void {
   try {
     localStorage.removeItem(key(slug));

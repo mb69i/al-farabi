@@ -3,15 +3,16 @@ import { Shell } from '../components/Shell';
 import { useI18n, type Key } from '../i18n';
 import type { Api, Gender } from '../lib/api';
 import { normalizeEmail, normalizePhone, suggestEmailFix } from '../lib/normalize';
-import { clearPass, loadPass, savePass, type Pass } from '../lib/pass';
+import { GOVERNORATES, governorateName } from '../lib/governorates';
+import { clearPass, countDeviceRegistration, DEVICE_LIMIT, deviceCount, loadPass, savePass, type Pass } from '../lib/pass';
 import './Register.css';
 
-type Field = 'fullName' | 'phone' | 'email' | 'gender' | 'workplace' | 'specialization';
+type Field = 'fullName' | 'phone' | 'email' | 'gender' | 'governorate' | 'workplace' | 'specialization';
 type Values = Record<Field, string>;
-type View = 'loading' | 'form' | 'done' | 'closed' | 'error' | 'busy';
+type View = 'loading' | 'form' | 'confirm' | 'done' | 'closed' | 'error' | 'busy' | 'limit';
 type Outcome = 'created' | 'already' | 'returning';
 
-const EMPTY: Values = { fullName: '', phone: '', email: '', gender: '', workplace: '', specialization: '' };
+const EMPTY: Values = { fullName: '', phone: '', email: '', gender: '', governorate: '', workplace: '', specialization: '' };
 
 /**
  * Words that count towards the three-part name (first, father, grandfather): at least two letters,
@@ -31,6 +32,7 @@ function validate(field: Field, v: string): Key | null {
     case 'email':
       return !s ? 'err.required' : normalizeEmail(s) ? null : 'err.email';
     case 'gender':
+    case 'governorate':
       return s ? null : 'err.choose';
     case 'workplace':
     case 'specialization':
@@ -38,9 +40,9 @@ function validate(field: Field, v: string): Key | null {
   }
 }
 
-const FIELDS: Field[] = ['fullName', 'phone', 'email', 'gender', 'workplace', 'specialization'];
+const FIELDS: Field[] = ['fullName', 'phone', 'email', 'gender', 'governorate', 'workplace', 'specialization'];
 const SERVER_FIELD: Record<string, Field> = {
-  full_name: 'fullName', phone: 'phone', email: 'email', gender: 'gender',
+  full_name: 'fullName', phone: 'phone', email: 'email', gender: 'gender', governorate: 'governorate',
   workplace: 'workplace', specialization: 'specialization',
 };
 
@@ -55,6 +57,7 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
   const [pass, setPass] = useState<Pass | null>(null);
   const [outcome, setOutcome] = useState<Outcome>('created');
   const [checkedIn, setCheckedIn] = useState(false);
+  const [deviceUsed, setDeviceUsed] = useState(() => deviceCount(slug));
   const honeypot = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -68,8 +71,10 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
     let alive = true;
     api
       .getPublicEvent(slug)
-      .then((ev) => alive && setView(ev && ev.registration_open === false ? 'closed' : 'form'))
-      .catch(() => alive && setView('form'));
+      .then((ev) =>
+        alive && setView(ev && ev.registration_open === false ? 'closed' : deviceCount(slug) >= DEVICE_LIMIT ? 'limit' : 'form'),
+      )
+      .catch(() => alive && setView(deviceCount(slug) >= DEVICE_LIMIT ? 'limit' : 'form'));
     return () => {
       alive = false;
     };
@@ -85,7 +90,8 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
     if (f === 'email') setSuggestion(suggestEmailFix(values.email.trim()));
   };
 
-  async function submit(e: FormEvent) {
+  /** First press: check every field, then show "confirm your details". */
+  function review(e: FormEvent) {
     e.preventDefault();
     if (inFlight.current) return;
     const next: Partial<Record<Field, Key>> = {};
@@ -108,6 +114,13 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
       return;
     }
 
+    setView('confirm');
+  }
+
+  /** Second press, on the confirm screen: register. */
+  async function send() {
+    if (inFlight.current) return;
+    const firstName = values.fullName.trim().split(/\s+/)[0];
     inFlight.current = true;
     setBusy(true);
     try {
@@ -116,6 +129,7 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
         phone: values.phone,
         email: values.email,
         gender: values.gender as Gender,
+        governorate: values.governorate,
         workplace: values.workplace,
         specialization: values.specialization,
         lang,
@@ -124,9 +138,13 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
       if (res.status === 'rate_limited') return setView('busy');
       if (res.status === 'invalid') {
         const f = SERVER_FIELD[res.field ?? ''] ?? 'fullName';
-        setErrors({ [f]: f === 'phone' ? 'err.phone' : f === 'email' ? 'err.email' : 'err.required' });
+        setErrors({
+          [f]: f === 'phone' ? 'err.phone' : f === 'email' ? 'err.email' : f === 'governorate' || f === 'gender' ? 'err.choose' : 'err.required',
+        });
+        setView('form');
         return;
       }
+      if (res.status === 'created') setDeviceUsed(countDeviceRegistration(slug));
       const p: Pass = { serial: res.serial ?? '', firstName, phone: normalizePhone(values.phone) ?? values.phone, lang };
       savePass(slug, p);
       setPass(p);
@@ -162,9 +180,17 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
     clearPass(slug);
     setPass(null);
     setValues(EMPTY);
+    setErrors({});
     setCheckedIn(false);
-    setView('form');
+    setView(deviceCount(slug) >= DEVICE_LIMIT ? 'limit' : 'form');
   }
+
+  const atLimit = deviceUsed >= DEVICE_LIMIT;
+
+  // the confirm screen opens at its heading (scrolled into view, read out by screen readers)
+  useEffect(() => {
+    if (view === 'confirm') document.getElementById('confirm-title')?.focus();
+  }, [view]);
 
   const fieldProps = (f: Field) => ({
     id: `f-${f}`,
@@ -246,15 +272,59 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
                   {t('pass.checkinToday')}
                 </button>
               ))}
-            <button type="button" className="btn-link" onClick={registerSomeoneElse}>
-              {t('pass.notYou')}
-            </button>
+            {atLimit ? (
+              <p className="pass-note pass-limit">{t('pass.deviceLimit')}</p>
+            ) : (
+              <button type="button" className="btn-link" onClick={registerSomeoneElse}>
+                {t('pass.notYou')}
+              </button>
+            )}
           </div>
         </section>
       )}
 
+      {view === 'limit' && (
+        <section className="reg-card reg-panel" role="status">
+          <h2>{t('reg.limitTitle')}</h2>
+          <p>{t('pass.deviceLimit')}</p>
+        </section>
+      )}
+
+      {view === 'confirm' && (
+        <section className="reg-card reg-confirm" aria-labelledby="confirm-title">
+          <header className="reg-form-head">
+            <h2 id="confirm-title" tabIndex={-1}>{t('reg.confirmTitle')}</h2>
+            <p>{t('reg.confirmLead')}</p>
+          </header>
+          <dl className="confirm-list">
+            {(
+              [
+                ['reg.fullName', values.fullName.trim().replace(/\s+/g, ' '), false],
+                ['reg.phone', normalizePhone(values.phone) ?? values.phone.trim(), true],
+                ['reg.email', normalizeEmail(values.email) ?? values.email.trim(), true],
+                ['reg.gender', values.gender ? t(values.gender === 'male' ? 'reg.male' : 'reg.female') : '', false],
+                ['reg.governorate', governorateName(values.governorate, lang), false],
+                ['reg.workplace', values.workplace.trim(), false],
+                ['reg.specialization', values.specialization.trim(), false],
+              ] as [Key, string, boolean][]
+            ).map(([label, value, ltr]) => (
+              <div key={label} className={label === 'reg.fullName' ? 'confirm-row confirm-row--name' : 'confirm-row'}>
+                <dt>{t(label)}</dt>
+                <dd dir={ltr ? 'ltr' : undefined}>{value}</dd>
+              </div>
+            ))}
+          </dl>
+          <button type="button" className="btn-primary btn-block" disabled={busy} onClick={() => void send()}>
+            {busy ? t('reg.submitting') : t('reg.submit')}
+          </button>
+          <button type="button" className="btn-link" disabled={busy} onClick={() => setView('form')}>
+            {t('reg.edit')}
+          </button>
+        </section>
+      )}
+
       {view === 'form' && (
-        <form className="reg-card reg-form" onSubmit={submit} noValidate>
+        <form className="reg-card reg-form" onSubmit={review} noValidate>
           <header className="reg-form-head">
             <h2>{t('reg.title')}</h2>
             <p>{t('reg.lead')}</p>
@@ -308,6 +378,19 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
             <Err f="gender" />
           </fieldset>
 
+          <div className={`field ${errors.governorate ? 'has-error' : ''}`}>
+            <label htmlFor="f-governorate">{t('reg.governorate')}</label>
+            <select {...fieldProps('governorate')}>
+              <option value="">{t('reg.governorateChoose')}</option>
+              {GOVERNORATES.map((g) => (
+                <option key={g.code} value={g.code}>
+                  {g[lang]}
+                </option>
+              ))}
+            </select>
+            <Err f="governorate" />
+          </div>
+
           <div className={`field ${errors.workplace ? 'has-error' : ''}`}>
             <label htmlFor="f-workplace">{t('reg.workplace')}</label>
             <input {...fieldProps('workplace')} autoComplete="organization" maxLength={160} />
@@ -325,8 +408,8 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
             <input ref={honeypot} id="f-website" name="website" tabIndex={-1} autoComplete="off" />
           </div>
 
-          <button type="submit" className="btn-primary btn-block" disabled={busy}>
-            {busy ? t('reg.submitting') : t('reg.submit')}
+          <button type="submit" className="btn-primary btn-block">
+            {t('reg.review')}
           </button>
         </form>
       )}

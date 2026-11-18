@@ -18,7 +18,8 @@ const SITE = ((import.meta.env.VITE_SITE_URL as string | undefined) || 'https://
 type CounterKey = Exclude<keyof DisplayCounts, 'researchers_total' | 'theme'>;
 type Theme = 'day' | 'night';
 
-const KEYS: CounterKey[] = ['total', 'present_today', 'male', 'female', 'vip', 'researchers_signed'];
+// No VIP counter on the hall screen (owner, 19 Nov); VIP stays in the data, the dashboard and the Excel file.
+const KEYS: CounterKey[] = ['total', 'present_today', 'male', 'female', 'researchers_signed'];
 const BUMP_MS = 2200; // how long a number glows after it goes up
 const MOMENT_MS = 6000; // how long "Welcome, guest no. N" stays up
 
@@ -296,7 +297,6 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
               <span className="d-split-female" />
             </div>
           </div>
-          {stat('vip', t('display.vip'), 'counter--gold')}
           {stat(
             'researchers_signed',
             t('display.researchers'),

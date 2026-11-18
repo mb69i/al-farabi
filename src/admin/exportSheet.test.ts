@@ -8,7 +8,7 @@ const DATA: AdminExport = {
   guests: [
     {
       id: 'g1', serial: 'ALF26-AAA222', full_name: 'Ali Hasan Kareem', phone: '+9647701234567', email: 'a@x.org',
-      gender: 'male', guest_type: 'student', workplace: 'UoB', specialization: 'CS', lang: 'en', is_vip: true,
+      gender: 'male', guest_type: 'student', workplace: 'UoB', specialization: 'CS', governorate: 'basra', lang: 'en', is_vip: true,
       created_at: '2026-11-21T07:00:00Z',
     },
     {
@@ -97,6 +97,12 @@ describe('designed Excel export', () => {
     expect((at.value as Date).toISOString()).toBe('2026-11-21T10:00:00.000Z'); // shown as Baghdad time (UTC+3)
     expect(at.numFmt).toMatch(/yyyy/);
     expect(ws.getRow(ali).getCell(col('الهاتف')).value).toBe('+9647701234567'); // kept as text
+    expect(ws.getRow(ali).getCell(col('المحافظة')).value).toBe('البصرة');
+    const others = [4, 5, 6].filter((r) => r !== ali).map((r) => ws.getRow(r).getCell(col('المحافظة')).value);
+    expect(others).toEqual(['—', '—']); // registered before the governorate was asked
+    const en = (await buildExport(DATA, 'en', { now: NOW })).getWorksheet('Guests')!;
+    const enCol = text(en, HEADER).indexOf('Governorate') + 1;
+    expect([4, 5, 6].map((r) => en.getRow(r).getCell(enCol).value)).toContain('Basra');
   });
 
   it('researchers: sorted, signed first-hand info, and the signature as a picture inside its cell', async () => {

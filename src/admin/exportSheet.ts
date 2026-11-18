@@ -3,6 +3,7 @@
 // filters, sized columns, right-to-left for Arabic and landscape printing. Built with ExcelJS, which this
 // module loads; the admin page imports this file only when Download is pressed.
 import ExcelJS from 'exceljs';
+import { governorateName } from '../lib/governorates';
 import type { AdminExport, AdminResearcher } from './adminApi';
 
 type Lang = 'ar' | 'en';
@@ -21,7 +22,7 @@ const L = {
   ar: {
     title: 'مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل',
     sheets: ['الملخص', 'الضيوف', 'الباحثون', 'الحضور اليومي'],
-    guests: ['#', 'الاسم', 'الرقم المرجعي', 'الهاتف', 'البريد الإلكتروني', 'الجنس', 'جهة العمل', 'التخصص', 'كبار الضيوف', 'أيام الحضور', 'وقت التسجيل', 'لغة التسجيل'],
+    guests: ['#', 'الاسم', 'الرقم المرجعي', 'الهاتف', 'البريد الإلكتروني', 'الجنس', 'المحافظة', 'جهة العمل', 'التخصص', 'كبار الضيوف', 'أيام الحضور', 'وقت التسجيل', 'لغة التسجيل'],
     researchers: ['#', 'الاسم', 'البريد الإلكتروني', 'الهاتف', 'الجنس', 'الجهة', 'عنوان البحث', 'كبار الضيوف', 'وقّع', 'وقت التوقيع', 'الطبيب', 'التوقيع'],
     checkins: ['#', 'اليوم', 'الوقت', 'الاسم', 'الرقم المرجعي'],
     gender: { male: 'ذكر', female: 'أنثى' } as Record<string, string>,
@@ -39,7 +40,7 @@ const L = {
   en: {
     title: 'The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation',
     sheets: ['Summary', 'Guests', 'Researchers', 'Check-ins'],
-    guests: ['#', 'Name', 'Reference', 'Phone', 'Email', 'Gender', 'Workplace', 'Specialisation', 'VIP', 'Days present', 'Registered at', 'Language'],
+    guests: ['#', 'Name', 'Reference', 'Phone', 'Email', 'Gender', 'Governorate', 'Workplace', 'Specialisation', 'VIP', 'Days present', 'Registered at', 'Language'],
     researchers: ['#', 'Name', 'Email', 'Phone', 'Gender', 'Institution', 'Research title', 'VIP', 'Signed', 'Signed at', 'Doctor', 'Signature'],
     checkins: ['#', 'Day', 'Time', 'Name', 'Reference'],
     gender: { male: 'Male', female: 'Female' } as Record<string, string>,
@@ -58,13 +59,13 @@ const L = {
 
 // (never exactly 9: ExcelJS drops a width equal to its default when saving)
 const WIDTHS = {
-  guests: [6, 30, 17, 18, 30, 11, 28, 22, 14, 13, 19, 14],
+  guests: [6, 30, 17, 18, 30, 11, 16, 28, 22, 14, 13, 19, 14],
   researchers: [6, 30, 28, 18, 11, 26, 44, 14, 10, 19, 22, 20],
   checkins: [6, 13, 10, 30, 17],
 };
 /** Short values (numbers, codes, yes/no, dates) are centred; names and text line up with the language. */
 const CENTRED = {
-  guests: [1, 3, 4, 6, 9, 10, 11, 12],
+  guests: [1, 3, 4, 6, 7, 10, 11, 12, 13],
   researchers: [1, 4, 5, 8, 9, 10, 12],
   checkins: [1, 2, 3, 5],
 };
@@ -218,9 +219,9 @@ export async function buildExport(data: AdminExport, lang: Lang, opts: ExportOpt
   const guests = [...data.guests].sort((a, b) => byName(a.full_name, b.full_name));
   const gs = listSheet(wb, l.sheets[1], l.guests, WIDTHS.guests, rtl, l.title, l.count(guests.length, at));
   addRows(gs, guests.map((g, i) => [
-    i + 1, g.full_name, g.serial, g.phone, g.email, l.gender[g.gender] ?? '', g.workplace, g.specialization,
+    i + 1, g.full_name, g.serial, g.phone, g.email, l.gender[g.gender] ?? '', governorateName(g.governorate, lang), g.workplace, g.specialization,
     yn(g.is_vip), present.get(g.serial) ?? 0, baghdad(g.created_at), l.lang[g.lang] ?? '',
-  ]), rtl, CENTRED.guests, { 11: 'yyyy-mm-dd hh:mm' });
+  ]), rtl, CENTRED.guests, { 12: 'yyyy-mm-dd hh:mm' });
 
   // ---------- researchers (by name), signature pictures in their cells ----------
   const display = (r: AdminResearcher) => (lang === 'en' ? r.name_en || r.name_ar : r.name_ar);

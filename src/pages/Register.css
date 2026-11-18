@@ -131,6 +131,95 @@
   text-align: right;
 }
 
+/* Governorate: the same look as the text fields, with a small chevron on the reading-end side */
+.field select {
+  width: 100%;
+  min-height: var(--tap);
+  padding-block: 10px;
+  padding-inline: 14px 40px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--line-light);
+  background-color: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem; /* 16px: stops iOS zooming into the field */
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  background-position: calc(100% - 22px) 52%, calc(100% - 16px) 52%;
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+[dir='rtl'] .field select {
+  background-position: 16px 52%, 22px 52%;
+}
+
+.field select:focus {
+  outline: none;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 4px rgba(20, 35, 75, 0.12);
+}
+
+.has-error select {
+  border-color: var(--danger);
+}
+
+/* "Confirm your details": every answer listed once, the name first and largest */
+.reg-confirm {
+  padding: var(--space-5) var(--space-4);
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 480px) {
+  .reg-confirm {
+    padding-inline: var(--space-6);
+  }
+}
+
+.reg-confirm h2:focus {
+  outline: none;
+}
+
+.confirm-list {
+  margin: 0;
+  display: grid;
+  border-top: 1px solid var(--line-light);
+}
+
+.confirm-row {
+  display: grid;
+  gap: 2px;
+  padding-block: var(--space-2);
+  border-bottom: 1px solid var(--line-light);
+}
+
+.confirm-row dt {
+  font-size: var(--fs-xs);
+  color: var(--ink-muted);
+}
+
+.confirm-row dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+[dir='rtl'] .confirm-row dd[dir='ltr'] {
+  text-align: right;
+}
+
+.confirm-row--name dd {
+  font-size: var(--fs-lg);
+}
+
+.reg-confirm .btn-link {
+  justify-self: center;
+}
+
 .field-hint {
   font-size: var(--fs-xs);
   color: var(--ink-muted);
@@ -284,6 +373,10 @@
 
 .pass-heading {
   font-size: var(--fs-lg);
+}
+
+.pass-limit {
+  max-width: 32ch;
 }
 
 .pass-note {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useI18n } from '../i18n';
+import { governorateName } from '../lib/governorates';
 import type { AdminResearcher, Delivery, Guest, Overview as OverviewData, Page } from './adminApi';
 import { Stat, useAdminApi } from './AdminLayout';
 import { parseResearcherSheet, type ImportError, type ResearcherImportRow } from './importResearchers';
@@ -75,7 +76,7 @@ export function Overview() {
 
 /* ---------- Guests ---------- */
 export function Guests() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const api = useAdminApi();
   const [search, setSearch] = useState('');
   const [offset, setOffset] = useState(0);
@@ -127,6 +128,7 @@ export function Guests() {
                   <th>{t('reg.phone')}</th>
                   <th>{t('reg.email')}</th>
                   <th>{t('reg.type')}</th>
+                  <th>{t('reg.governorate')}</th>
                   <th>{t('reg.workplace')}</th>
                   <th>{t('admin.vip')}</th>
                   <th />
@@ -142,6 +144,7 @@ export function Guests() {
                     <td className="num">{g.phone}</td>
                     <td dir="ltr">{g.email}</td>
                     <td>{g.guest_type ? t(`reg.${g.guest_type}` as const) : '—'}</td>
+                    <td>{governorateName(g.governorate, lang)}</td>
                     <td>{g.workplace}</td>
                     <td>
                       <input

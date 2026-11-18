@@ -27,12 +27,13 @@ beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
 describe('Display', () => {
-  it('renders the six counters from API', async () => {
+  it('renders the five counters from API, without a VIP counter (VIP stays in the data, not on the screen)', async () => {
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});
     expect(value('Male')).toBe('198');
     expect(value('Female')).toBe('176');
-    expect(value('VIP guests')).toBe('23');
+    expect(screen.queryByText('VIP guests')).toBeNull();
+    expect(document.querySelector('.counter--gold')).toBeNull();
     expect(value('Researchers')).toBe('64');
     expect(value('Registered')).toBe('412');
     expect(value('Present today')).toBe('287');
@@ -254,7 +255,7 @@ describe('Display — centred layout like the previous event tool', () => {
     expect(stage).toContainElement(strip as HTMLElement);
     // the QR comes before the numbers
     expect(qr.compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    for (const label of ['Registered', 'Present today', 'Male', 'Female', 'VIP guests', 'Researchers']) {
+    for (const label of ['Registered', 'Present today', 'Male', 'Female', 'Researchers']) {
       expect(strip).toContainElement(screen.getByText(label));
     }
     expect(screen.getByText('Scan to register your attendance')).toBeInTheDocument();

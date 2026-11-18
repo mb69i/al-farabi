@@ -35,8 +35,18 @@ function fill() {
   set(/^email/i, 'ali@gmail.com');
   set(/workplace/i, 'Baghdad University');
   set(/specialisation/i, 'Engineering');
+  set(/governorate/i, 'baghdad');
   fireEvent.click(screen.getByLabelText('Male'));
 }
+
+/** First press: check the details. */
+const review = () => fireEvent.click(screen.getByRole('button', { name: /review my details/i }));
+/** Second press, on the "confirm your details" screen. */
+const confirm = async () => fireEvent.click(await screen.findByRole('button', { name: /confirm registration/i }));
+const sendForm = async () => {
+  review();
+  await confirm();
+};
 
 beforeEach(() => localStorage.clear());
 
@@ -48,9 +58,10 @@ describe('Register', () => {
     expect(screen.queryByText('Attending as')).toBeNull();
     expect(screen.queryByLabelText('Visitor')).toBeNull();
     fill();
-    fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
+    await sendForm();
     await waitFor(() => expect(api.registerGuest).toHaveBeenCalled());
     expect((api.registerGuest as ReturnType<typeof vi.fn>).mock.calls[0][0]).not.toHaveProperty('guestType');
+    expect((api.registerGuest as ReturnType<typeof vi.fn>).mock.calls[0][0]).toMatchObject({ governorate: 'baghdad' });
   });
 
   it('shows field errors on blur', async () => {
@@ -67,7 +78,8 @@ describe('Register', () => {
     setup(fakeApi({ registerGuest }));
     await screen.findByLabelText(/full name/i);
     fill();
-    const button = screen.getByRole('button', { name: /confirm registration/i });
+    review();
+    const button = await screen.findByRole('button', { name: /confirm registration/i });
     fireEvent.click(button);
     fireEvent.click(button);
     expect(registerGuest).toHaveBeenCalledTimes(1);
@@ -79,7 +91,7 @@ describe('Register', () => {
     setup(fakeApi());
     await screen.findByLabelText(/full name/i);
     fill();
-    fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
+    await sendForm();
     expect(await screen.findByRole('heading', { name: /registered/i })).toBeInTheDocument();
     expect(screen.queryByRole('img', { name: /robot/i })).toBeNull(); // the owner removed the robot (18 Nov)
     expect(screen.getByText('ALF26-ABC234')).toBeInTheDocument();
@@ -94,7 +106,7 @@ describe('Register', () => {
     );
     await screen.findByLabelText(/full name/i);
     fill();
-    fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
+    await sendForm();
     expect(await screen.findByText(/already registered/i)).toBeInTheDocument();
     expect(screen.queryByRole('img', { name: /robot/i })).toBeNull();
     expect(loadPass('test-slug')?.serial).toBe('ALF26-OLD999');
@@ -119,7 +131,7 @@ describe('Register', () => {
     setup(fakeApi({ registerGuest: vi.fn(async () => ({ status: 'rate_limited' as const, checked_in_today: false })) }));
     await screen.findByLabelText(/full name/i);
     fill();
-    fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
+    await sendForm();
     expect(await screen.findByText(/too many attempts/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
     expect((screen.getByLabelText(/full name/i) as HTMLInputElement).value).toBe('Ali Hasan Kareem');
@@ -129,7 +141,7 @@ describe('Register', () => {
     setup(fakeApi({ registerGuest: vi.fn(async () => ({ status: 'closed' as const, checked_in_today: false })) }));
     await screen.findByLabelText(/full name/i);
     fill();
-    fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
+    await sendForm();
     expect(await screen.findByText(/registration is closed/i)).toBeInTheDocument();
   });
 
@@ -150,12 +162,12 @@ describe('Register', () => {
     fill();
     for (const two of ['Ali Hasan', 'علي حسن', 'Dr. Ali Hasan', 'Ali  H  K']) {
       fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: two } });
-      fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
+      review();
       expect(await screen.findByText('Enter your full name: three names (first, father and grandfather)')).toBeInTheDocument();
     }
     expect(api.registerGuest).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'علي حسن كريم' } });
-    fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
+    await sendForm();
     await waitFor(() => expect(api.registerGuest).toHaveBeenCalled());
   });
 
@@ -165,7 +177,7 @@ describe('Register', () => {
     await screen.findByLabelText(/full name/i);
     fill();
     fireEvent.change(document.querySelector('input[name="website"]')!, { target: { value: 'spam' } });
-    fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
+    review();
     expect(await screen.findByRole('heading', { name: /registered/i })).toBeInTheDocument();
     expect(api.registerGuest).not.toHaveBeenCalled();
   });
@@ -174,7 +186,7 @@ describe('Register', () => {
     setup(fakeApi({ registerGuest: vi.fn(async () => ({ status: 'invalid' as const, field: 'email', checked_in_today: false })) }));
     await screen.findByLabelText(/full name/i);
     fill();
-    fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
+    await sendForm();
     expect(await screen.findByText('This email address is not valid')).toBeInTheDocument();
   });
 
@@ -182,9 +194,86 @@ describe('Register', () => {
     setup(fakeApi({ registerGuest: vi.fn(async () => { throw new Error('offline'); }) }));
     await screen.findByLabelText(/full name/i);
     fill();
-    fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
+    await sendForm();
     expect(await screen.findByText(/could not be completed/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
     expect((screen.getByLabelText(/full name/i) as HTMLInputElement).value).toBe('Ali Hasan Kareem');
+  });
+  it('asks for the governorate (18 + outside Iraq) and will not send without it', async () => {
+    const api = fakeApi();
+    setup(api);
+    await screen.findByLabelText(/full name/i);
+    fill();
+    const select = screen.getByLabelText(/governorate/i) as HTMLSelectElement;
+    const options = Array.from(select.options).filter((o) => o.value);
+    expect(options).toHaveLength(19);
+    expect(options.map((o) => o.textContent)).toEqual(expect.arrayContaining(['Baghdad', 'Basra', 'Outside Iraq']));
+    fireEvent.change(select, { target: { value: '' } });
+    review();
+    expect(await screen.findByText('Please choose one')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /confirm registration/i })).toBeNull();
+    expect(api.registerGuest).not.toHaveBeenCalled();
+  });
+
+  it('shows "confirm your details" with everything entered; Edit goes back with the answers kept', async () => {
+    const api = fakeApi();
+    setup(api);
+    await screen.findByLabelText(/full name/i);
+    fill();
+    review();
+    const box = await screen.findByRole('region', { name: /confirm your details/i });
+    for (const v of ['Ali Hasan Kareem', '+9647701234567', 'ali@gmail.com', 'Male', 'Baghdad', 'Baghdad University', 'Engineering']) {
+      expect(box).toHaveTextContent(v);
+    }
+    expect(api.registerGuest).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: /^edit/i }));
+    expect((await screen.findByLabelText(/full name/i) as HTMLInputElement).value).toBe('Ali Hasan Kareem');
+    expect((screen.getByLabelText(/governorate/i) as HTMLSelectElement).value).toBe('baghdad');
+    expect(api.registerGuest).not.toHaveBeenCalled();
+  });
+
+  it('a server error on the governorate is shown on that field', async () => {
+    setup(fakeApi({ registerGuest: vi.fn(async () => ({ status: 'invalid' as const, field: 'governorate', checked_in_today: false })) }));
+    await screen.findByLabelText(/full name/i);
+    fill();
+    await sendForm();
+    expect(await screen.findByText('Please choose one')).toBeInTheDocument();
+    expect(screen.getByLabelText(/governorate/i)).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('one device can register up to 3 people (to fix a mistake), then asks the next person to use their own phone', async () => {
+    let n = 0;
+    const api = fakeApi({
+      registerGuest: vi.fn(async () => ({ status: 'created' as const, serial: `ALF26-DEV00${++n}`, checked_in_today: true })),
+    });
+    setup(api);
+    for (let i = 1; i <= 3; i++) {
+      await screen.findByLabelText(/full name/i);
+      fill();
+      await sendForm();
+      expect(await screen.findByText(`ALF26-DEV00${i}`)).toBeInTheDocument();
+      if (i < 3) fireEvent.click(screen.getByRole('button', { name: /register someone else/i }));
+    }
+    expect(screen.queryByRole('button', { name: /register someone else/i })).toBeNull();
+    expect(screen.getByText(/this phone has registered 3 people/i)).toBeInTheDocument();
+    expect(api.registerGuest).toHaveBeenCalledTimes(3);
+  });
+
+  it('a device at its limit with no saved pass shows the limit, not the form', async () => {
+    localStorage.setItem('alfarabi-device-count:test-slug', '3');
+    setup(fakeApi());
+    expect(await screen.findByText(/this phone has registered 3 people/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/full name/i)).toBeNull();
+  });
+
+  it('"already registered" does not use up one of the 3', async () => {
+    setup(fakeApi({
+      registerGuest: vi.fn(async () => ({ status: 'already_registered' as const, serial: 'ALF26-OLD999', checked_in_today: true })),
+    }));
+    await screen.findByLabelText(/full name/i);
+    fill();
+    await sendForm();
+    expect(await screen.findByText(/already registered/i)).toBeInTheDocument();
+    expect(localStorage.getItem('alfarabi-device-count:test-slug')).toBeNull();
   });
 });

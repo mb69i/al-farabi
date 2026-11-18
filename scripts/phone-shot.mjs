@@ -1,6 +1,6 @@
 // Phone-size screenshots of the app for review.
 // Usage: node scripts/phone-shot.mjs <scenario> <out.png> [baseUrl]
-// Scenarios: form, busy, thanks, display, display-live (day), display-night, display-phone, <page>-night, verify-ok, verify-missing, login
+// Scenarios: form, confirm (the "confirm your details" step), limit (a phone that registered 3 people), busy, thanks, display, display-live (day), display-night, display-phone, <page>-night, verify-ok, verify-missing, login
 // Needs PLAYWRIGHT_BROWSERS_PATH pointing at the installed Chromium.
 import { chromium, devices } from '@playwright/test';
 
@@ -59,9 +59,16 @@ async function fillForm(page) {
   await page.click('input[name="gender"][value="male"]', { force: true });
   await page.fill('#f-workplace', 'جامعة الفارابي');
   await page.fill('#f-specialization', 'هندسة الذكاء الاصطناعي');
+  if (await page.locator('#f-governorate').count()) await page.selectOption('#f-governorate', 'baghdad');
   const type = page.locator('input[name="guestType"][value="visitor"]');
   if (await type.count()) await type.click({ force: true });
   await page.click('button[type="submit"]');
+}
+
+/** Second press, on the "confirm your details" screen (when the form has one). */
+async function confirmForm(page) {
+  const btn = page.locator('.reg-confirm .btn-primary');
+  if (await btn.count()) await btn.click();
 }
 
 const browser = await chromium.launch();
@@ -77,6 +84,7 @@ const ctx = await browser.newContext({
 });
 const page = await ctx.newPage();
 if (nightSite) await ctx.addInitScript(() => localStorage.setItem('site-theme', 'night'));
+if (scenario === 'limit') await ctx.addInitScript(() => localStorage.setItem('alfarabi-device-count:alfarabi-conf-2026', '3'));
 for (const [fn, body] of Object.entries(fakeRpc[scenario] ?? {})) {
   await page.route(`**/rest/v1/rpc/${fn}`, (r) =>
     r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) }),
@@ -115,8 +123,13 @@ if (scenario === 'researchers') {
   await page.waitForTimeout(1200);
 }
 
+if (scenario === 'confirm') {
+  await fillForm(page);
+  await page.waitForTimeout(500);
+}
 if (scenario === 'busy' || scenario === 'thanks') {
   await fillForm(page);
+  await confirmForm(page);
   await page.waitForTimeout(scenario === 'thanks' ? 3500 : 800);
 }
 if (isDisplay || scenario === 'admin' || scenario === 'controls' || scenario === 'backups') await page.waitForTimeout(2000);
@@ -134,7 +147,7 @@ if (process.env.FOCUS) {
   await page.waitForTimeout(300);
   await page.locator(process.env.FOCUS).screenshot({ path: out });
 } else {
-  await page.screenshot({ path: out, fullPage: ['form', 'admin', 'controls', 'backups'].includes(scenario) });
+  await page.screenshot({ path: out, fullPage: ['form', 'confirm', 'admin', 'controls', 'backups'].includes(scenario) });
 }
 if (video) {
   await page.waitForTimeout(Number(process.env.RECORD_SECONDS ?? 6) * 1000);

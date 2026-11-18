@@ -35,7 +35,10 @@ describe('registerGuest', () => {
       p_workplace: 'جامعة بغداد',
       p_specialization: 'هندسة',
       p_lang: 'ar',
+      p_governorate: null,
     });
+    await createApi(c, 'slug', { sleep: async () => {} }).registerGuest({ ...input, governorate: 'najaf' });
+    expect(c.rpc).toHaveBeenLastCalledWith('register_guest', expect.objectContaining({ p_governorate: 'najaf' }));
   });
 
   it('retries network errors and 5xx, then succeeds', async () => {

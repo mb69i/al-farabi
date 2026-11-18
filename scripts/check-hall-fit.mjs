@@ -60,13 +60,13 @@ for (const theme of ['day', 'night']) {
     if (m.numbers.length && Math.max(...m.numbers) - Math.min(...m.numbers) > 3) {
       failures.push(`${tag}: numbers not on one line (centres ${m.numbers.map(Math.round)})`);
     }
-    if (m.cells.length === 7) {
+    if (m.cells.length === 6) {
       const ws = m.cells.map((c) => c.w);
       if (Math.max(...ws) - Math.min(...ws) > 2) failures.push(`${tag}: number cells not equal (${ws.map(Math.round)})`);
       if (m.cells.some((c) => Math.abs(c.off) > 2)) failures.push(`${tag}: a number is not centred in its cell (${m.cells.map((c) => Math.round(c.off))})`);
       if (m.cells.slice(1).some((c) => !c.line)) failures.push(`${tag}: a divider line is missing between two numbers`);
     } else {
-      failures.push(`${tag}: expected 7 cells (Live + 6 numbers), found ${m.cells.length}`);
+      failures.push(`${tag}: expected 6 cells (Live + 5 numbers; no VIP since 19 Nov), found ${m.cells.length}`);
     }
     for (const [s, b] of m.parts) {
       if (!b) failures.push(`${tag}: ${s} missing`);

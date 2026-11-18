@@ -13,7 +13,9 @@ begin
   values (ev, 'ALF26-OLDG1X', 'ضيف قديم جدا', 'ar', '+9647700009911', 'old-guest@test.local', 'male', null, 'UoB', 'CS', 'ar')
   returning id into gid;
   alter table public.guests enable trigger guests_queue_certificate;
+  alter table public.guest_checkins disable trigger checkins_queue_certificate; -- yesterday was before the trigger existed
   insert into public.guest_checkins (guest_id, day) values (gid, public.baghdad_today() - 1);
+  alter table public.guest_checkins enable trigger checkins_queue_certificate;
   if exists (select 1 from public.deliveries where guest_id = gid and kind = 'certificate') then raise exception 'FAIL: setup'; end if;
 
   -- comes back today ("already registered")
