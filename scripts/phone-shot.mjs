@@ -67,11 +67,14 @@ async function fillForm(page) {
 const browser = await chromium.launch();
 const isDisplay = scenario.startsWith('display') && scenario !== 'display-phone';
 const isLive = ['display-live', 'display-night', 'display-phone'].includes(scenario);
-const ctx = await browser.newContext(
-  isDisplay
+// RECORD_VIDEO=<folder>: also save a .webm of the page (to show animation); RECORD_SECONDS sets how long to keep it.
+const video = process.env.RECORD_VIDEO;
+const ctx = await browser.newContext({
+  ...(isDisplay
     ? { viewport: { width: 1280, height: 720 }, locale: 'ar-IQ' }
-    : { ...devices['iPhone 13'], deviceScaleFactor: 2, locale: 'ar-IQ' },
-);
+    : { ...devices['iPhone 13'], deviceScaleFactor: 2, locale: 'ar-IQ' }),
+  ...(video ? { recordVideo: { dir: video, size: isDisplay ? { width: 1280, height: 720 } : { width: 390, height: 844 } } } : {}),
+});
 const page = await ctx.newPage();
 if (nightSite) await ctx.addInitScript(() => localStorage.setItem('site-theme', 'night'));
 for (const [fn, body] of Object.entries(fakeRpc[scenario] ?? {})) {
@@ -125,6 +128,18 @@ if (scenario === 'backups') {
 if (isLive) await page.waitForTimeout(3600); // second poll + bump in progress
 if (scenario === 'footer') { await page.waitForTimeout(800); await page.locator('footer').scrollIntoViewIfNeeded(); }
 
-await page.screenshot({ path: out, fullPage: ['form', 'admin', 'controls', 'backups'].includes(scenario) });
+// FOCUS=<css selector>: frame just that element (e.g. FOCUS=.robot-scene for the thank-you robot).
+if (process.env.FOCUS) {
+  await page.evaluate((sel) => document.querySelector(sel)?.scrollIntoView({ block: 'center' }), process.env.FOCUS);
+  await page.waitForTimeout(300);
+  await page.locator(process.env.FOCUS).screenshot({ path: out });
+} else {
+  await page.screenshot({ path: out, fullPage: ['form', 'admin', 'controls', 'backups'].includes(scenario) });
+}
+if (video) {
+  await page.waitForTimeout(Number(process.env.RECORD_SECONDS ?? 6) * 1000);
+  await ctx.close(); // writes the video
+  console.log('video ->', await page.video().path());
+}
 await browser.close();
 console.log('saved', out);

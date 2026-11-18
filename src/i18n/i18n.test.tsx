@@ -41,7 +41,7 @@ function Probe() {
   const { t, lang, setLang, dir } = useI18n();
   return (
     <div>
-      <span data-testid="thanks">{t('thanks.robot', { name: 'Ali' })}</span>
+      <span data-testid="thanks">{t('admin.backupPairTitle', { name: 'Ali' })}</span>
       <span data-testid="dir">{dir}</span>
       <button onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>toggle</button>
     </div>

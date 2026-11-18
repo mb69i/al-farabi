@@ -47,7 +47,6 @@ export const en: Record<Key, string> = {
   'err.choose': 'Please choose one',
   'err.short': 'Enter at least 2 letters',
 
-  'thanks.robot': 'Welcome, {name}! Thank you for registering for the Al-Farabi Conference.',
   'thanks.title': 'You are registered',
   'thanks.already': 'You were already registered — your attendance today is confirmed.',
   'thanks.emailNote': 'Your certificate will arrive by email within minutes.',

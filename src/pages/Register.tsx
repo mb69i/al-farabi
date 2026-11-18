@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Shell } from '../components/Shell';
-import { ThanksRobot } from '../components/ThanksRobot';
 import { useI18n, type Key } from '../i18n';
 import type { Api, Gender } from '../lib/api';
 import { normalizeEmail, normalizePhone, suggestEmailFix } from '../lib/normalize';
@@ -219,7 +218,6 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
 
       {view === 'done' && pass && (
         <section className="reg-done">
-          <ThanksRobot message={t('thanks.robot', { name: pass.firstName })} label={lang === 'ar' ? 'روبوت الفارابي' : 'Al-Farabi robot'} />
           <div className="reg-card pass-card">
             <h2 className="pass-heading">{outcome === 'created' ? t('thanks.title') : t('pass.title')}</h2>
             {outcome === 'already' && <p className="pass-note">{t('thanks.already')}</p>}

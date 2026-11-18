@@ -75,17 +75,18 @@ describe('Register', () => {
     await act(async () => resolve({ status: 'created', serial: 'S', checked_in_today: true }));
   });
 
-  it('created shows the robot and saves the pass', async () => {
+  it('created shows the success card (no robot) and saves the pass', async () => {
     setup(fakeApi());
     await screen.findByLabelText(/full name/i);
     fill();
     fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
-    expect(await screen.findByRole('img', { name: /robot/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /registered/i })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: /robot/i })).toBeNull(); // the owner removed the robot (18 Nov)
     expect(screen.getByText('ALF26-ABC234')).toBeInTheDocument();
     expect(loadPass('test-slug')?.serial).toBe('ALF26-ABC234');
   });
 
-  it('already_registered shows robot and saved pass with day check-in', async () => {
+  it('already_registered shows the saved pass with day check-in', async () => {
     setup(
       fakeApi({
         registerGuest: vi.fn(async () => ({ status: 'already_registered' as const, serial: 'ALF26-OLD999', checked_in_today: true })),
@@ -95,7 +96,7 @@ describe('Register', () => {
     fill();
     fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
     expect(await screen.findByText(/already registered/i)).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: /robot/i })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: /robot/i })).toBeNull();
     expect(loadPass('test-slug')?.serial).toBe('ALF26-OLD999');
   });
 
@@ -142,14 +143,14 @@ describe('Register', () => {
     expect((email as HTMLInputElement).value).toBe('ali@gmail.com');
   });
 
-  it('honeypot filled shows the robot without calling the API', async () => {
+  it('honeypot filled shows the success card without calling the API', async () => {
     const api = fakeApi();
     setup(api);
     await screen.findByLabelText(/full name/i);
     fill();
     fireEvent.change(document.querySelector('input[name="website"]')!, { target: { value: 'spam' } });
     fireEvent.click(screen.getByRole('button', { name: /confirm registration/i }));
-    expect(await screen.findByRole('img', { name: /robot/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /registered/i })).toBeInTheDocument();
     expect(api.registerGuest).not.toHaveBeenCalled();
   });
 

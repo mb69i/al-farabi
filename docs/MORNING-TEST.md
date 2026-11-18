@@ -70,7 +70,7 @@ In the admin dashboard (your laptop) you can watch it live:
 ## 6. Optional: guest registration test
 
 1. Registration is already **open** for the demo (Admin → **التحكم / Controls** to change it).
-2. On a phone open **https://al-farabi-gilt.vercel.app** → register → the robot thanks you.
+2. On a phone open **https://al-farabi-gilt.vercel.app** → register → the "تم تسجيلك بنجاح" card with your reference number appears.
 3. Open **https://al-farabi-gilt.vercel.app/display** on a big screen → counters go up.
 4. Switch **Registration open** OFF again after the test.
 
