@@ -62,4 +62,14 @@ describe('handleCertificateRequest', () => {
     expect(await handleCertificateRequest(req(), d)).toEqual({ status: 422, body: { error: 'missing name' } });
     expect(d.upload).not.toHaveBeenCalled();
   });
+
+  it('a drawing failure is reported with its reason (to the sender only), and nothing is stored', async () => {
+    const d = deps({ render: vi.fn(async () => { throw new Error('Failed to launch the browser process: libnss3.so missing'); }) });
+    const out = await handleCertificateRequest(req(), d);
+    expect(out.status).toBe(500);
+    expect(out.body.error).toMatch(/^render failed: Failed to launch the browser process/);
+    expect(d.upload).not.toHaveBeenCalled();
+    // an unauthenticated caller never gets that far
+    expect((await handleCertificateRequest(req({ headers: {} }), d)).body).toEqual({ error: 'unauthorized' });
+  });
 });

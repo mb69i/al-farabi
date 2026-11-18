@@ -39,7 +39,8 @@ export async function handleCertificateRequest(req, deps) {
     });
   } catch (e) {
     if (e instanceof CertificateError) return { status: 422, body: { error: e.message } };
-    throw e;
+    // Only an authenticated caller (the sender) gets here; it saves the reason on the delivery for staff.
+    return { status: 500, body: { error: `render failed: ${String(e?.message ?? e).slice(0, 300)}` } };
   }
   const path = `${job.event_id}/certificate/${id}.pdf`;
   await deps.upload('outputs', path, out.pdf, 'application/pdf');

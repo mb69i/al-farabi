@@ -1,5 +1,6 @@
 // Vercel function: POST /api/certificate {delivery_id} with X-Render-Token (see certs/server.mjs).
 // Called only by the email sender (api/deliver.py). Draws the certificate with a serverless Chromium.
+import '../certs/chromium-env.mjs'; // first: sets the runtime hint @sparticuz/chromium reads when it loads
 import chromium from '@sparticuz/chromium';
 import { chromium as playwright } from 'playwright-core';
 import { renderCertificate } from '../certs/render.mjs';
