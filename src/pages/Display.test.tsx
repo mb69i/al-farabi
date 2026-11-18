@@ -71,10 +71,12 @@ describe('Display', () => {
     window.history.pushState({}, '', '/');
   });
 
-  it('QR encodes site origin', async () => {
+  it('QR and its caption always send guests to the live site, whichever copy of the site shows the screen', async () => {
+    // (the projector once showed a preview copy, whose address needs a Vercel login)
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});
-    expect(screen.getByTestId('qr').getAttribute('data-target')).toBe(`${window.location.origin}/`);
+    expect(screen.getByTestId('qr').getAttribute('data-target')).toBe('https://al-farabi-gilt.vercel.app/');
+    expect(screen.getByText('al-farabi-gilt.vercel.app')).toBeInTheDocument();
   });
 });
 
@@ -278,15 +280,33 @@ describe('Display — header and sponsors like the certificate', () => {
     expect(screen.getByText('The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation')).toBeInTheDocument();
   });
 
-  it('shows the certificate sponsors band along the bottom, outside the centred column', async () => {
+  it('shows the 68 sponsor logos as a moving bar along the bottom, outside the centred column', async () => {
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});
     const footer = screen.getByRole('contentinfo');
     expect(document.querySelector('.d-stage')).not.toContainElement(footer);
-    const band = footer.querySelector('img')!;
-    expect(band).toHaveAttribute('src', '/brand/sponsors-band.webp'); // cut from the owner's sponsors certificate
-    expect(band.getAttribute('alt')).toContain('Sponsors & Partners');
+    const imgs = footer.querySelectorAll('.d-marquee-track img');
+    // two copies of one strip image (one download) make the loop seamless; screen readers hear it once
+    expect(imgs).toHaveLength(2);
+    for (const img of imgs) expect(img).toHaveAttribute('src', '/brand/sponsors-strip.webp');
+    expect(imgs[0].getAttribute('alt')).toContain('Sponsors & Partners');
+    expect(imgs[1]).toHaveAttribute('alt', '');
+    expect(imgs[1]).toHaveAttribute('aria-hidden', 'true');
     expect(footer.querySelectorAll('.d-sponsor--empty')).toHaveLength(0);
+  });
+
+  it('the bar moves, but stands still when motion is off', async () => {
+    setup(api(vi.fn(async () => COUNTS))); // animate={false}
+    await act(async () => {});
+    expect(document.querySelector('.d-marquee')).toHaveClass('d-marquee--still');
+    window.history.pushState({}, '', '/display?lang=en');
+    const { container } = render(
+      <I18nProvider initial="en">
+        <Display api={api(vi.fn(async () => COUNTS))} slug="s" />
+      </I18nProvider>,
+    );
+    await act(async () => {});
+    expect(container.querySelector('.d-marquee')).not.toHaveClass('d-marquee--still');
   });
 
   it('falls back to marked empty slots (no invented sponsors) if the band is removed', async () => {

@@ -23,13 +23,20 @@ for (const theme of ['day', 'night']) {
     const m = await page.evaluate(() => {
       const box = (s) => document.querySelector(s)?.getBoundingClientRect();
       const stage = box('.d-stage');
-      const parts = ['.d-logos', '.d-ribbon', '.d-title', '.qr-box', '.qr-caption', '.d-strip', '.d-corner', '.d-sponsors'].map((s) => [s, box(s)]);
+      const parts = ['.d-logos', '.d-ribbon', '.d-title', '.qr-box', '.qr-caption', '.d-strip', '.d-corner', '.d-sponsors', '.d-marquee'].map((s) => [s, box(s)]);
       return {
         scrollW: document.documentElement.scrollWidth,
         scrollH: document.documentElement.scrollHeight,
         stageCentre: stage ? (stage.left + stage.right) / 2 : -1,
         stageHeight: stage ? stage.height : 0,
         parts: parts.map(([s, b]) => [s, b ? [b.left, b.top, b.right, b.bottom] : null]),
+        strip: box('.d-strip') ? [box('.d-strip').left, box('.d-strip').right] : null,
+        bar: box('.d-marquee') ? [box('.d-marquee').left, box('.d-marquee').right] : null,
+        // vertical centres of every number in the strip (the owner marked the male/female numbers sitting higher)
+        numbers: [...document.querySelectorAll('.d-strip .counter-value')].map((e) => {
+          const r = e.getBoundingClientRect();
+          return (r.top + r.bottom) / 2;
+        }),
       };
     });
     const tag = `${theme} ${w}x${h}`;
@@ -37,6 +44,14 @@ for (const theme of ['day', 'night']) {
     // headroom: other browsers' font metrics, zoom or a welcome message must not push it off screen
     if (m.stageHeight > h * 0.9) failures.push(`${tag}: column uses ${Math.round((m.stageHeight / h) * 100)}% of the height (max 90%)`);
     if (Math.abs(m.stageCentre - w / 2) > 2) failures.push(`${tag}: column not centred (${Math.round(m.stageCentre)} vs ${w / 2})`);
+    // the owner: counters strip "same size as the block" — same left and right edges as the sponsors bar
+    if (!m.strip || !m.bar) failures.push(`${tag}: counters strip or sponsors bar missing`);
+    else if (Math.abs(m.strip[0] - m.bar[0]) > 2 || Math.abs(m.strip[1] - m.bar[1]) > 2) {
+      failures.push(`${tag}: strip ${m.strip.map(Math.round)} vs sponsors bar ${m.bar.map(Math.round)} (edges must match)`);
+    }
+    if (m.numbers.length && Math.max(...m.numbers) - Math.min(...m.numbers) > 3) {
+      failures.push(`${tag}: numbers not on one line (centres ${m.numbers.map(Math.round)})`);
+    }
     for (const [s, b] of m.parts) {
       if (!b) failures.push(`${tag}: ${s} missing`);
       else if (b[0] < 0 || b[1] < 0 || b[2] > w || b[3] > h) failures.push(`${tag}: ${s} cut off ${b.map(Math.round)}`);

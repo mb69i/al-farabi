@@ -38,9 +38,9 @@ describe('page speed', () => {
     for (const f of ['public/brand/crest-360.webp', 'public/brand/ministry-360.webp', 'public/brand/event-mark.webp']) {
       expect(statSync(resolve(root, f)).size, f).toBeLessThan(80 * 1024);
     }
-    // the sponsors band (about 70 logos) is one WebP, not the ~1 MB PNG cut from the forma
-    expect(statSync(resolve(root, 'public/brand/sponsors-band.webp')).size).toBeLessThan(250 * 1024);
-    expect(read('src/pages/sponsors.ts')).not.toMatch(/sponsors-band\.png/);
+    // the moving sponsors bar: the 68 logos (14 MB of PNGs) as one strip image, loaded once
+    expect(statSync(resolve(root, 'public/brand/sponsors-strip.webp')).size).toBeLessThan(500 * 1024);
+    expect(read('src/pages/sponsors.ts')).toMatch(/sponsors-strip\.webp/);
   });
 
   it('keeps supabase-js, qrcode and the staff screens out of the registration page bundle', () => {

@@ -11,6 +11,10 @@ type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean; spons
 const RIBBON_AR = 'مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل';
 const RIBBON_EN = 'The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation';
 
+// The QR always sends guests to the live site, even when this screen is opened from a preview copy
+// (whose address needs a Vercel login). VITE_SITE_URL can point it at a custom domain later.
+const SITE = ((import.meta.env.VITE_SITE_URL as string | undefined) || 'https://al-farabi-gilt.vercel.app').replace(/\/+$/, '');
+
 type CounterKey = Exclude<keyof DisplayCounts, 'researchers_total' | 'theme'>;
 type Theme = 'day' | 'night';
 
@@ -85,7 +89,7 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
   const [offline, setOffline] = useState(false);
   const [notConfigured, setNotConfigured] = useState(false);
   const [qr, setQr] = useState('');
-  const target = `${window.location.origin}/`;
+  const target = `${SITE}/`;
 
   // The projector shows Arabic unless the URL asks for English (?lang=en).
   useEffect(() => {
@@ -319,7 +323,16 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
       {/* Sponsors as on the sponsors certificate: the designer's band, on the same paper as the logos */}
       <footer className="d-sponsors">
         {sponsorBand ? (
-          <img className="d-sponsors-band" src={sponsorBand.src} alt={sponsorBand.alt} />
+          <>
+            <p className="d-sponsors-title">الجهات الراعية والمشاركة · Sponsors &amp; Partners</p>
+            <div className={`d-marquee ${motion ? '' : 'd-marquee--still'}`}>
+              {/* two copies of one strip slide by exactly one copy's width: a seamless loop, one download */}
+              <div className="d-marquee-track" dir="ltr">
+                <img src={sponsorBand.src} alt={sponsorBand.alt} />
+                <img src={sponsorBand.src} alt="" aria-hidden="true" />
+              </div>
+            </div>
+          </>
         ) : (
           <>
             <span className="d-sponsors-label">{t('display.sponsoredBy')}</span>

@@ -14,6 +14,9 @@
   /* 1.6vh (not 16:9's 1.778) leaves ~15% spare height for other browsers, zoom and bars */
   --u: min(1vw, 1.6vh);
 
+  /* the counters strip and the sponsors bar share this width, so their edges line up (owner, 18 Nov) */
+  --d-block: min(calc(var(--u) * 84), calc(100vw - var(--u) * 6));
+
   --d-bg: var(--white);
   /* (own copy of the day dots, so a visitor's night choice on other pages never changes the hall) */
   --d-pattern:
@@ -270,9 +273,12 @@
 
 /* ---------- One small strip of numbers ---------- */
 .d-strip {
-  display: inline-flex;
-  align-items: stretch;
-  padding: calc(var(--u) * 0.7) calc(var(--u) * 1.2);
+  display: flex;
+  width: var(--d-block);
+  justify-content: space-around;
+  align-items: center;
+  /* extra room at the bottom for the male/female bar and the researchers bar (taken out of the flow) */
+  padding: calc(var(--u) * 0.7) calc(var(--u) * 1.2) calc(var(--u) * 1.1);
   border-radius: calc(var(--u) * 1.4);
   background: var(--d-glass);
   border: 1px solid var(--d-line);
@@ -385,9 +391,9 @@
 }
 
 .d-gender {
+  position: relative;
   display: grid;
   align-content: center;
-  gap: calc(var(--u) * 0.25);
   padding-inline: calc(var(--u) * 0.3);
 }
 
@@ -400,9 +406,11 @@
 }
 
 .d-split {
+  position: absolute;
+  inset-inline: calc(var(--u) * 1.3);
+  bottom: calc(var(--u) * -0.55);
   display: flex;
   height: calc(var(--u) * 0.3);
-  margin-inline: calc(var(--u) * 1);
   border-radius: 999px;
   overflow: hidden;
   background: var(--d-female);
@@ -418,6 +426,9 @@
 }
 
 .counter-progress-wrap {
+  position: absolute;
+  inset-inline: calc(var(--u) * 0.8);
+  bottom: calc(var(--u) * -0.75);
   display: flex;
   align-items: center;
   gap: calc(var(--u) * 0.4);
@@ -451,6 +462,7 @@
 .d-sponsors {
   flex-shrink: 0;
   display: flex;
+  flex-direction: column;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
@@ -470,14 +482,50 @@
   color: var(--gold-soft);
 }
 
-.d-sponsors-band {
-  display: block;
-  width: min(calc(var(--u) * 74), 100%);
-  height: auto;
-  padding: calc(var(--u) * 0.35) calc(var(--u) * 1);
+.d-sponsors-title {
+  font-size: calc(var(--u) * 0.75);
+  color: var(--d-muted);
+  margin-bottom: calc(var(--u) * 0.3);
+}
+
+/* The 68 sponsor logos slide slowly right to left on the certificate's paper (readable by day and night) */
+.d-marquee {
+  width: var(--d-block);
+  overflow: hidden;
+  /* the strip starts at the left edge and slides left, whatever the page language */
+  direction: ltr;
+  padding: calc(var(--u) * 0.45) 0;
   border-radius: calc(var(--u) * 0.8);
-  background: #fffef9; /* the certificate paper, so the logos read the same by day and night */
+  background: #fffef9;
   border: 1px solid rgba(184, 145, 58, 0.55);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
+}
+
+.d-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: d-marquee 130s linear infinite;
+}
+
+.d-marquee-track img {
+  display: block;
+  flex-shrink: 0;
+  height: calc(var(--u) * 3.3);
+  width: auto;
+}
+
+.d-marquee--still .d-marquee-track {
+  animation: none;
+}
+
+@keyframes d-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .d-sponsor {
@@ -581,11 +629,14 @@
   .qr-box {
     width: min(calc(var(--u) * 26), 70vw);
   }
+  .display {
+    --d-block: 94vw;
+    padding-inline: 3vw; /* 3vw + 94vw + 3vw: nothing wider than the phone */
+  }
   .d-strip {
     flex-wrap: wrap;
     justify-content: center;
-    row-gap: calc(var(--u) * 1.6);
-    max-width: 94vw;
+    row-gap: calc(var(--u) * 2.2);
   }
   .d-strip > * + * {
     border-inline-start: 0;

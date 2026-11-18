@@ -48,9 +48,12 @@ each runs inside BEGIN…ROLLBACK).
 - `/display` header = the certificate's: Al-Farabi crest | event mark | Ministry seal on a paper strip with gold hairlines,
   then the navy ribbon (Arabic title + English line, Amiri font from `public/fonts`). Logos are projector-size WebP copies
   (`public/brand/*-360.webp`, `event-mark.webp` cut from the forma); `src/test/speed.test.ts` blocks the 800 KB originals.
-- Sponsors footer: the "Sponsors & Partners · الجهات الراعية والمشاركة" band (about 70 logos) cut at 300 dpi from the
-  owner's sponsors certificate (`certs/forma/forma-sponsors.pdf`, 18 Nov) → `public/brand/sponsors-band.webp`, set in
-  `src/pages/sponsors.ts` (null = four marked empty slots). The certificate itself stays the no-sponsors forma.
+- Sponsors footer (18 Nov evening): the owner's 68 sponsor logos (zip of PNGs) as ONE strip image
+  `public/brand/sponsors-strip.webp` (each logo trimmed, 120 px tall, even spacing; 452 KB) shown twice in a slowly
+  moving bar (130 s per loop; still with reduced motion). Remake the strip with the same spacing if logos change.
+  The counters strip and the bar share one width (`--d-block`), and every number in the strip sits on one line;
+  `scripts/check-hall-fit.mjs` checks both. The QR always points at the live site (`VITE_SITE_URL` or
+  https://al-farabi-gilt.vercel.app), even when /display is opened from a preview copy.
 
 ## This PC (18 Nov)
 - Drive C: was full (29 MB). The project's tool caches now live on D: and were moved there (C: back to ~6.8 GB free):
