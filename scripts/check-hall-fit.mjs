@@ -23,7 +23,7 @@ for (const theme of ['day', 'night']) {
     const m = await page.evaluate(() => {
       const box = (s) => document.querySelector(s)?.getBoundingClientRect();
       const stage = box('.d-stage');
-      const parts = ['.d-crest', '.d-title', '.qr-box', '.qr-caption', '.d-strip', '.d-corner'].map((s) => [s, box(s)]);
+      const parts = ['.d-logos', '.d-ribbon', '.d-title', '.qr-box', '.qr-caption', '.d-strip', '.d-corner', '.d-sponsors'].map((s) => [s, box(s)]);
       return {
         scrollW: document.documentElement.scrollWidth,
         scrollH: document.documentElement.scrollHeight,

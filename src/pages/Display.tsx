@@ -3,8 +3,13 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useI18n } from '../i18n';
 import { ApiError, type Api, type DisplayCounts } from '../lib/api';
 import './Display.css';
+import { SPONSORS, type Sponsor } from './sponsors';
 
-type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean };
+type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean; sponsors?: Sponsor[] };
+
+// The certificate's ribbon wording (both lines are always shown, like on the printed certificate).
+const RIBBON_AR = 'مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل';
+const RIBBON_EN = 'The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation';
 
 type CounterKey = Exclude<keyof DisplayCounts, 'researchers_total' | 'theme'>;
 type Theme = 'day' | 'night';
@@ -65,7 +70,7 @@ function AnimatedNumber({ value, animate }: { value: number; animate: boolean })
   return <>{shown.toLocaleString('en-US')}</>;
 }
 
-export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
+export function Display({ api, slug, pollMs = 5000, animate = true, sponsors = SPONSORS }: Props) {
   const { t, setLang } = useI18n();
   const reduced = usePrefersReducedMotion();
   const motion = animate && !reduced;
@@ -210,13 +215,22 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
       </div>
 
       <main className="d-stage">
-        <span className="d-crest">
-          <img src="/brand/crest-192.png" alt={t('brand.university')} />
-        </span>
-        <p className="d-kicker">
-          {t('brand.university')} · {t('brand.edition')}
-        </p>
-        <h1 className="d-title">{t('brand.conferenceLong')}</h1>
+        {/* Header as on the certificate: Al-Farabi | event mark | Ministry, then the navy ribbon */}
+        <div className="d-logos" dir="ltr">
+          <img className="d-logo d-logo--crest" src="/brand/crest-360.webp" alt={t('brand.university')} />
+          <span className="d-logo-sep" aria-hidden="true" />
+          <img className="d-logo d-logo--mark" src="/brand/event-mark.webp" alt={t('brand.conference')} />
+          <span className="d-logo-sep" aria-hidden="true" />
+          <img className="d-logo d-logo--ministry" src="/brand/ministry-360.webp" alt={t('brand.ministry')} />
+        </div>
+        <div className="d-ribbon">
+          <h1 className="d-title" lang="ar" dir="rtl">
+            {RIBBON_AR}
+          </h1>
+          <p className="d-title-en" lang="en" dir="ltr">
+            {RIBBON_EN}
+          </p>
+        </div>
         <p className="d-chip">
           <span>{t('brand.place')}</span>
           <span aria-hidden="true">—</span>
@@ -301,6 +315,21 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
           )}
         </div>
       </main>
+
+      <footer className="d-sponsors">
+        <span className="d-sponsors-label">{t('display.sponsoredBy')}</span>
+        {sponsors.length
+          ? sponsors.map((s) => (
+              <span key={s.logo} className="d-sponsor">
+                <img src={s.logo} alt={s.name} />
+              </span>
+            ))
+          : [1, 2, 3, 4].map((i) => (
+              <span key={i} className="d-sponsor d-sponsor--empty">
+                {t('display.sponsorSlot')}
+              </span>
+            ))}
+      </footer>
     </div>
   );
 }

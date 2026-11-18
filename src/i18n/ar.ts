@@ -1,5 +1,6 @@
 export const ar = {
   'brand.university': 'جامعة الفارابي',
+  'brand.ministry': 'وزارة التعليم العالي والبحث العلمي',
   'brand.conference': 'مؤتمر الفارابي',
   'brand.conferenceLong': 'مؤتمر الفارابي للبحوث التطبيقية في التحول الرقمي الشامل',
   'brand.edition': 'النسخة الأولى',
@@ -56,6 +57,8 @@ export const ar = {
 
   'theme.night': 'الوضع الليلي',
   'theme.day': 'الوضع النهاري',
+  'display.sponsoredBy': 'برعاية',
+  'display.sponsorSlot': 'شعار الراعي',
   'display.scan': 'امسح الرمز لتسجيل حضورك',
   'display.male': 'ذكور',
   'display.female': 'إناث',

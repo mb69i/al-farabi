@@ -2,6 +2,7 @@ import type { Key } from './ar';
 
 export const en: Record<Key, string> = {
   'brand.university': 'Al-Farabi University',
+  'brand.ministry': 'Ministry of Higher Education and Scientific Research',
   'brand.conference': 'Al-Farabi Conference',
   'brand.conferenceLong': 'Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation',
   'brand.edition': 'First Edition',
@@ -58,6 +59,8 @@ export const en: Record<Key, string> = {
 
   'theme.night': 'Night mode',
   'theme.day': 'Day mode',
+  'display.sponsoredBy': 'Sponsored by',
+  'display.sponsorSlot': 'Sponsor logo',
   'display.scan': 'Scan to register your attendance',
   'display.male': 'Male',
   'display.female': 'Female',

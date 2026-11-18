@@ -258,3 +258,48 @@ describe('Display — centred layout like the previous event tool', () => {
     expect(screen.getByText('Scan to register your attendance')).toBeInTheDocument();
   });
 });
+
+describe('Display — header and sponsors like the certificate', () => {
+  it('shows the three logos in the certificate order: Al-Farabi, the event mark in the middle, the Ministry', async () => {
+    setup(api(vi.fn(async () => COUNTS)));
+    await act(async () => {});
+    const row = document.querySelector('.d-logos') as HTMLElement;
+    expect(row).toHaveAttribute('dir', 'ltr'); // same left-to-right order as the printed certificate
+    const srcs = [...row.querySelectorAll('img')].map((i) => i.getAttribute('src'));
+    expect(srcs).toEqual(['/brand/crest-360.webp', '/brand/event-mark.webp', '/brand/ministry-360.webp']);
+    expect(screen.getByAltText('Al-Farabi University')).toBeInTheDocument();
+    expect(screen.getByAltText('Ministry of Higher Education and Scientific Research')).toBeInTheDocument();
+  });
+
+  it('carries the certificate ribbon: the Arabic title and its English line', async () => {
+    setup(api(vi.fn(async () => COUNTS)));
+    await act(async () => {});
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل');
+    expect(screen.getByText('The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation')).toBeInTheDocument();
+  });
+
+  it('has a sponsors strip at the bottom, outside the centred column, with empty slots until logos are given', async () => {
+    setup(api(vi.fn(async () => COUNTS)));
+    await act(async () => {});
+    const footer = screen.getByRole('contentinfo');
+    expect(footer).toHaveTextContent('Sponsored by');
+    expect(document.querySelector('.d-stage')).not.toContainElement(footer);
+    expect(footer.querySelectorAll('.d-sponsor--empty')).toHaveLength(4);
+    expect(footer.querySelectorAll('img')).toHaveLength(0); // no invented sponsors
+  });
+
+  it('shows real sponsor logos when they are set', async () => {
+    window.history.pushState({}, '', '/display?lang=en');
+    render(
+      <I18nProvider initial="en">
+        <Display api={api(vi.fn(async () => COUNTS))} slug="s" animate={false}
+          sponsors={[{ name: 'Sponsor A', logo: '/sponsors/a.png' }, { name: 'Sponsor B', logo: '/sponsors/b.png' }]} />
+      </I18nProvider>,
+    );
+    await act(async () => {});
+    const footer = screen.getByRole('contentinfo');
+    expect(footer.querySelectorAll('.d-sponsor--empty')).toHaveLength(0);
+    expect(screen.getByAltText('Sponsor A')).toHaveAttribute('src', '/sponsors/a.png');
+    expect(screen.getByAltText('Sponsor B')).toBeInTheDocument();
+  });
+});

@@ -33,7 +33,11 @@ describe('page speed', () => {
       expect(statSync(resolve(root, f)).size).toBeLessThan(40 * 1024);
     }
     const sources = ['index.html', 'src/components/Shell.tsx', 'src/components/ThanksRobot.tsx', 'src/pages/Display.tsx'];
-    for (const s of sources) expect(read(s), s).not.toMatch(/\/brand\/crest\.png/);
+    for (const s of sources) expect(read(s), s).not.toMatch(/\/brand\/(crest|ministry)\.png/);
+    // the hall screen's certificate-style logos are projector-size copies, not the ~800 KB originals
+    for (const f of ['public/brand/crest-360.webp', 'public/brand/ministry-360.webp', 'public/brand/event-mark.webp']) {
+      expect(statSync(resolve(root, f)).size, f).toBeLessThan(80 * 1024);
+    }
   });
 
   it('keeps supabase-js, qrcode and the staff screens out of the registration page bundle', () => {
