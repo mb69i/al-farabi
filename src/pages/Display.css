@@ -103,6 +103,13 @@
   min-height: 0;
 }
 
+/* Never squash a row to make room (that made the welcome pill overlap the +N badges): if the column
+   is ever too tall it scrolls instead, which scripts/check-hall-fit.mjs reports. */
+.d-stage > *,
+.d-sponsors {
+  flex-shrink: 0;
+}
+
 /* Header as on the certificate: a strip of "paper" with Al-Farabi | event mark | Ministry, gold hairlines
    between them, then the navy ribbon with the Arabic title and its English line. The paper keeps the
    navy logos readable on the night background too. */
@@ -123,20 +130,20 @@
 }
 
 .d-logo--crest {
-  height: calc(var(--u) * 6);
+  height: calc(var(--u) * 5.4);
 }
 
 .d-logo--mark {
-  height: calc(var(--u) * 6.4);
+  height: calc(var(--u) * 5.8);
 }
 
 .d-logo--ministry {
-  height: calc(var(--u) * 5.8);
+  height: calc(var(--u) * 5.2);
 }
 
 .d-logo-sep {
   width: max(1px, calc(var(--u) * 0.09));
-  height: calc(var(--u) * 5.3);
+  height: calc(var(--u) * 4.8);
   background: #b8913a;
 }
 
@@ -198,7 +205,7 @@
 }
 
 .qr-box {
-  width: min(calc(var(--u) * 17), 30dvh);
+  width: min(calc(var(--u) * 15.5), 28dvh);
   aspect-ratio: 1;
 }
 
@@ -463,6 +470,16 @@
   color: var(--gold-soft);
 }
 
+.d-sponsors-band {
+  display: block;
+  width: min(calc(var(--u) * 74), 100%);
+  height: auto;
+  padding: calc(var(--u) * 0.35) calc(var(--u) * 1);
+  border-radius: calc(var(--u) * 0.8);
+  background: #fffef9; /* the certificate paper, so the logos read the same by day and night */
+  border: 1px solid rgba(184, 145, 58, 0.55);
+}
+
 .d-sponsor {
   display: grid;
   place-items: center;
@@ -470,13 +487,6 @@
   height: calc(var(--u) * 3.2);
   padding: calc(var(--u) * 0.35);
   border-radius: calc(var(--u) * 0.5);
-  background: #fff;
-}
-
-.d-sponsor img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
 }
 
 .d-sponsor--empty {

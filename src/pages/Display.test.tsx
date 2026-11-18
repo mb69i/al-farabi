@@ -278,28 +278,28 @@ describe('Display — header and sponsors like the certificate', () => {
     expect(screen.getByText('The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation')).toBeInTheDocument();
   });
 
-  it('has a sponsors strip at the bottom, outside the centred column, with empty slots until logos are given', async () => {
+  it('shows the certificate sponsors band along the bottom, outside the centred column', async () => {
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});
     const footer = screen.getByRole('contentinfo');
-    expect(footer).toHaveTextContent('Sponsored by');
     expect(document.querySelector('.d-stage')).not.toContainElement(footer);
-    expect(footer.querySelectorAll('.d-sponsor--empty')).toHaveLength(4);
-    expect(footer.querySelectorAll('img')).toHaveLength(0); // no invented sponsors
+    const band = footer.querySelector('img')!;
+    expect(band).toHaveAttribute('src', '/brand/sponsors-band.webp'); // cut from the owner's sponsors certificate
+    expect(band.getAttribute('alt')).toContain('Sponsors & Partners');
+    expect(footer.querySelectorAll('.d-sponsor--empty')).toHaveLength(0);
   });
 
-  it('shows real sponsor logos when they are set', async () => {
+  it('falls back to marked empty slots (no invented sponsors) if the band is removed', async () => {
     window.history.pushState({}, '', '/display?lang=en');
     render(
       <I18nProvider initial="en">
-        <Display api={api(vi.fn(async () => COUNTS))} slug="s" animate={false}
-          sponsors={[{ name: 'Sponsor A', logo: '/sponsors/a.png' }, { name: 'Sponsor B', logo: '/sponsors/b.png' }]} />
+        <Display api={api(vi.fn(async () => COUNTS))} slug="s" animate={false} sponsorBand={null} />
       </I18nProvider>,
     );
     await act(async () => {});
     const footer = screen.getByRole('contentinfo');
-    expect(footer.querySelectorAll('.d-sponsor--empty')).toHaveLength(0);
-    expect(screen.getByAltText('Sponsor A')).toHaveAttribute('src', '/sponsors/a.png');
-    expect(screen.getByAltText('Sponsor B')).toBeInTheDocument();
+    expect(footer).toHaveTextContent('Sponsored by');
+    expect(footer.querySelectorAll('.d-sponsor--empty')).toHaveLength(4);
+    expect(footer.querySelectorAll('img')).toHaveLength(0);
   });
 });

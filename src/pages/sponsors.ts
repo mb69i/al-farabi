@@ -1,8 +1,14 @@
 /**
- * Sponsor logos for the hall screen footer (and later the certificate's sponsors variant).
- * Put each logo in public/sponsors/ and list it here, e.g. { name: 'Company', logo: '/sponsors/company.png' }.
- * While the list is empty the footer shows four empty, clearly-marked slots: no invented sponsors.
+ * Sponsors for the hall screen footer.
+ *
+ * SPONSOR_BAND is the "Sponsors & Partners · الجهات الراعية والمشاركة" band (two rows, about 70 logos)
+ * cut at 300 dpi from the owner's sponsors certificate (certs/forma/forma-sponsors.pdf, sent 18 Nov),
+ * so the screen shows exactly the designer's sponsors. Set it to null to fall back to four empty,
+ * clearly-marked slots: never invented sponsors.
  */
-export type Sponsor = { name: string; logo: string };
+export type SponsorBand = { src: string; alt: string };
 
-export const SPONSORS: Sponsor[] = [];
+export const SPONSOR_BAND: SponsorBand | null = {
+  src: '/brand/sponsors-band.webp',
+  alt: 'الجهات الراعية والمشاركة — Sponsors & Partners',
+};

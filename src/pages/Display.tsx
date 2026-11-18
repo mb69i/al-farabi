@@ -3,9 +3,9 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useI18n } from '../i18n';
 import { ApiError, type Api, type DisplayCounts } from '../lib/api';
 import './Display.css';
-import { SPONSORS, type Sponsor } from './sponsors';
+import { SPONSOR_BAND, type SponsorBand } from './sponsors';
 
-type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean; sponsors?: Sponsor[] };
+type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean; sponsorBand?: SponsorBand | null };
 
 // The certificate's ribbon wording (both lines are always shown, like on the printed certificate).
 const RIBBON_AR = 'مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل';
@@ -70,7 +70,7 @@ function AnimatedNumber({ value, animate }: { value: number; animate: boolean })
   return <>{shown.toLocaleString('en-US')}</>;
 }
 
-export function Display({ api, slug, pollMs = 5000, animate = true, sponsors = SPONSORS }: Props) {
+export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand = SPONSOR_BAND }: Props) {
   const { t, setLang } = useI18n();
   const reduced = usePrefersReducedMotion();
   const motion = animate && !reduced;
@@ -316,19 +316,20 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsors = S
         </div>
       </main>
 
+      {/* Sponsors as on the sponsors certificate: the designer's band, on the same paper as the logos */}
       <footer className="d-sponsors">
-        <span className="d-sponsors-label">{t('display.sponsoredBy')}</span>
-        {sponsors.length
-          ? sponsors.map((s) => (
-              <span key={s.logo} className="d-sponsor">
-                <img src={s.logo} alt={s.name} />
-              </span>
-            ))
-          : [1, 2, 3, 4].map((i) => (
+        {sponsorBand ? (
+          <img className="d-sponsors-band" src={sponsorBand.src} alt={sponsorBand.alt} />
+        ) : (
+          <>
+            <span className="d-sponsors-label">{t('display.sponsoredBy')}</span>
+            {[1, 2, 3, 4].map((i) => (
               <span key={i} className="d-sponsor d-sponsor--empty">
                 {t('display.sponsorSlot')}
               </span>
             ))}
+          </>
+        )}
       </footer>
     </div>
   );

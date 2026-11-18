@@ -48,8 +48,9 @@ each runs inside BEGIN…ROLLBACK).
 - `/display` header = the certificate's: Al-Farabi crest | event mark | Ministry seal on a paper strip with gold hairlines,
   then the navy ribbon (Arabic title + English line, Amiri font from `public/fonts`). Logos are projector-size WebP copies
   (`public/brand/*-360.webp`, `event-mark.webp` cut from the forma); `src/test/speed.test.ts` blocks the 800 KB originals.
-- Sponsors footer: list logos in `src/pages/sponsors.ts` (files in `public/sponsors/`). **Empty list = four dashed
-  "شعار الراعي" placeholders** — before the event either add the logos or decide to hide the strip.
+- Sponsors footer: the "Sponsors & Partners · الجهات الراعية والمشاركة" band (about 70 logos) cut at 300 dpi from the
+  owner's sponsors certificate (`certs/forma/forma-sponsors.pdf`, 18 Nov) → `public/brand/sponsors-band.webp`, set in
+  `src/pages/sponsors.ts` (null = four marked empty slots). The certificate itself stays the no-sponsors forma.
 
 ## Notes from items 6–8
 - Public pages talk to the database through `src/lib/rpcFetch.ts` (no supabase-js); staff screens load
