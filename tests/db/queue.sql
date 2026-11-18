@@ -1,7 +1,10 @@
 -- Task 6 tests: delivery queue, backoff, runner lease, automatic kick. Rolled back.
 begin;
+-- card-queue checks: registrations here should not also queue certificates (see cert_on_register.sql)
+alter table public.guests disable trigger guests_queue_certificate;
 
-update public.events set registration_open = true, cards_enabled = true, certificates_enabled = true
+-- certificates off: this file tests the card queue (certificates on registration: cert_on_register.sql)
+update public.events set registration_open = true, cards_enabled = true, certificates_enabled = false
  where slug = 'alfarabi-conf-2026';
 insert into public.templates (event_id, kind, forma_path, width, height, layout)
 select id, k, 'alfarabi-conf-2026/' || k || '/forma.png', 1600, 1000, '{"fields":{}}'

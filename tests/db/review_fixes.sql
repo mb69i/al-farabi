@@ -1,10 +1,13 @@
 -- Final-review fixes (Important 1-3, Minor 1 and 6). Rolled back.
 begin;
+-- card-queue checks: registrations here should not also queue certificates (see cert_on_register.sql)
+alter table public.guests disable trigger guests_queue_certificate;
 
 insert into auth.users (id, email, aud, role) values
   ('00000000-0000-0000-0000-0000000000a1', 'admin@test.local', 'authenticated', 'authenticated');
 insert into public.staff (user_id, email, role) values ('00000000-0000-0000-0000-0000000000a1', 'admin@test.local', 'admin');
-update public.events set registration_open = true, cards_enabled = true, certificates_enabled = true where slug = 'alfarabi-conf-2026';
+-- certificates off: these checks are about the card queue (certificates on registration: cert_on_register.sql)
+update public.events set registration_open = true, cards_enabled = true, certificates_enabled = false where slug = 'alfarabi-conf-2026';
 insert into public.templates (event_id, kind, forma_path, width, height, layout)
 select id, 'card', 'x/card/forma.png', 100, 100, '{"fields":{}}' from public.events where slug = 'alfarabi-conf-2026';
 select public.register_guest('alfarabi-conf-2026', 'Ali Hasan', '+9647701234567', 'wrong@x.org', 'male', 'visitor', 'UoB', 'CS', 'en');

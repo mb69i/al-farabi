@@ -5,8 +5,8 @@ import { randomInt } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { chromium } from 'playwright';
-import { renderCertificate } from './render.ts';
-import type { CertificateInput } from './values.ts';
+import { renderCertificate } from './render.mjs';
+import type { CertificateInput } from './values.mjs';
 
 const out = resolve(process.argv[2] ?? 'certs/samples');
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { buildValues, certificateDatePhrase, CertificateError, fillTemplate, REQUIRED_PLACEHOLDERS } from './values.ts';
+import { buildValues, certificateDatePhrase, CertificateError, fillTemplate, REQUIRED_PLACEHOLDERS } from './values.mjs';
 
 const base = {
   name: 'د. أحمد علي حسين',
@@ -95,5 +95,15 @@ describe('fillTemplate', () => {
 
   it('refuses to leave a placeholder empty-handed', () => {
     expect(() => fillTemplate('<p>{{NAME}} {{MISSING}}</p>', { NAME: 'x' })).toThrow(/MISSING/);
+  });
+});
+
+describe('date words match the website', () => {
+  it('same Iraqi month wording as src/lib/datePhrase.ts', async () => {
+    const { datePhrase } = await import('../src/lib/datePhrase.ts');
+    const { arabicDateWords } = await import('./values.mjs');
+    for (const [a, b] of [['2026-11-21', '2026-11-21'], ['2026-11-21', '2026-11-22'], ['2026-09-30', '2026-10-01'], ['2026-12-31', '2027-01-02']]) {
+      expect(arabicDateWords(a, b)).toBe(datePhrase(a, b, 'ar'));
+    }
   });
 });

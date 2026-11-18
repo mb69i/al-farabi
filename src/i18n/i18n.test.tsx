@@ -23,6 +23,15 @@ describe('dictionaries', () => {
   it('have exactly the same keys', () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(ar).sort());
   });
+  it('registration promises the certificate that is emailed right away, not a card', () => {
+    const keys = ['reg.lead', 'reg.fullNameHint', 'reg.emailHint', 'thanks.emailNote'] as const;
+    for (const k of keys) {
+      expect(ar[k]).toMatch(/شهادة|شهادتك/);
+      expect(ar[k]).not.toMatch(/بطاقة|بطاقتك/);
+      expect(en[k]).toMatch(/certificate/i);
+      expect(en[k]).not.toMatch(/card/i);
+    }
+  });
   it('have no empty strings', () => {
     for (const v of [...Object.values(ar), ...Object.values(en)]) expect(v.trim()).not.toBe('');
   });

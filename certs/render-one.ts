@@ -3,7 +3,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { chromium } from 'playwright';
-import { renderCertificate } from './render.ts';
+import { renderCertificate } from './render.mjs';
 
 const [inputPath, outDir = 'certs/samples'] = process.argv.slice(2);
 if (!inputPath) throw new Error('usage: node certs/render-one.ts input.json [outDir]');

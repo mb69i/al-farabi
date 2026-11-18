@@ -1,5 +1,7 @@
 -- Task 3 tests: registration, day check-in, event info, hall counters. Rolled back.
 begin;
+-- card-queue checks: registrations here should not also queue certificates (see cert_on_register.sql)
+alter table public.guests disable trigger guests_queue_certificate;
 
 -- helper: register as anon with sensible defaults
 create function pg_temp.reg(phone text, email text, name text default 'Ali Hasan') returns json
@@ -9,7 +11,8 @@ $$;
 grant execute on function pg_temp.reg(text, text, text) to anon;
 
 -- open registration, enable cards, add a card template
-update public.events set registration_open = true, cards_enabled = true where slug = 'alfarabi-conf-2026';
+-- certificates off: this file tests the card queue (certificate-on-registration is in cert_on_register.sql)
+update public.events set registration_open = true, cards_enabled = true, certificates_enabled = false where slug = 'alfarabi-conf-2026';
 insert into public.templates (event_id, kind, forma_path, width, height, layout)
 select id, 'card', 'x/card/forma.png', 100, 100, '{"fields":{}}' from public.events where slug = 'alfarabi-conf-2026';
 

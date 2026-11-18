@@ -1,5 +1,7 @@
 -- Task 5 tests: admin/owner functions, aal2 gate, audit log, staff management. Rolled back.
 begin;
+-- card-queue checks: registrations here should not also queue certificates (see cert_on_register.sql)
+alter table public.guests disable trigger guests_queue_certificate;
 
 insert into auth.users (id, email, aud, role) values
   ('00000000-0000-0000-0000-0000000000d1', 'doctor@test.local', 'authenticated', 'authenticated'),
@@ -33,6 +35,7 @@ end $$;
 
 -- fixtures: open event, one guest with a disabled card, one researcher row
 update public.events set registration_open = true where slug = 'alfarabi-conf-2026';
+update public.events set certificates_enabled = false where slug = 'alfarabi-conf-2026'; -- card checks only
 select public.register_guest('alfarabi-conf-2026', 'Ali Hasan', '+9647701234567', 'ali@x.org', 'male', 'visitor', 'UoB', 'CS', 'en');
 create temp table g on commit drop as select id from public.guests limit 1;
 grant select on g to authenticated;

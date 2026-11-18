@@ -33,22 +33,22 @@ Serial numbers keep our database format, `ALF26-XXXX-XXXX-XXXX`, which has 60 ra
 
 The sponsors variant puts a "برعاية" row with four logo slots in the empty space between the QR and the signature. The forma itself has no sponsor area.
 
-## Where it runs: on the laptop, as a batch (decided)
+## Where it runs: on the server, right after registration (owner, 18 Nov)
 
-| | Laptop batch (Playwright, already installed) | Vercel Node function + `@sparticuz/chromium` |
-|---|---|---|
-| Works today | Yes, with the same Chromium the tests use | New deploy, not yet tested on Vercel |
-| Limits | None | About 60 MB of Chromium per cold start, a memory and time limit per call, and the forma and fonts must be bundled |
-| Failure on the day | Visible on the laptop, rerun the batch | A silent timeout or out-of-memory error inside the queue |
-| Cost | The laptop must be on when certificates go out | Runs unattended |
+The owner wants each certificate emailed **straight after registration**. A laptop batch can't do that unless the laptop is always on, so drawing moved to the server.
 
-The laptop batch is the safer choice for 21–22 Nov. Certificates go out after the sessions in any case, not at registration time. The batch will:
+1. **Registration** (`register_guest`) adds a guest. The `guests_queue_certificate` trigger (migration 18) queues one certificate job. A second-day check-in creates no new guest, so no duplicate is queued.
+   - The doctor's sign-off queues researcher certificates, as before.
+   - The event's "certificates" switch (Admin → التحكم) still decides whether jobs are `queued` or `disabled`.
+2. **The sender** (`api/deliver.py`, woken by the queue) claims the job. It calls **`/api/certificate`** (`api/certificate.mjs`, Node and a serverless Chromium, `@sparticuz/chromium` 130 with `playwright-core` 1.48) with the job id and an HMAC token derived from the service key; the key itself never travels.
+3. **`/api/certificate`** then:
+   - calls `certificate_job()`, which issues the serial once with the event's dates (it is idempotent);
+   - draws the certificate on the forma and checks the QR twice;
+   - stores `outputs/<event>/certificate/<delivery>.pdf` and returns that path.
+4. **The sender** emails that PDF and marks the delivery as sent.
+   - Failures retry after 1, 2, 5, 15 and 60 minutes.
+   - The sender takes one job per claim, with a 30-second budget per run, so it always finishes within the 60-second function limit.
 
-1. call `issue_certificate()` for each person (an idempotent serial);
-2. render and check the certificate;
-3. upload the PDF to the `outputs` bucket;
-4. queue the email.
+Speed: a certificate takes about 3–8 s (longer on a cold start). Bursts drain at roughly 6–10 per minute; the every-minute sweep and each new registration keep the queue moving.
 
-The existing Vercel sender then emails the stored file instead of drawing it. Emails, retries and the Resend key all stay on Vercel. The laptop needs `SUPABASE_SERVICE_ROLE_KEY` in a local, git-ignored `.env`, provided by the owner.
-
-**Not wired yet.** Sending waits until the owner approves the samples.
+Fallback if the server Chromium ever fails: `certs/render-one.ts` draws on the laptop, and `deliveries.prerendered_path` (migration 17) makes the sender email that file as is.

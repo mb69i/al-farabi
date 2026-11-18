@@ -11,6 +11,7 @@ DEFAULT_SENDER = "مؤتمر الفارابي <certificates@mb-ai.org>"
 
 def deps_from_env() -> dict:
     from engine.auth import require_role
+    from engine.certremote import RemoteCertificates
     from engine.jobs import run
     from engine.mailer import Mailer
     from engine.supa import Supa
@@ -25,6 +26,8 @@ def deps_from_env() -> dict:
         "event_slug": os.environ.get("EVENT_SLUG", "alfarabi-conf-2026"),
         "auth": lambda token, allowed: require_role(token, allowed, url=url, anon_key=anon),
         "run": run,
+        "certs": RemoteCertificates(os.environ.get("SITE_URL") or "https://al-farabi-gilt.vercel.app",
+                                    os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")),
     }
 
 

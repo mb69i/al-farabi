@@ -57,23 +57,27 @@
   "functions": {
     "api/deliver.py": {
       "includeFiles": "engine/**",
-      "excludeFiles": "{node_modules,src,tests,dist,docs,public,.venv}/**",
+      "excludeFiles": "{node_modules,src,tests,dist,docs,public,.venv,certs}/**",
       "maxDuration": 60
     },
     "api/preview.py": {
       "includeFiles": "engine/**",
-      "excludeFiles": "{node_modules,src,tests,dist,docs,public,.venv}/**",
+      "excludeFiles": "{node_modules,src,tests,dist,docs,public,.venv,certs}/**",
       "maxDuration": 30
     },
     "api/template.py": {
       "includeFiles": "engine/**",
-      "excludeFiles": "{node_modules,src,tests,dist,docs,public,.venv}/**",
+      "excludeFiles": "{node_modules,src,tests,dist,docs,public,.venv,certs}/**",
       "maxDuration": 30
     },
     "api/staff.py": {
       "includeFiles": "engine/**",
-      "excludeFiles": "{node_modules,src,tests,dist,docs,public,.venv}/**",
+      "excludeFiles": "{node_modules,src,tests,dist,docs,public,.venv,certs}/**",
       "maxDuration": 15
+    },
+    "api/certificate.mjs": {
+      "includeFiles": "{certs/template.html,certs/forma/background.jpg,engine/fonts/*.ttf,node_modules/@sparticuz/chromium/bin/**}",
+      "maxDuration": 30
     }
   }
 }

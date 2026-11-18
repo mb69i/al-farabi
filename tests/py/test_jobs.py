@@ -40,11 +40,21 @@ def test_idempotency_key_uses_delivery_id():
     assert mailer.sent[0]["key"] == "delivery-d0-0"
 
 
-def test_certificate_attaches_pdf_and_png():
+def test_certificate_never_uses_an_old_pillow_template():
+    # certificates are always drawn on the owner's forma by the site function, even if a Pillow template exists
+    class Certs:
+        ready = True
+        made = []
+
+        def make(self, delivery_id):
+            self.made.append(delivery_id)
+            return f"e/certificate/{delivery_id}.pdf"
+
+    certs = Certs()
     supa, mailer = FakeSupa(_rows(1, kind="certificate")), FakeMailer()
-    process_batch(supa, mailer)
-    names = [a[0] for a in mailer.sent[0]["attachments"]]
-    assert any(n.endswith(".pdf") for n in names) and any(n.endswith(".png") for n in names)
+    assert process_batch(supa, mailer, certs=certs)["sent"] == 1
+    assert certs.made == ["d0"] and supa.uploads == {}
+    assert [a[0] for a in mailer.sent[0]["attachments"]] == ["al-farabi-certificate.pdf"]
 
 
 def test_forma_downloaded_once_per_path_in_a_batch():
@@ -93,3 +103,36 @@ def test_premade_file_that_is_not_a_pdf_fails_the_row():
     supa, mailer = FakeSupa(_premade("e/certificate/demo-x.png")), FakeMailer()
     assert process_batch(supa, mailer)["failed"] == 1
     assert mailer.sent == []
+
+
+class FakeCerts:
+    ready = True
+
+    def __init__(self, path="e/certificate/d6.pdf"):
+        self.path, self.made = path, []
+
+    def make(self, delivery_id):
+        self.made.append(delivery_id)
+        return self.path
+
+
+def _new_cert():
+    ctx = context(6, kind="certificate")
+    ctx["template"] = None
+    ctx["prerendered"] = None
+    return [({"id": "d6", "kind": "certificate", "event_id": "e"}, ctx)]
+
+
+def test_new_certificate_is_drawn_by_the_site_function_then_emailed():
+    supa, mailer, certs = FakeSupa(_new_cert()), FakeMailer(), FakeCerts()
+    assert process_batch(supa, mailer, certs=certs) == {"claimed": 1, "sent": 1, "failed": 0}
+    assert certs.made == ["d6"]
+    assert supa.downloaded == [("outputs", "e/certificate/d6.pdf")]
+    assert mailer.sent[0]["attachments"][0][0] == "al-farabi-certificate.pdf"
+    assert supa.called("complete_delivery")[0]["p_file_path"] == "e/certificate/d6.pdf"
+
+
+def test_new_certificate_without_the_site_function_fails_and_retries_later():
+    supa, mailer = FakeSupa(_new_cert()), FakeMailer()
+    assert process_batch(supa, mailer)["failed"] == 1
+    assert "renderer" in supa.called("fail_delivery")[0]["p_error"]

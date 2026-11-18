@@ -33,10 +33,17 @@ def _send_premade(supa, mailer, row: dict, ctx: dict, path: str) -> None:
     supa.rpc("complete_delivery", {"p_id": row["id"], "p_provider_id": provider_id, "p_file_path": path})
 
 
-def _make_one(supa, mailer, row: dict, formas: dict) -> None:
+def _make_one(supa, mailer, row: dict, formas: dict, certs=None) -> None:
     ctx = supa.rpc("delivery_context", {"p_id": row["id"]})
-    if ctx and ctx.get("kind") == "certificate" and ctx.get("prerendered"):
-        return _send_premade(supa, mailer, row, ctx, ctx["prerendered"])
+    if ctx and ctx.get("kind") == "certificate":
+        # Certificates are drawn on the owner's forma by the site's Chromium function (api/certificate.mjs),
+        # unless one was already made (prerendered).
+        path = ctx.get("prerendered")
+        if not path:
+            if certs is None or not getattr(certs, "ready", False):
+                raise RuntimeError("certificate renderer not configured")
+            path = certs.make(row["id"])
+        return _send_premade(supa, mailer, row, ctx, path)
     tpl = (ctx or {}).get("template")
     if not tpl or not tpl.get("forma_path"):
         raise RuntimeError("template missing")
@@ -64,7 +71,7 @@ def _make_one(supa, mailer, row: dict, formas: dict) -> None:
     supa.rpc("complete_delivery", {"p_id": row["id"], "p_provider_id": provider_id, "p_file_path": file_path})
 
 
-def process_batch(supa, mailer, limit: int = 10, before_send=None, formas: dict | None = None) -> dict:
+def process_batch(supa, mailer, limit: int = 10, before_send=None, formas: dict | None = None, certs=None) -> dict:
     rows = supa.rpc("claim_deliveries", {"p_limit": limit}) or []
     summary = {"claimed": len(rows), "sent": 0, "failed": 0}
     formas = {} if formas is None else formas
@@ -72,7 +79,7 @@ def process_batch(supa, mailer, limit: int = 10, before_send=None, formas: dict 
         if before_send:
             before_send()
         try:
-            _make_one(supa, mailer, row, formas)
+            _make_one(supa, mailer, row, formas, certs)
             summary["sent"] += 1
         except Exception as exc:  # noqa: BLE001 — every failure must reach fail_delivery
             summary["failed"] += 1
@@ -80,12 +87,14 @@ def process_batch(supa, mailer, limit: int = 10, before_send=None, formas: dict 
     return summary
 
 
-def run(supa, mailer, *, clock=time.monotonic, sleep=time.sleep,
-        budget: float = 45.0, interval: float = 0.55, batch: int = 5) -> dict:
+def run(supa, mailer, *, certs=None, clock=time.monotonic, sleep=time.sleep,
+        budget: float = 30.0, interval: float = 0.55, batch: int = 1) -> dict:
     """Single runner: drains the queue at <= 1/interval sends per second within budget.
 
     Another invocation holding the lease means this one exits at once; the
     holder keeps claiming until the queue is empty, so new rows are not missed.
+    One row per claim and a 30 s budget: drawing a certificate can take up to ~25 s, and the
+    function must finish (and release the lease) within its 60 s limit.
     """
     if not mailer.ready:
         # Leave the queue untouched so no retries are used up before email is set up.
@@ -109,7 +118,7 @@ def run(supa, mailer, *, clock=time.monotonic, sleep=time.sleep,
             remaining = int((budget - (clock() - start)) / interval)
             if remaining < 1:
                 break
-            out = process_batch(supa, mailer, limit=min(batch, remaining), before_send=pace, formas=formas)
+            out = process_batch(supa, mailer, limit=min(batch, remaining), before_send=pace, formas=formas, certs=certs)
             for k in total:
                 total[k] += out[k]
             if out["claimed"] == 0:

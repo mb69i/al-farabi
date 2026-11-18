@@ -48,7 +48,7 @@ def handle_deliver(headers, raw, deps):
         ok = bool(given) and deps["supa"].rpc("delivery_secret_ok", {"p_given": given}) is True
     if not ok:
         return _json(401, {"error": "unauthorized"})
-    return _json(200, deps["run"](deps["supa"], deps["mailer"]))
+    return _json(200, deps["run"](deps["supa"], deps["mailer"], certs=deps.get("certs")))
 
 
 def handle_preview(headers, raw, deps):

@@ -17,7 +17,7 @@ def deps(**kw):
         "mailer": FakeMailer(),
         "event_slug": "alfarabi-conf-2026",
         "auth": lambda token, allowed: {"role": "admin", "aal": "aal2", "user_id": "u1"},
-        "run": lambda supa, mailer: {"claimed": 0, "sent": 0, "failed": 0},
+        "run": lambda supa, mailer, **kw: {"claimed": 0, "sent": 0, "failed": 0},
     }
     base.update(kw)
     return base
@@ -37,8 +37,20 @@ def test_deliver_rejects_when_secret_not_configured():
 
 def test_deliver_runs_batch_with_right_secret():
     status, _, body = handle_deliver({"authorization": "Bearer s3cret"}, b"",
-                                     deps(run=lambda s, m: {"claimed": 2, "sent": 2, "failed": 0}))
+                                     deps(run=lambda s, m, **kw: {"claimed": 2, "sent": 2, "failed": 0}))
     assert status == 200 and json.loads(body)["sent"] == 2
+
+
+def test_deliver_gives_the_runner_the_certificate_drawer():
+    seen = {}
+    certs = object()
+
+    def run(supa, mailer, **kw):
+        seen.update(kw)
+        return {"claimed": 0, "sent": 0, "failed": 0}
+
+    handle_deliver({"authorization": "Bearer s3cret"}, b"", deps(run=run, certs=certs))
+    assert seen["certs"] is certs
 
 
 def test_preview_requires_admin():
@@ -132,7 +144,7 @@ class SecretSupa(FakeSupa):
 
 def test_deliver_checks_database_secret_when_none_in_settings():
     ran = []
-    d = deps(secret="", supa=SecretSupa("db-made"), run=lambda s, m: ran.append(1) or {"claimed": 0})
+    d = deps(secret="", supa=SecretSupa("db-made"), run=lambda s, m, **kw: ran.append(1) or {"claimed": 0})
     assert handle_deliver({"authorization": "Bearer db-made"}, b"", d)[0] == 200
     assert handle_deliver({"authorization": "Bearer wrong"}, b"", d)[0] == 401
     assert handle_deliver({"authorization": "Bearer "}, b"", d)[0] == 401

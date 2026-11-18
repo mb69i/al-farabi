@@ -6,27 +6,25 @@ import { fileURLToPath } from 'node:url';
 import jsQR from 'jsqr';
 import { PNG } from 'pngjs';
 import QRCode from 'qrcode';
-import type { Browser, Page } from 'playwright';
-import { buildValues, CertificateError, fillTemplate, type CertificateInput } from './values.ts';
+import { buildValues, CertificateError, fillTemplate } from './values.mjs';
+// Plain JavaScript so the Vercel server function (api/certificate.mjs) can load it as is.
 
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const ORIGIN = 'https://cert.local';
 const CANVAS = { width: 1754, height: 1240 }; // css px; ×2 = 3508 × 2480 = A4 at 300 dpi
 const SCALE = 2;
-const TYPES: Record<string, string> = { '.ttf': 'font/ttf', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml' };
+const TYPES = { '.ttf': 'font/ttf', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml' };
 
-export type Sponsor = { name: string; logo?: string }; // logo: path under the repo, e.g. certs/sponsors/x.png
-export type RenderOptions = { sponsors?: Sponsor[]; template?: string };
-export type Rendered = { png: Buffer; jpg: Buffer; pdf: Buffer; url: string; serial: string; name: { lines: number; fits: boolean } };
+/** @typedef {{ name: string, logo?: string }} Sponsor  logo: path under the repo, e.g. certs/sponsors/x.png */
 
-let templateCache: string | null = null;
+let templateCache = null;
 const loadTemplate = async () => (templateCache ??= await readFile(resolve(ROOT, 'certs/template.html'), 'utf8'));
 
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+const esc = (s) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
-function sponsorSlots(list: Sponsor[] | undefined): { html: string; files: Map<string, string> } {
-  const files = new Map<string, string>();
-  const items = list?.length ? list : [1, 2, 3, 4].map(() => ({ name: '' }) as Sponsor); // empty slots until logos are given
+function sponsorSlots(list) {
+  const files = new Map();
+  const items = list?.length ? list : [1, 2, 3, 4].map(() => ({ name: '' })); // empty slots until logos are given
   const html = items
     .map((s, i) => {
       if (!s.logo) return `<span class="sponsor sponsor--empty">${s.name ? esc(s.name) : 'شعار الراعي'}</span>`;
@@ -39,7 +37,7 @@ function sponsorSlots(list: Sponsor[] | undefined): { html: string; files: Map<s
 }
 
 /** Serves the page and its local assets; anything else is refused, so no request leaves the machine. */
-async function serve(page: Page, html: string, extra: Map<string, string>) {
+async function serve(page, html, extra) {
   await page.route('**/*', async (route) => {
     const u = new URL(route.request().url());
     if (u.origin !== ORIGIN) return route.abort();
@@ -57,10 +55,8 @@ async function serve(page: Page, html: string, extra: Map<string, string>) {
   });
 }
 
-type Box = { x: number; y: number; width: number; height: number };
-
 /** The QR area of a full-size image (in device pixels), with a margin for the quiet zone. */
-function qrCrop(box: Box, width: number, height: number) {
+function qrCrop(box, width, height) {
   const pad = 24;
   const x0 = Math.max(0, Math.floor((box.x - pad) * SCALE));
   const y0 = Math.max(0, Math.floor((box.y - pad) * SCALE));
@@ -69,7 +65,7 @@ function qrCrop(box: Box, width: number, height: number) {
   return { x0, y0, w: x1 - x0, h: y1 - y0 };
 }
 
-function decodePngQr(png: PNG, box: Box): string | null {
+function decodePngQr(png, box) {
   const { x0, y0, w, h } = qrCrop(box, png.width, png.height);
   const out = new Uint8ClampedArray(w * h * 4);
   for (let y = 0; y < h; y++) {
@@ -83,7 +79,7 @@ function decodePngQr(png: PNG, box: Box): string | null {
  * Flat PDF: one A4 page holding the JPEG (Chromium keeps it as DCTDecode, so it stays ~2 MB).
  * The QR is decoded once more from that JPEG, the exact image that gets printed.
  */
-async function flatPdf(browser: Browser, jpg: Buffer, box: Box): Promise<{ pdf: Buffer; decoded: string | null }> {
+async function flatPdf(browser, jpg, box) {
   const page = await browser.newPage();
   try {
     await page.route('**/*', (r) => (r.request().url().startsWith('data:') ? r.continue() : r.abort()));
@@ -93,16 +89,16 @@ async function flatPdf(browser: Browser, jpg: Buffer, box: Box): Promise<{ pdf: 
       { waitUntil: 'load' },
     );
     const raw = await page.evaluate(() => {
-      const img = document.getElementById('cert') as HTMLImageElement;
+      const img = document.getElementById('cert');
       return { w: img.naturalWidth, h: img.naturalHeight };
     });
     const c = qrCrop(box, raw.w, raw.h);
     const pixels = await page.evaluate(({ x0, y0, w, h }) => {
-      const img = document.getElementById('cert') as HTMLImageElement;
+      const img = document.getElementById('cert');
       const canvas = document.createElement('canvas');
       canvas.width = w;
       canvas.height = h;
-      const ctx = canvas.getContext('2d')!;
+      const ctx = canvas.getContext('2d');
       ctx.drawImage(img, x0, y0, w, h, 0, 0, w, h);
       return Array.from(ctx.getImageData(0, 0, w, h).data);
     }, c);
@@ -114,7 +110,13 @@ async function flatPdf(browser: Browser, jpg: Buffer, box: Box): Promise<{ pdf: 
   }
 }
 
-export async function renderCertificate(browser: Browser, input: CertificateInput, opts: RenderOptions = {}): Promise<Rendered> {
+/**
+ * @param {import('playwright-core').Browser} browser
+ * @param {import('./values.mjs').CertificateInput} input
+ * @param {{ sponsors?: Sponsor[], template?: string }} [opts]
+ * @returns {Promise<{ png: Buffer, jpg: Buffer, pdf: Buffer, url: string, serial: string, name: { lines: number, fits: boolean } }>}
+ */
+export async function renderCertificate(browser, input, opts = {}) {
   const { url, fields } = buildValues(input); // throws on missing name/date/URL/serial before any browser work
   const qr = await QRCode.toString(url, { type: 'svg', margin: 0, errorCorrectionLevel: 'M', color: { dark: '#14234B', light: '#FFFFFF' } });
   const sponsors = sponsorSlots(opts.sponsors);
@@ -125,8 +127,8 @@ export async function renderCertificate(browser: Browser, input: CertificateInpu
     const page = await context.newPage();
     await serve(page, html, sponsors.files);
     await page.goto(`${ORIGIN}/`, { waitUntil: 'load' });
-    const state = await page.waitForFunction(() => (window as unknown as { __cert?: unknown }).__cert, null, { timeout: 15_000 })
-      .then((h) => h.jsonValue() as Promise<{ lines: number; fits: boolean; fonts: boolean; images: boolean; overflow: boolean }>);
+    const state = await page.waitForFunction(() => window.__cert, null, { timeout: 15_000 })
+      .then((h) => h.jsonValue());
     if (!state.fonts) throw new CertificateError('certificate fonts did not load');
     if (!state.images) throw new CertificateError('a logo did not load');
     if (!state.fits) throw new CertificateError(`name or organisation too long to fit: ${input.name}`);

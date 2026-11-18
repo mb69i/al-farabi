@@ -4,7 +4,7 @@ import jsQR from 'jsqr';
 import { PNG } from 'pngjs';
 import { chromium, type Browser } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { renderCertificate } from './render.ts';
+import { renderCertificate } from './render.mjs';
 
 const hasBrowser = Boolean(process.env.PLAYWRIGHT_BROWSERS_PATH);
 const input = {
