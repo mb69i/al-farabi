@@ -33,6 +33,14 @@ for (const theme of ['day', 'night']) {
         strip: box('.d-strip') ? [box('.d-strip').left, box('.d-strip').right] : null,
         bar: box('.d-marquee') ? [box('.d-marquee').left, box('.d-marquee').right] : null,
         // vertical centres of every number in the strip (the owner marked the male/female numbers sitting higher)
+        // one cell per number (plus the Live badge): equal widths, each number centred in its cell, and a divider
+        // line on every cell boundary — the owner: "the break lines between every number should look perfect"
+        cells: [...document.querySelectorAll('.d-strip > .d-live, .d-strip > .counter, .d-gender .counter')].map((c) => {
+          const r = c.getBoundingClientRect();
+          const v = c.querySelector('.counter-value')?.getBoundingClientRect() ?? r;
+          const line = getComputedStyle(c, '::before');
+          return { w: r.width, off: (v.left + v.right) / 2 - (r.left + r.right) / 2, line: line.content !== 'none' && line.width !== '0px' };
+        }),
         numbers: [...document.querySelectorAll('.d-strip .counter-value')].map((e) => {
           const r = e.getBoundingClientRect();
           return (r.top + r.bottom) / 2;
@@ -51,6 +59,14 @@ for (const theme of ['day', 'night']) {
     }
     if (m.numbers.length && Math.max(...m.numbers) - Math.min(...m.numbers) > 3) {
       failures.push(`${tag}: numbers not on one line (centres ${m.numbers.map(Math.round)})`);
+    }
+    if (m.cells.length === 7) {
+      const ws = m.cells.map((c) => c.w);
+      if (Math.max(...ws) - Math.min(...ws) > 2) failures.push(`${tag}: number cells not equal (${ws.map(Math.round)})`);
+      if (m.cells.some((c) => Math.abs(c.off) > 2)) failures.push(`${tag}: a number is not centred in its cell (${m.cells.map((c) => Math.round(c.off))})`);
+      if (m.cells.slice(1).some((c) => !c.line)) failures.push(`${tag}: a divider line is missing between two numbers`);
+    } else {
+      failures.push(`${tag}: expected 7 cells (Live + 6 numbers), found ${m.cells.length}`);
     }
     for (const [s, b] of m.parts) {
       if (!b) failures.push(`${tag}: ${s} missing`);

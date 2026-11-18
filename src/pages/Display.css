@@ -29,6 +29,7 @@
   --d-glass: rgba(37, 78, 160, 0.07);
   --d-line: rgba(163, 38, 43, 0.4);
   --d-divider: rgba(20, 35, 75, 0.14);
+  --d-rule: rgba(20, 35, 75, 0.22); /* the lines between the numbers */
   --d-track: rgba(20, 35, 75, 0.12);
   --d-male: var(--navy);
   --d-female: var(--burgundy);
@@ -64,6 +65,7 @@
   --d-glass: rgba(255, 255, 255, 0.05);
   --d-line: rgba(242, 194, 48, 0.28);
   --d-divider: rgba(255, 255, 255, 0.12);
+  --d-rule: rgba(255, 255, 255, 0.2);
   --d-track: rgba(255, 255, 255, 0.14);
   --d-male: #dfe5f3;
   --d-female: var(--burgundy-bright);
@@ -275,8 +277,7 @@
 .d-strip {
   display: flex;
   width: var(--d-block);
-  justify-content: space-around;
-  align-items: center;
+  align-items: stretch;
   /* extra room at the bottom for the male/female bar and the researchers bar (taken out of the flow) */
   padding: calc(var(--u) * 0.7) calc(var(--u) * 1.2) calc(var(--u) * 1.1);
   border-radius: calc(var(--u) * 1.4);
@@ -287,15 +288,44 @@
   box-shadow: 0 calc(var(--u) * 0.6) calc(var(--u) * 1.8) calc(var(--u) * -1) rgba(12, 23, 51, 0.35);
 }
 
-.d-strip > * + * {
-  border-inline-start: 1px solid var(--d-divider);
+/* Seven equal cells — Live, registered, present today, male, female, VIP, researchers — each number centred,
+   and the same divider line between every two (owner: "the break lines between every number should look perfect") */
+.d-strip > .d-live,
+.d-strip > .counter,
+.d-gender .counter {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: 0; /* no side padding, so the paired male/female cells come out exactly as wide as the rest */
+}
+
+.d-strip > .d-gender {
+  flex: 2 1 0;
+  min-width: 0;
+  padding-inline: 0;
+}
+
+.d-strip > .counter::before,
+.d-gender .counter::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 18%;
+  bottom: 18%;
+  width: 1px;
+  background: var(--d-rule);
+}
+
+/* the "just went up" highlight sits inside its cell, clear of the lines on either side */
+.d-strip > .counter,
+.d-gender .counter {
+  isolation: isolate;
 }
 
 .d-live {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: calc(var(--u) * 0.45);
-  padding-inline: calc(var(--u) * 0.4) calc(var(--u) * 1.1);
   color: var(--d-accent);
   font-size: calc(var(--u) * 0.95);
   font-weight: 700;
@@ -366,7 +396,12 @@
   color: var(--d-accent);
 }
 
-.counter--bump {
+.counter--bump::after {
+  content: '';
+  position: absolute;
+  inset: 0 calc(var(--u) * 0.6);
+  z-index: -1;
+  border-radius: calc(var(--u) * 0.8);
   background: var(--d-bump);
 }
 
@@ -401,9 +436,6 @@
   display: flex;
 }
 
-.d-gender .counter {
-  padding-inline: calc(var(--u) * 1);
-}
 
 .d-split {
   position: absolute;
@@ -629,17 +661,27 @@
   .qr-box {
     width: min(calc(var(--u) * 26), 70vw);
   }
+  /* phones: a tidy 4-column grid — Live on top; registered, today, male, female; then VIP and researchers centred */
   .d-strip {
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     row-gap: calc(var(--u) * 2.2);
   }
-  .d-strip > * + * {
-    border-inline-start: 0;
+  .d-strip > .d-live {
+    grid-column: 1 / -1;
   }
-  .d-live {
-    flex-basis: 100%;
-    justify-content: center;
+  .d-strip > .d-gender {
+    grid-column: span 2;
+  }
+  .d-strip > .counter--gold {
+    grid-column: 2;
+  }
+  .d-strip > .counter--burgundy {
+    grid-column: 3;
+  }
+  .d-strip > .counter::before,
+  .d-gender .counter::before {
+    display: none;
   }
   .counter-value {
     font-size: calc(var(--u) * 2.6);
