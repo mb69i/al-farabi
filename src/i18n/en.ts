@@ -132,7 +132,7 @@ export const en: Record<Key, string> = {
   'res.confirm': 'Confirm signature',
   'res.saving': 'Saving…',
   'res.back': 'Back',
-  'res.done': "Signed — the certificate is on its way to the researcher's email.",
+  'res.done': 'Signed. The researcher gets their card now and the printed certificate after the conference.',
   'res.alreadySigned': 'This paper is already signed',
   'res.paused': 'Signature saved. Certificate sending is paused and will resume later.',
   'res.failed': 'The signature could not be saved. Check the connection and try again.',

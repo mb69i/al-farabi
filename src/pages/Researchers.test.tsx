@@ -87,7 +87,8 @@ describe('Researchers', () => {
     const confirm = screen.getByRole('button', { name: 'Confirm signature' });
     fireEvent.click(confirm);
     fireEvent.click(confirm);
-    expect(await screen.findByText(/on its way to the researcher/i)).toBeInTheDocument();
+    expect(await screen.findByText(/printed certificate after the conference/i)).toBeInTheDocument(); // no email certificate (19 Nov)
+    expect(screen.queryByText(/email/i)).toBeNull();
     expect(submit).toHaveBeenCalledTimes(1);
     expect((submit.mock.calls[0] as unknown[])[0]).toMatchObject({ id: 'r1' });
   });
