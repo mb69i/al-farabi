@@ -20,28 +20,67 @@ const input = { eventId: 'ev', researcherId: 'rs', png, strokes: [[{ x: 1, y: 2 
 
 describe('submitSignoff', () => {
   it('retries upload then calls RPC once', async () => {
-    const d = deps([
-      { error: { message: 'network' } },
-      { error: { message: 'network' } },
-      { error: null }, // png ok on 3rd try
-      { error: null }, // strokes ok
-    ]);
+    const pngTries = [{ error: { message: 'network' } }, { error: { message: 'network' } }, { error: null }];
+    const d = deps([], {
+      upload: vi.fn(async (path: string) => (path.endsWith('.png') ? pngTries.shift()! : { error: null })),
+    });
     const res = await submitSignoff(d, input);
     expect(res.status).toBe('signed');
-    expect(d.upload).toHaveBeenCalledTimes(4);
+    expect(d.upload).toHaveBeenCalledTimes(4); // png 3 tries + strokes once
     expect(d.rpc).toHaveBeenCalledTimes(1);
+  });
+
+  // Owner, 21 Nov: "make the researchers sign in faster". The two files go up together, not one after the other.
+  it('uploads the signature and the strokes at the same time', async () => {
+    const started: string[] = [];
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const d = deps([], {
+      upload: vi.fn(async (path: string) => {
+        started.push(path);
+        await gate;
+        return { error: null };
+      }),
+    });
+    const done = submitSignoff(d, input);
+    await vi.waitFor(() => expect(started).toHaveLength(2));
+    expect(d.rpc).not.toHaveBeenCalled(); // the sign-off is recorded only once both files are stored
+    release();
+    await done;
+    expect(d.rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it('a stalled upload is given up after a time limit and tried again', async () => {
+    let first = true;
+    const d = deps([], {
+      timeoutMs: 20,
+      upload: vi.fn(async (path: string) => {
+        if (path.endsWith('.png') && first) {
+          first = false;
+          return new Promise<never>(() => {}); // the hall wifi swallowed it
+        }
+        return { error: null };
+      }),
+    });
+    const res = await submitSignoff(d, input);
+    expect(res.status).toBe('signed');
+    expect(d.upload).toHaveBeenCalledTimes(3);
   });
 
   it('upload failing 4 times surfaces error and does not call RPC', async () => {
     const fail = { error: { message: 'network' } };
-    const d = deps([fail, fail, fail, fail]);
+    const d = deps([], { upload: vi.fn(async (path: string) => (path.endsWith('.png') ? fail : { error: null })) });
     await expect(submitSignoff(d, input)).rejects.toThrow();
-    expect(d.upload).toHaveBeenCalledTimes(4);
+    expect(d.upload).toHaveBeenCalledTimes(5); // png 4 tries + strokes
     expect(d.rpc).not.toHaveBeenCalled();
   });
 
   it('an object that already exists counts as uploaded', async () => {
-    const d = deps([{ error: { message: 'The resource already exists', statusCode: '409' } }, { error: null }]);
+    const d = deps([], {
+      upload: vi.fn(async (path: string) =>
+        path.endsWith('.png') ? { error: { message: 'The resource already exists', statusCode: '409' } } : { error: null },
+      ),
+    });
     await submitSignoff(d, input);
     expect(d.upload).toHaveBeenCalledTimes(2);
     expect(d.rpc).toHaveBeenCalledTimes(1);
@@ -50,8 +89,8 @@ describe('submitSignoff', () => {
   it('paths are under signatures/<event>/<researcher>/ with a timestamp', async () => {
     const d = deps([]);
     await submitSignoff(d, input);
-    const paths = d.upload.mock.calls.map((c) => (c as unknown[])[0]);
-    expect(paths).toEqual(['ev/rs/1700000000000.png', 'ev/rs/1700000000000.json']);
+    const paths = d.upload.mock.calls.map((c) => (c as unknown[])[0]).sort();
+    expect(paths).toEqual(['ev/rs/1700000000000.json', 'ev/rs/1700000000000.png']);
     const args = (d.rpc.mock.calls[0] as unknown[])[1] as Record<string, string>;
     expect(args.p_signature_path).toBe('signatures/ev/rs/1700000000000.png');
     expect(args.p_strokes_path).toBe('signatures/ev/rs/1700000000000.json');

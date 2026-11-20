@@ -23,8 +23,8 @@ vi.mock('../components/SignaturePad', () => ({
 }));
 
 const ROWS: ResearcherRow[] = [
-  { id: 'r1', name_ar: 'أحمد علي', name_en: 'Ahmed Ali', institution: 'جامعة بغداد', research_title: 'بحث أول', signed: false },
-  { id: 'r2', name_ar: 'أحمد حسن', name_en: null, institution: 'جامعة البصرة', research_title: 'بحث ثان', signed: true },
+  { id: 'r1', name_ar: 'أحمد علي', name_en: 'Ahmed Ali', institution: 'جامعة بغداد', research_title: 'بحث أول', signed: false, paper_code: 'ARCDT26-007', hall: 'L_102' },
+  { id: 'r2', name_ar: 'أحمد حسن', name_en: null, institution: 'جامعة البصرة', research_title: 'بحث ثان', signed: true, paper_code: null, hall: null },
 ];
 
 function setup(submit = vi.fn(async () => ({ status: 'signed' as const }))) {
@@ -38,7 +38,7 @@ function setup(submit = vi.fn(async () => ({ status: 'signed' as const }))) {
 }
 
 async function typeSearch(q: string) {
-  fireEvent.change(screen.getByLabelText('Search by researcher name'), { target: { value: q } });
+  fireEvent.change(screen.getByLabelText('Search researchers'), { target: { value: q } });
   await act(async () => {
     vi.advanceTimersByTime(300);
   });
@@ -78,32 +78,63 @@ describe('Researchers', () => {
     expect(confirm).toBeEnabled();
   });
 
-  it('confirming submits once and shows success', async () => {
-    const { submit } = setup();
+  // Owner, 21 Nov: search by name, phone number, paper ID or email.
+  it('says what can be searched and shows each paper ID and hall', async () => {
+    setup();
+    expect(screen.getByLabelText('Search researchers')).toHaveAttribute('placeholder', expect.stringMatching(/name.*phone.*paper ID.*email/i));
+    await typeSearch('ARCDT26-007');
+    const row = (await screen.findByText('أحمد علي')).closest('button')!;
+    expect(row.textContent).toContain('ARCDT26-007');
+    expect(row.textContent).toContain('L_102');
+  });
+
+  async function signFirst() {
     await typeSearch('احمد');
     fireEvent.click((await screen.findByText('أحمد علي')).closest('button')!);
     fireEvent.click(screen.getByText('draw stroke'));
     fireEvent.click(screen.getByText('draw stroke'));
+  }
+
+  // Owner, 21 Nov: "make the researchers sign in faster". The desk goes straight back to the search while
+  // the signature saves in the background.
+  it('goes straight back to the search while the signature saves', async () => {
+    let finish!: (v: { status: 'signed' }) => void;
+    const { submit } = setup(vi.fn(() => new Promise<{ status: 'signed' }>((r) => (finish = r))));
+    await signFirst();
     const confirm = screen.getByRole('button', { name: 'Confirm signature' });
     fireEvent.click(confirm);
     fireEvent.click(confirm);
+    expect(await screen.findByLabelText('Search researchers')).toHaveValue('');
+    expect(screen.getByRole('status').textContent).toMatch(/Ahmed Ali.*Saving/);
+    await act(async () => finish({ status: 'signed' }));
     // 20 Nov: only a sign-in email; no card, no email certificate (the paper certificate comes later)
-    expect(await screen.findByText(/email confirming they are signed in; the printed certificate comes after the conference/i)).toBeInTheDocument();
+    expect(screen.getByRole('status').textContent).toMatch(/email confirming they are signed in; the printed certificate comes after the conference/i);
     expect(screen.queryByText(/card/i)).toBeNull();
     expect(submit).toHaveBeenCalledTimes(1);
     expect((submit.mock.calls[0] as unknown[])[0]).toMatchObject({ id: 'r1' });
   });
 
-  it('a failed save keeps the pad and shows the error', async () => {
-    setup(vi.fn(async () => {
-      throw new Error('offline');
-    }));
+  it('a researcher being saved cannot be opened twice', async () => {
+    setup(vi.fn(() => new Promise<never>(() => {})));
+    await signFirst();
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm signature' }));
+    await screen.findByLabelText('Search researchers');
     await typeSearch('احمد');
-    fireEvent.click((await screen.findByText('أحمد علي')).closest('button')!);
-    fireEvent.click(screen.getByText('draw stroke'));
-    fireEvent.click(screen.getByText('draw stroke'));
+    expect((await screen.findByText('أحمد علي')).closest('button')).toBeDisabled();
+  });
+
+  it('a failed save is shown with a retry that sends the same signature again', async () => {
+    const submit = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce({ status: 'signed' });
+    setup(submit);
+    await signFirst();
     fireEvent.click(screen.getByRole('button', { name: 'Confirm signature' }));
     expect(await screen.findByText(/could not be saved/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Confirm signature' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(await screen.findByText(/email confirming they are signed in/i)).toBeInTheDocument();
+    expect(submit).toHaveBeenCalledTimes(2);
+    expect(submit.mock.calls[1][1]).toBe(submit.mock.calls[0][1]); // same signature image
   });
 });

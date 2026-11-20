@@ -8,6 +8,8 @@ export type SignoffDeps = {
   rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
   sleep?: (ms: number) => Promise<void>;
   now?: () => number;
+  /** One upload try that takes longer than this is given up and tried again (hall wifi can stall a request). */
+  timeoutMs?: number;
 };
 
 export type SignoffInput = {
@@ -19,6 +21,7 @@ export type SignoffInput = {
 };
 
 const ATTEMPTS = 4;
+const TIMEOUT_MS = 12_000;
 
 function readBytes(blob: Blob): Promise<ArrayBuffer> {
   if (typeof blob.arrayBuffer === 'function') return blob.arrayBuffer();
@@ -41,9 +44,15 @@ function alreadyExists(err: { message: string; statusCode?: string }): boolean {
 
 async function uploadWithRetry(deps: SignoffDeps, path: string, body: Blob, type: string): Promise<void> {
   const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+  const limit = deps.timeoutMs ?? TIMEOUT_MS;
   let last = 'upload failed';
   for (let i = 0; i < ATTEMPTS; i++) {
-    const { error } = await deps.upload(path, body, type);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const stalled = new Promise<{ error: { message: string } }>((r) => {
+      timer = setTimeout(() => r({ error: { message: 'upload timed out' } }), limit);
+    });
+    // A stalled try that lands later is harmless: the retry then finds the file already there (409 = stored).
+    const { error } = await Promise.race([deps.upload(path, body, type), stalled]).finally(() => clearTimeout(timer));
     if (!error || alreadyExists(error)) return;
     last = error.message;
     if (i < ATTEMPTS - 1) await sleep(500 * 2 ** i);
@@ -57,8 +66,11 @@ export async function submitSignoff(deps: SignoffDeps, input: SignoffInput): Pro
   const hash = await sha256Hex(input.png);
   const strokes = new Blob([JSON.stringify(input.strokes)], { type: 'application/json' });
 
-  await uploadWithRetry(deps, `${base}.png`, input.png, 'image/png');
-  await uploadWithRetry(deps, `${base}.json`, strokes, 'application/json');
+  // Both files at once (owner, 21 Nov: faster sign-in); the sign-off is recorded only once both are stored.
+  await Promise.all([
+    uploadWithRetry(deps, `${base}.png`, input.png, 'image/png'),
+    uploadWithRetry(deps, `${base}.json`, strokes, 'application/json'),
+  ]);
 
   const { data, error } = await deps.rpc('sign_off_researcher', {
     p_researcher_id: input.researcherId,

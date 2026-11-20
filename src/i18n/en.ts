@@ -121,8 +121,11 @@ export const en: Record<Key, string> = {
   'staff.idle': 'You were signed out after a period of inactivity',
 
   'res.title': 'Researcher sign-off',
-  'res.search': 'Search by researcher name',
-  'res.searchHint': 'Arabic or English',
+  'res.search': 'Search researchers',
+  'res.searchHint': 'name, phone number, paper ID or email',
+  'res.paper': 'Paper ID',
+  'res.hall': 'Hall',
+  'res.retry': 'Try again',
   'res.noResults': 'No match in the approved researchers list',
   'res.signed': 'Signed',
   'res.institution': 'Institution',

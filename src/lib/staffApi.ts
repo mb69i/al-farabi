@@ -8,6 +8,9 @@ export type ResearcherRow = {
   institution: string | null;
   research_title: string;
   signed: boolean;
+  /** ARCDT26-007 style paper ID and the session hall (L_102, OL1) from the agenda; null for papers not on it. */
+  paper_code: string | null;
+  hall: string | null;
 };
 
 /** Staff (doctor) calls. All authorisation is enforced by the database. */
@@ -24,6 +27,7 @@ export function createStaffApi(client: SupabaseClient, slug: string) {
 
   return {
     async searchResearchers(q: string): Promise<ResearcherRow[]> {
+      getEventId().catch(() => {}); // look the event up now so the first signature does not wait for it
       const { data, error } = await client.rpc('search_researchers', { p_slug: slug, p_query: q });
       if (error) throw new Error(error.message);
       return (data ?? []) as ResearcherRow[];

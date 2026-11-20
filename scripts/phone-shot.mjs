@@ -16,8 +16,8 @@ function fakeJwt(aal) {
   return `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ sub: 'u1', aal, role: 'authenticated', exp: 4102444800 })}.x`;
 }
 const RESEARCHERS = [
-  { id: 'r1', name_ar: 'أحمد علي حسين (تجريبي)', name_en: 'Ahmed Ali Hussein (Demo)', institution: 'جامعة بغداد', research_title: 'تطبيقات الذكاء الاصطناعي في تشخيص أمراض القلب', signed: true },
-  { id: 'r2', name_ar: 'أحمد كريم الجبوري', name_en: null, institution: 'جامعة الفارابي', research_title: 'تحليل البيانات الضخمة لتحسين جودة التعليم العالي في العراق', signed: false },
+  { id: 'r1', name_ar: 'أحمد علي حسين (تجريبي)', name_en: 'Ahmed Ali Hussein (Demo)', institution: 'جامعة بغداد', research_title: 'تطبيقات الذكاء الاصطناعي في تشخيص أمراض القلب', signed: true, paper_code: 'DEMO-1', hall: 'L_102' },
+  { id: 'r2', name_ar: 'أحمد كريم الجبوري', name_en: null, institution: 'جامعة الفارابي', research_title: 'تحليل البيانات الضخمة لتحسين جودة التعليم العالي في العراق', signed: false, paper_code: 'ARCDT26-007', hall: 'L_102' },
 ];
 
 const SAMPLE_CONTACT = { phone: '0770 123 4567', email: 'info@alfarabiuc.edu.iq', location_ar: 'جامعة الفارابي — بغداد', location_en: 'Al-Farabi University — Baghdad' };
@@ -43,6 +43,9 @@ const fakeRpc = {
   busy: { register_guest: { status: 'rate_limited', checked_in_today: false } },
   thanks: { register_guest: { status: 'created', serial: 'ALF26-K7Q2MX', checked_in_today: true } },
   researchers: { whoami: { role: 'doctor', aal: 'aal1', email: 'doctor@example.org' }, search_researchers: RESEARCHERS },
+  // the desk right after a signature: back at the search while it saves (21 Nov)
+  'researchers-saving': { whoami: { role: 'doctor', aal: 'aal1', email: 'doctor@example.org' }, search_researchers: RESEARCHERS,
+    get_public_event: { id: '00000000-0000-0000-0000-000000000001', slug: 'alfarabi-conf-2026' } },
   admin: {
     whoami: { role: 'owner', aal: 'aal2', email: 'owner@example.org' },
     admin_overview: { total: 412, present_today: 287, male: 198, female: 176, vip: 23, researchers_signed: 64,
@@ -104,22 +107,36 @@ if (isLive) {
   });
 }
 
-if (scenario === 'researchers' || scenario === 'admin' || scenario === 'controls' || scenario === 'backups') {
-  const session = { access_token: fakeJwt(scenario === 'researchers' ? 'aal1' : 'aal2'), token_type: 'bearer', expires_in: 3600, expires_at: 4102444800,
+const isRes = scenario.startsWith('researchers');
+if (isRes) await page.route('**/storage/v1/object/**', async (r) => { await new Promise((ok) => setTimeout(ok, 30000)); r.fulfill({ status: 200, body: '{}' }); });
+if (isRes || scenario === 'admin' || scenario === 'controls' || scenario === 'backups') {
+  const session = { access_token: fakeJwt(isRes ? 'aal1' : 'aal2'), token_type: 'bearer', expires_in: 3600, expires_at: 4102444800,
     refresh_token: 'x', user: { id: 'u1', aud: 'authenticated', role: 'authenticated', email: 'doctor@example.org',
       app_metadata: {}, user_metadata: {}, created_at: '2026-11-17T00:00:00Z' } };
   await ctx.addInitScript(([k, v]) => localStorage.setItem(k, v), [`sb-${REF}-auth-token`, JSON.stringify(session)]);
   await page.route('**/auth/v1/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(session.user) }));
 }
 
-const path = { display: '/display', 'display-live': '/display', 'display-night': '/display', 'display-phone': '/display', login: '/staff/login', researchers: '/researchers', admin: '/admin', controls: '/admin/switches', backups: '/admin/backups', 'verify-ok': '/verify?s=ALF26-K7Q2-MXH4-P9TB', 'verify-missing': '/verify?s=ALF26-ZZZZ-ZZZZ-ZZZZ' }[scenario] ?? '/';
-if (!['researchers', 'admin', 'controls', 'backups'].includes(scenario)) {
+const path = { display: '/display', 'display-live': '/display', 'display-night': '/display', 'display-phone': '/display', login: '/staff/login', researchers: '/researchers', 'researchers-saving': '/researchers', admin: '/admin', controls: '/admin/switches', backups: '/admin/backups', 'verify-ok': '/verify?s=ALF26-K7Q2-MXH4-P9TB', 'verify-missing': '/verify?s=ALF26-ZZZZ-ZZZZ-ZZZZ' }[scenario] ?? '/';
+if (!isRes && !['admin', 'controls', 'backups'].includes(scenario)) {
   await page.goto(base + path, { waitUntil: 'networkidle' });
   await page.evaluate(() => { try { localStorage.clear(); } catch {} });
 }
 await page.goto(base + path, { waitUntil: 'networkidle' });
-if (scenario === 'researchers') {
+if (isRes) {
   await page.fill('#res-q', 'احمد');
+  await page.waitForTimeout(1200);
+}
+if (scenario === 'researchers-saving') {
+  await page.locator('.res-row:not([disabled])').first().click();
+  const box = await page.locator('canvas').boundingBox();
+  await page.mouse.move(box.x + 40, box.y + box.height / 2);
+  await page.mouse.down();
+  for (let k = 1; k <= 12; k++) await page.mouse.move(box.x + 40 + k * 18, box.y + box.height / 2 + (k % 2 ? -25 : 25));
+  await page.mouse.up();
+  await page.locator('.res-confirm').click();
+  await page.waitForTimeout(600);
+  await page.fill('#res-q', 'ARCDT26-007');
   await page.waitForTimeout(1200);
 }
 

@@ -78,6 +78,14 @@
 }
 
 .res-row-alt,
+.res-row-paper {
+  justify-self: start;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--burgundy);
+  letter-spacing: 0.02em;
+}
+
 .res-row-meta {
   font-size: var(--fs-sm);
   color: var(--text-on-dark-muted);
@@ -190,19 +198,54 @@
   font-size: 1.125rem;
 }
 
-.res-outcome {
-  padding: var(--space-4);
-  border-radius: var(--radius);
-  font-weight: 700;
-  text-align: center;
+/* Saves running in the background (21 Nov: the desk goes straight back to the search). */
+.res-saves {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
-.res-outcome--ok {
+.res-saves:empty {
+  display: none;
+}
+
+.res-save {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+.res-save-name {
+  font-weight: 800;
+}
+
+.res-save--saving {
+  background: var(--glass);
+  border: 1px solid var(--line-dark);
+  color: var(--ink-muted);
+}
+
+.res-save--ok {
   background: rgba(31, 122, 77, 0.2);
   color: var(--success);
 }
 
-.res-outcome--error {
+.res-save--error {
   background: rgba(180, 35, 24, 0.2);
   color: var(--danger);
+}
+
+.res-retry {
+  margin-inline-start: auto;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius);
+  border: 1px solid currentColor;
+  background: var(--surface);
+  color: var(--danger);
+  font-weight: 700;
 }
