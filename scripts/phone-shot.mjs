@@ -28,7 +28,7 @@ const fakeRpc = {
     admin_overview: { total: 0, present_today: 0, male: 0, female: 0, vip: 0, researchers_signed: 0, researchers_total: 0,
       switches: { registration_open: true, cards_enabled: false, certificates_enabled: false }, theme: 'auto', deliveries: [] } },
   'verify-ok': { verify_certificate: { status: 'valid', serial: 'ALF26-K7Q2-MXH4-P9TB', name: 'محمد الباقر علي', role: 'attendee',
-    event_ar: 'مؤتمر الفارابي للبحوث التطبيقية في التحول الرقمي الشامل', event_en: 'Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation',
+    event_ar: 'مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل', event_en: 'The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation',
     date_from: '2026-11-21', date_to: '2026-11-22' } },
   'verify-missing': { verify_certificate: { status: 'not_found' } },
   backups: {

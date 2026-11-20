@@ -32,6 +32,10 @@ describe('dictionaries', () => {
       expect(en[k]).not.toMatch(/card/i);
     }
   });
+  it('use the official event name from the agenda (owner, 20 Nov): "the First" Al-Farabi Conference', () => {
+    expect(ar['brand.conferenceLong']).toBe('مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل');
+    expect(en['brand.conferenceLong']).toBe('The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation');
+  });
   it('have no empty strings', () => {
     for (const v of [...Object.values(ar), ...Object.values(en)]) expect(v.trim()).not.toBe('');
   });

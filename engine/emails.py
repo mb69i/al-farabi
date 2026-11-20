@@ -13,23 +13,23 @@ SUBJECTS = {
 BODIES = {
     ("card", "ar"): [
         "عزيزنا {full_name}،",
-        "شكراً لحضورك مؤتمر الفارابي للبحوث التطبيقية في التحول الرقمي الشامل.",
+        "شكراً لحضورك مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل.",
         "تجد في المرفقات بطاقة حضورك الرسمية. الرقم المرجعي: {serial}",
     ],
     ("card", "en"): [
         "Dear {full_name},",
-        "Thank you for attending the Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation.",
+        "Thank you for attending the First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation.",
         "Your official attendee card is attached. Reference: {serial}",
     ],
     ("certificate", "ar"): [
         "الباحث الكريم {full_name}،",
-        "يسرّ جامعة الفارابي أن تقدّم لكم شهادة المشاركة في مؤتمر الفارابي للبحوث التطبيقية في التحول الرقمي الشامل",
+        "يسرّ جامعة الفارابي أن تقدّم لكم شهادة المشاركة في مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل",
         "عن بحثكم الموسوم: «{research_title}».",
         "تجدون الشهادة في المرفقات بصيغتي PDF وصورة.",
     ],
     ("certificate", "en"): [
         "Dear {full_name},",
-        "Al-Farabi University is pleased to present your certificate of participation in the Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation",
+        "Al-Farabi University is pleased to present your certificate of participation in the First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation",
         "for your research: “{research_title}”.",
         "The certificate is attached as a PDF and an image.",
     ],

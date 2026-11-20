@@ -7,9 +7,11 @@ import { SPONSOR_BAND, type SponsorBand } from './sponsors';
 
 type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean; sponsorBand?: SponsorBand | null };
 
-// The certificate's ribbon wording (both lines are always shown, like on the printed certificate).
-const RIBBON_AR = 'مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل';
-const RIBBON_EN = 'The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation';
+// Wording of the agenda's opening slide (owner, 20 Nov), always in Arabic as on the slide.
+const PATRON = 'برعاية وزارة التعليم العالي والبحث العلمي';
+const TITLE_LINES = ['مؤتمر الفارابي الأول للبحوث التطبيقية', 'في التحول الرقمي الشامل'] as const;
+const SLOGAN = 'تحت شعار ( الريادة والابتكار ركائز التحول الرقمي الشامل في العراق )';
+const WHEN = '21 – 22 / 11 / 2026 في رحاب جامعة الفارابي – بغداد';
 
 // The QR always sends guests to the live site, even when this screen is opened from a preview copy
 // (whose address needs a Vercel login). VITE_SITE_URL can point it at a custom domain later.
@@ -220,26 +222,34 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
       </div>
 
       <main className="d-stage">
-        {/* Header as on the certificate: Al-Farabi | event mark | Ministry, then the navy ribbon */}
+        {/* Header like the opening slide of the agenda (owner, 20 Nov): Al-Farabi | the official conference logo |
+            Ministry, the Ministry's sponsorship in gold, the official name, the slogan, then dates and place. */}
+        <svg className="d-arch" viewBox="0 0 400 300" aria-hidden="true" focusable="false">
+          <circle cx="200" cy="150" r="138" />
+          <path d="M120 300 V170 Q120 95 200 60 Q280 95 280 170 V300" />
+          <path d="M150 300 V180 Q150 125 200 100 Q250 125 250 180 V300" />
+          <path d="M175 300 V190 Q175 150 200 135 Q225 150 225 190 V300" />
+        </svg>
         <div className="d-logos" dir="ltr">
           <img className="d-logo d-logo--crest" src="/brand/crest-360.webp" alt={t('brand.university')} />
-          <span className="d-logo-sep" aria-hidden="true" />
-          <img className="d-logo d-logo--mark" src="/brand/event-mark.webp" alt={t('brand.conference')} />
-          <span className="d-logo-sep" aria-hidden="true" />
+          <img
+            className="d-logo d-logo--mark"
+            src={theme === 'night' ? '/brand/conference-logo-dark.svg' : '/brand/conference-logo-light.svg'}
+            alt={t('brand.conference')}
+          />
           <img className="d-logo d-logo--ministry" src="/brand/ministry-360.webp" alt={t('brand.ministry')} />
         </div>
-        <div className="d-ribbon">
-          <h1 className="d-title" lang="ar" dir="rtl">
-            {RIBBON_AR}
-          </h1>
-          <p className="d-title-en" lang="en" dir="ltr">
-            {RIBBON_EN}
-          </p>
-        </div>
-        <p className="d-chip">
-          <span>{t('brand.place')}</span>
-          <span aria-hidden="true">—</span>
-          <span>{t('brand.dates')}</span>
+        <p className="d-patron" lang="ar" dir="rtl">
+          {PATRON}
+        </p>
+        <h1 className="d-title" lang="ar" dir="rtl">
+          <span>{TITLE_LINES[0]}</span> <span>{TITLE_LINES[1]}</span>
+        </h1>
+        <p className="d-slogan" lang="ar" dir="rtl">
+          {SLOGAN}
+        </p>
+        <p className="d-when" lang="ar" dir="rtl">
+          {WHEN}
         </p>
 
         <div className={`d-qr-frame ${moment ? 'd-qr-frame--glow' : ''}`}>

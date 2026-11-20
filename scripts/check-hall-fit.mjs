@@ -23,7 +23,7 @@ for (const theme of ['day', 'night']) {
     const m = await page.evaluate(() => {
       const box = (s) => document.querySelector(s)?.getBoundingClientRect();
       const stage = box('.d-stage');
-      const parts = ['.d-logos', '.d-ribbon', '.d-title', '.qr-box', '.qr-caption', '.d-strip', '.d-corner', '.d-sponsors', '.d-marquee'].map((s) => [s, box(s)]);
+      const parts = ['.d-logos', '.d-patron', '.d-title', '.d-when', '.qr-box', '.qr-caption', '.d-strip', '.d-corner', '.d-sponsors', '.d-marquee'].map((s) => [s, box(s)]);
       return {
         scrollW: document.documentElement.scrollWidth,
         scrollH: document.documentElement.scrollHeight,
@@ -31,6 +31,9 @@ for (const theme of ['day', 'night']) {
         stageHeight: stage ? stage.height : 0,
         parts: parts.map(([s, b]) => [s, b ? [b.left, b.top, b.right, b.bottom] : null]),
         strip: box('.d-strip') ? [box('.d-strip').left, box('.d-strip').right] : null,
+        // the counters must end above the sponsors bar (20 Nov: the taller agenda header pushed them into it)
+        stripBottom: box('.d-strip')?.bottom ?? 0,
+        sponsorsTop: box('.d-sponsors')?.top ?? Infinity,
         bar: box('.d-marquee') ? [box('.d-marquee').left, box('.d-marquee').right] : null,
         // vertical centres of every number in the strip (the owner marked the male/female numbers sitting higher)
         // one cell per number (plus the Live badge): equal widths, each number centred in its cell, and a divider
@@ -51,6 +54,7 @@ for (const theme of ['day', 'night']) {
     if (m.scrollW > w || m.scrollH > h) failures.push(`${tag}: scrollbars (${m.scrollW}x${m.scrollH})`);
     // headroom: other browsers' font metrics, zoom or a welcome message must not push it off screen
     if (m.stageHeight > h * 0.9) failures.push(`${tag}: column uses ${Math.round((m.stageHeight / h) * 100)}% of the height (max 90%)`);
+    if (m.stripBottom > m.sponsorsTop - 2) failures.push(`${tag}: counters overlap the sponsors bar (${Math.round(m.stripBottom)} > ${Math.round(m.sponsorsTop)})`);
     if (Math.abs(m.stageCentre - w / 2) > 2) failures.push(`${tag}: column not centred (${Math.round(m.stageCentre)} vs ${w / 2})`);
     // the owner: counters strip "same size as the block" — same left and right edges as the sponsors bar
     if (!m.strip || !m.bar) failures.push(`${tag}: counters strip or sponsors bar missing`);

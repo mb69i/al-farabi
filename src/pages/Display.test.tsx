@@ -262,23 +262,33 @@ describe('Display — centred layout like the previous event tool', () => {
   });
 });
 
-describe('Display — header and sponsors like the certificate', () => {
-  it('shows the three logos in the certificate order: Al-Farabi, the event mark in the middle, the Ministry', async () => {
-    setup(api(vi.fn(async () => COUNTS)));
+describe('Display — header like the agenda slide, sponsors along the bottom', () => {
+  it('shows the three logos like the agenda: Al-Farabi, the official conference logo in the middle, the Ministry', async () => {
+    setup(api(vi.fn(async () => ({ ...COUNTS, theme: 'night' as const }))));
     await act(async () => {});
     const row = document.querySelector('.d-logos') as HTMLElement;
-    expect(row).toHaveAttribute('dir', 'ltr'); // same left-to-right order as the printed certificate
+    expect(row).toHaveAttribute('dir', 'ltr');
     const srcs = [...row.querySelectorAll('img')].map((i) => i.getAttribute('src'));
-    expect(srcs).toEqual(['/brand/crest-360.webp', '/brand/event-mark.webp', '/brand/ministry-360.webp']);
+    // owner, 20 Nov: the full conference logo (arch + "مؤتمر الفارابي / Al-Farabi Conference / النسخة الأولى 2026")
+    expect(srcs).toEqual(['/brand/crest-360.webp', '/brand/conference-logo-dark.svg', '/brand/ministry-360.webp']);
     expect(screen.getByAltText('Al-Farabi University')).toBeInTheDocument();
     expect(screen.getByAltText('Ministry of Higher Education and Scientific Research')).toBeInTheDocument();
   });
 
-  it('carries the certificate ribbon: the Arabic title and its English line', async () => {
+  it('by day uses the conference logo made for light backgrounds', async () => {
+    setup(api(vi.fn(async () => ({ ...COUNTS, theme: 'day' as const }))));
+    await act(async () => {});
+    expect(document.querySelector('.d-logos img[src="/brand/conference-logo-light.svg"]')).not.toBeNull();
+  });
+
+  it('opens like the agenda slide: under the Ministry, the official name, the slogan, then dates and place', async () => {
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});
+    expect(screen.getByText('برعاية وزارة التعليم العالي والبحث العلمي')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل');
-    expect(screen.getByText('The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation')).toBeInTheDocument();
+    expect(screen.getByText('تحت شعار ( الريادة والابتكار ركائز التحول الرقمي الشامل في العراق )')).toBeInTheDocument();
+    expect(screen.getByText('21 – 22 / 11 / 2026 في رحاب جامعة الفارابي – بغداد')).toBeInTheDocument();
+    expect(document.querySelector('.d-ribbon')).toBeNull(); // the old certificate ribbon is gone
   });
 
   it('shows the 68 sponsor logos as a moving bar along the bottom, outside the centred column', async () => {

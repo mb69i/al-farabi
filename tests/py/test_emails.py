@@ -54,3 +54,14 @@ def test_emails_use_cairo_with_safe_fallbacks():
     _, html, _ = build("card", "ar", {"full_name": "علي", "serial": "S"}, "https://alfarabi.mb-ai.org")
     assert "family=Cairo" in html
     assert "font-family:'Cairo',Tahoma,Arial,sans-serif" in html
+
+
+def test_every_email_uses_the_official_event_name():
+    # owner, 20 Nov: "مؤتمر الفارابي الأول ..." / "the First Al-Farabi Conference ..." (from the agenda)
+    from engine.emails import BODIES
+    for (kind, lang), lines in BODIES.items():
+        text = " ".join(lines)
+        if "التطبيقية" in text:
+            assert "مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل" in text, (kind, lang)
+        if "Applied Research" in text:
+            assert "First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation" in text, (kind, lang)

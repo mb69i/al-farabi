@@ -4,7 +4,7 @@ export const en: Record<Key, string> = {
   'brand.university': 'Al-Farabi University',
   'brand.ministry': 'Ministry of Higher Education and Scientific Research',
   'brand.conference': 'Al-Farabi Conference',
-  'brand.conferenceLong': 'Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation',
+  'brand.conferenceLong': 'The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation',
   'brand.edition': 'First Edition',
   'brand.slogan': 'Leadership and innovation: pillars of comprehensive digital transformation in Iraq',
   'brand.dates': '21 – 22 November 2026',

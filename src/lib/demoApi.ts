@@ -12,7 +12,7 @@ export const demoApi: Api = {
   verifyCertificate: async (serial) =>
     serial.replace(/[^A-Za-z0-9]/g, '').toUpperCase() === 'ALF26DEMODEMODEMO'
       ? { status: 'valid', serial: 'ALF26-DEMO-DEMO-DEMO', name: 'محمد الباقر علي', role: 'attendee',
-          event_ar: 'مؤتمر الفارابي للبحوث التطبيقية في التحول الرقمي الشامل', event_en: 'Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation',
+          event_ar: 'مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل', event_en: 'The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation',
           date_from: '2026-11-21', date_to: '2026-11-22' }
       : { status: 'not_found' },
   getDisplayCounts: async () => ({
