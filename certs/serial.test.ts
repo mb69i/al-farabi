@@ -49,11 +49,12 @@ describe('one drawing at a time per server copy', () => {
 });
 
 describe('the certificate function uses the guards', () => {
-  it('each request gets its own server copy (Fluid off), and the function draws through oneAtATime/once', async () => {
+  // Fluid stays on: turning it off moved the function to 1 GB and Chromium died at launch (live, 20 Nov 07:40).
+  it('keeps Fluid on (2 GB) and draws through oneAtATime/once', async () => {
     const { readFileSync } = await import('node:fs');
     const { resolve } = await import('node:path');
     const cfg = JSON.parse(readFileSync(resolve(process.cwd(), 'vercel.json'), 'utf8'));
-    expect(cfg.fluid).toBe(false);
+    expect(cfg.fluid).not.toBe(false);
     const fn = readFileSync(resolve(process.cwd(), 'api/certificate.mjs'), 'utf8');
     expect(fn).toMatch(/const renderOnce = oneAtATime\(/);
     expect(fn).toMatch(/const executablePath = once\(/);
