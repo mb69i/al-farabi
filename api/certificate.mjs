@@ -3,7 +3,7 @@
 import '../certs/chromium-env.mjs'; // first: sets the runtime hint @sparticuz/chromium reads when it loads
 import chromium from '@sparticuz/chromium';
 import { chromium as playwright } from 'playwright-core';
-import { renderCertificate } from '../certs/render.mjs';
+import { renderCard, renderCertificate } from '../certs/render.mjs';
 import { handleCertificateRequest } from '../certs/server.mjs';
 import { once, oneAtATime } from '../certs/serial.mjs';
 
@@ -33,21 +33,23 @@ const executablePath = once(() => chromium.executablePath());
 // A fresh browser per certificate: the serverless Chromium runs single-process, and a browser left over from
 // an earlier (possibly failed) request is the most common cause of "Target ... has been closed" errors.
 // One drawing at a time per server copy: parallel browsers in one copy crashed each other (load test 20 Nov).
-const renderOnce = oneAtATime(async (input) => {
+const withBrowser = oneAtATime(async (draw) => {
   const browser = await playwright.launch({ executablePath: await executablePath(), args: chromium.args, headless: true });
   try {
-    return await renderCertificate(browser, input);
+    return await draw(browser);
   } finally {
     await browser.close().catch(() => {});
   }
 });
+const renderOnce = (input) => withBrowser((browser) => renderCertificate(browser, input));
+const renderCardOnce = (input) => withBrowser((browser) => renderCard(browser, input));
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   try {
     const out = await handleCertificateRequest(
       { method: req.method, headers: req.headers, body: req.body },
-      { serviceKey: SERVICE_KEY, verifyBase: VERIFY_BASE, rpc, render: renderOnce },
+      { serviceKey: SERVICE_KEY, verifyBase: VERIFY_BASE, rpc, render: renderOnce, renderCard: renderCardOnce },
     );
     res.status(out.status).json(out.body);
   } catch (e) {

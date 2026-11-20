@@ -27,6 +27,9 @@ export async function handleCertificateRequest(req, deps) {
   if (!tokenOk(req.headers['x-render-token'], deps.serviceKey)) return { status: 401, body: { error: 'unauthorized' } };
   const id = req.body && typeof req.body === 'object' ? req.body.delivery_id : null;
   if (typeof id !== 'string' || !UUID.test(id)) return { status: 400, body: { error: 'bad request' } };
+  const kind = req.body.kind ?? 'certificate';
+  if (kind === 'card') return drawCard(id, deps);
+  if (kind !== 'certificate') return { status: 400, body: { error: 'bad request' } };
 
   const job = await deps.rpc('certificate_job', { p_delivery_id: id });
   if (!job) return { status: 404, body: { error: 'no such certificate delivery' } };
@@ -43,4 +46,18 @@ export async function handleCertificateRequest(req, deps) {
     return { status: 500, body: { error: `render failed: ${String(e?.message ?? e).slice(0, 300)}` } };
   }
   return { status: 200, body: { serial: out.serial, pdf: Buffer.from(out.pdf).toString('base64') } };
+}
+
+/** Researcher attendance card (owner, 20 Nov): emailed when a doctor signs. Returns the PNG. */
+async function drawCard(id, deps) {
+  const job = await deps.rpc('card_job', { p_delivery_id: id });
+  if (!job) return { status: 404, body: { error: 'no such researcher card delivery' } };
+  let out;
+  try {
+    out = await deps.renderCard({ name: job.name, org: job.org, title: job.title, dateFrom: job.date_from, dateTo: job.date_to });
+  } catch (e) {
+    if (e instanceof CertificateError) return { status: 422, body: { error: e.message } };
+    return { status: 500, body: { error: `render failed: ${String(e?.message ?? e).slice(0, 300)}` } };
+  }
+  return { status: 200, body: { png: Buffer.from(out.png).toString('base64') } };
 }

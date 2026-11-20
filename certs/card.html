@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>بطاقة حضور باحث</title>
+<!-- Researcher attendance card (owner, 20 Nov): emailed the moment a doctor signs; the paper certificate comes later.
+     1200 x 750 css px, drawn at x2 (2400 x 1500). The certificate's paper, frame and colours; the site font, Cairo. -->
+<style>
+  @font-face { font-family: 'Cairo'; font-weight: 400 800; src: url('/cairo/cairo-arabic.woff2') format('woff2');
+    unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+200C-200E, U+FB50-FDFF, U+FE70-FEFC; }
+  @font-face { font-family: 'Cairo'; font-weight: 400 800; src: url('/cairo/cairo-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122; }
+  :root { --navy: #14234B; --navy-deep: #0C1733; --burgundy: #A3262B; --gold: #B8913A; --paper: #FBF8F1; --muted: #4A5570; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1200px; height: 750px; overflow: hidden; }
+  body {
+    font-family: 'Cairo', sans-serif; color: var(--navy); background: var(--paper);
+    box-shadow: inset 0 0 0 14px var(--navy), inset 0 0 0 16px var(--gold), inset 0 0 0 22px var(--paper), inset 0 0 0 23.5px var(--burgundy);
+    display: flex; flex-direction: column; align-items: center; padding: 40px 64px 34px; position: relative;
+  }
+  .logos { display: flex; direction: ltr; align-items: center; gap: 22px; height: 92px; } /* certificate order: crest, mark, ministry */
+  .logos img { height: 92px; width: auto; display: block; }
+  .logos .sep { width: 1.5px; height: 70px; background: var(--gold); }
+  .ribbon {
+    margin-top: 14px; width: 900px; text-align: center; color: #fff; padding: 10px 70px 9px;
+    background: linear-gradient(180deg, #1d3060, var(--navy));
+    clip-path: polygon(0 0, 100% 0, 96% 50%, 100% 100%, 0 100%, 4% 50%);
+  }
+  .ribbon .ar { font-weight: 700; font-size: 25px; line-height: 1.35; }
+  .ribbon .en { font-size: 12.5px; letter-spacing: 0.02em; opacity: 0.92; line-height: 1.4; }
+  .label {
+    margin-top: 18px; display: inline-flex; gap: 12px; align-items: baseline; padding: 4px 22px 6px; border-radius: 999px;
+    background: rgba(163, 38, 43, 0.09); border: 1px solid rgba(163, 38, 43, 0.35); color: var(--burgundy);
+  }
+  .label .ar { font-weight: 800; font-size: 22px; }
+  .label .en { font-weight: 600; font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .who { margin: 10px 0 12px; width: 1000px; text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; }
+  #name { font-weight: 800; font-size: 54px; line-height: 1.3; white-space: nowrap; max-width: 1000px; }
+  #name.wrap { white-space: normal; text-wrap: balance; }
+  #org { margin-top: 2px; font-size: 24px; color: var(--muted); font-weight: 600; line-height: 1.4; max-width: 1000px; }
+  .rule { width: 260px; height: 1.5px; margin: 14px auto 10px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+  .title-label { font-size: 15px; color: var(--burgundy); font-weight: 700; }
+  #title { margin-top: 2px; font-size: 24px; font-weight: 600; line-height: 1.5; max-width: 980px; text-wrap: balance; }
+  .foot {
+    width: 100%; display: flex; justify-content: space-between; align-items: center; padding-top: 10px;
+    border-top: 1px solid rgba(20, 35, 75, 0.15); font-size: 16px; color: var(--muted); font-weight: 600;
+  }
+  .foot .dates { color: var(--navy); font-weight: 700; }
+</style>
+</head>
+<body>
+  <div class="logos">
+    <img src="/brand/crest.png" alt="">
+    <span class="sep"></span>
+    <img src="/brand/event-mark.png" alt="">
+    <span class="sep"></span>
+    <img src="/brand/ministry.png" alt="">
+  </div>
+  <div class="ribbon">
+    <div class="ar">مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل</div>
+    <div class="en">The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation</div>
+  </div>
+  <div class="label"><span class="ar">بطاقة حضور باحث</span><span class="en" dir="ltr">Researcher Attendance Card</span></div>
+
+  <div class="who">
+    <div id="name"><bdi>{{NAME}}</bdi></div>
+    <div id="org"><bdi>{{ORG}}</bdi></div>
+    <div class="rule"></div>
+    <div class="title-label">عنوان البحث · Research title</div>
+    <div id="title"><bdi>«{{TITLE}}»</bdi></div>
+  </div>
+
+  <div class="foot">
+    <span class="dates">{{DATES}}</span>
+    <span>جامعة الفارابي — بغداد</span>
+  </div>
+
+  <script>
+    // Name on one line (54px down to 38px), else two lines at 38px; the title shrinks (24px down to 17px) to fit 3 lines.
+    (async () => {
+      const faces = ['800 54px Cairo', '600 24px Cairo', '400 16px Cairo'];
+      await Promise.all(faces.map((f) => document.fonts.load(f, 'بطاقة Ab1')));
+      await Promise.all([...document.images].map((i) => (i.complete ? null : new Promise((r) => { i.onload = i.onerror = r; }))));
+      const name = document.getElementById('name');
+      let size = 54;
+      while (name.scrollWidth > 1000 + 1 && size > 38) { size -= 2; name.style.fontSize = size + 'px'; }
+      if (name.scrollWidth > 1000 + 1) { name.classList.add('wrap'); name.style.fontSize = '38px'; }
+      const nameLines = Math.round(name.getBoundingClientRect().height / (parseFloat(getComputedStyle(name).fontSize) * 1.3));
+
+      const title = document.getElementById('title');
+      const lines = () => Math.round(title.getBoundingClientRect().height / parseFloat(getComputedStyle(title).lineHeight));
+      let t = 24;
+      while (lines() > 3 && t > 17) { t -= 1; title.style.fontSize = t + 'px'; }
+
+      const foot = document.querySelector('.foot').getBoundingClientRect();
+      const who = document.querySelector('.who');
+      window.__card = {
+        fonts: faces.every((f) => document.fonts.check(f, 'بطاقة')),
+        images: [...document.images].every((i) => i.complete && i.naturalWidth > 0),
+        fits: nameLines <= 2 && lines() <= 3,
+        overflow: who.scrollHeight > who.clientHeight + 1 || foot.bottom > 750 - 26,
+      };
+    })();
+  </script>
+</body>
+</html>

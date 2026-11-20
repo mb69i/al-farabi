@@ -56,7 +56,7 @@ describe('the certificate function uses the guards', () => {
     const cfg = JSON.parse(readFileSync(resolve(process.cwd(), 'vercel.json'), 'utf8'));
     expect(cfg.fluid).not.toBe(false);
     const fn = readFileSync(resolve(process.cwd(), 'api/certificate.mjs'), 'utf8');
-    expect(fn).toMatch(/const renderOnce = oneAtATime\(/);
+    expect(fn).toMatch(/const withBrowser = oneAtATime\(/);
     expect(fn).toMatch(/const executablePath = once\(/);
   });
 });

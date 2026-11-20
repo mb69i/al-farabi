@@ -76,7 +76,7 @@
       "maxDuration": 15
     },
     "api/certificate.mjs": {
-      "includeFiles": "{certs/template.html,certs/forma/background.jpg,certs/forma/signature.png,engine/fonts/*.ttf,node_modules/@sparticuz/chromium/bin/**}",
+      "includeFiles": "{certs/template.html,certs/card.html,certs/forma/background.jpg,certs/forma/signature.png,engine/fonts/*.ttf,src/styles/fonts/*.woff2,public/brand/crest.png,public/brand/event-mark.png,public/brand/ministry.png,node_modules/@sparticuz/chromium/bin/**}",
       "maxDuration": 30
     }
   }

@@ -53,3 +53,23 @@ def test_errors_become_exceptions_with_the_reason():
 
 def test_not_ready_without_a_key():
     assert RemoteCertificates("https://s", "").ready is False
+
+
+def test_make_card_asks_for_the_researcher_card_and_returns_the_png():
+    import base64
+    png = b"\x89PNG\r\n\x1a\n card"
+    http = Http(Res(200, {"png": base64.b64encode(png).decode()}))
+    certs = RemoteCertificates("https://site.example", "test-service-key", http=http)
+    assert certs.make_card("d9") == png
+    url, kw = http.calls[0]
+    assert url == "https://site.example/api/certificate"
+    assert kw["json"] == {"delivery_id": "d9", "kind": "card"}
+
+
+def test_a_card_answer_that_is_not_a_png_is_an_error():
+    certs = RemoteCertificates("https://s", "k", http=Http(Res(200, {"png": "bm90IGEgcG5n"})))
+    with pytest.raises(RuntimeError, match="PNG"):
+        certs.make_card("d1")
+    certs = RemoteCertificates("https://s", "k", http=Http(Res(422, {"error": "missing research title"})))
+    with pytest.raises(RuntimeError, match="missing research title"):
+        certs.make_card("d1")

@@ -206,3 +206,35 @@ def test_a_hand_made_pdf_is_kept():
     supa, mailer = FakeSupa(_premade()), FakeMailer()
     process_batch(supa, mailer)
     assert supa.deleted == []
+
+
+class CardCerts(SlowCerts):
+    def make_card(self, delivery_id):
+        return b"\x89PNG\r\n\x1a\n" + delivery_id.encode()
+
+
+def _researcher_card(i=7):
+    ctx = {"kind": "card", "role": "researcher", "lang": "ar", "to_email": f"r{i}@example.com", "template": None,
+           "prerendered": None,
+           "values": {"full_name": "ليلى حسن", "research_title": "الثقة بالذكاء الاصطناعي", "institution": "AUB"}}
+    return [({"id": f"d{i}", "kind": "card", "event_id": "e"}, ctx)]
+
+
+def test_a_researcher_card_is_drawn_by_the_site_and_emailed_as_a_png_never_stored():
+    supa, mailer = FakeSupa(_researcher_card()), FakeMailer()
+    assert process_batch(supa, mailer, certs=CardCerts()) == {"claimed": 1, "sent": 1, "failed": 0}
+    sent = mailer.sent[0]
+    assert sent["to"] == "r7@example.com"
+    assert sent["attachments"] == [("al-farabi-attendance-card.png", b"\x89PNG\r\n\x1a\nd7", "image/png")]
+    assert "بطاقة" in sent["subject"]
+    assert "الثقة بالذكاء الاصطناعي" in sent["text"] and "ورقي" in sent["text"]  # the paper certificate comes later
+    assert supa.uploads == {} and supa.downloaded == []
+    assert supa.called("complete_delivery")[0]["p_file_path"] is None
+
+
+def test_researcher_cards_are_drawn_alongside_certificates():
+    certs = CardCerts()
+    supa, mailer = FakeSupa(_new_certs([1, 2]) + _researcher_card(3)), FakeMailer()
+    assert process_batch(supa, mailer, limit=3, certs=certs)["sent"] == 3
+    assert [a[0] for m in mailer.sent for a in m["attachments"]] == [
+        "al-farabi-certificate.pdf", "al-farabi-certificate.pdf", "al-farabi-attendance-card.png"]

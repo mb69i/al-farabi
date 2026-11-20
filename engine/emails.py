@@ -35,6 +35,20 @@ BODIES = {
     ],
 }
 
+# Researcher attendance card (owner, 20 Nov): emailed when a doctor signs; the paper certificate comes later.
+SUBJECTS[("researcher_card", "ar")] = "بطاقة حضور الباحث — مؤتمر الفارابي"
+SUBJECTS[("researcher_card", "en")] = "Your researcher attendance card — Al-Farabi Conference"
+BODIES[("researcher_card", "ar")] = [
+    "الباحث الكريم {full_name}،",
+    "شكراً لمشاركتكم في مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل ببحثكم الموسوم: «{research_title}».",
+    "تجدون في المرفقات بطاقة حضوركم الرقمية. أما شهادة المشاركة فستُسلَّم لكم ورقياً لاحقاً.",
+]
+BODIES[("researcher_card", "en")] = [
+    "Dear {full_name},",
+    "Thank you for taking part in the First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation with your research: “{research_title}”.",
+    "Your digital attendance card is attached. Your certificate of participation will be handed to you on paper later.",
+]
+
 # Certificates for attendees (no research title): the Chromium engine sends one PDF.
 BODIES[("certificate_attendee", "ar")] = [
     "عزيزنا {full_name}،",

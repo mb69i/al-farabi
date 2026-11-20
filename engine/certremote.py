@@ -45,3 +45,22 @@ class RemoteCertificates:
         if not pdf.startswith(b"%PDF-"):
             raise RuntimeError("certificate function returned no PDF")
         return pdf
+
+    def make_card(self, delivery_id: str) -> bytes:
+        """Researcher attendance card (owner, 20 Nov): the same function draws it and returns a PNG."""
+        res = self.http.post(self.url, json={"delivery_id": delivery_id, "kind": "card"},
+                             headers={"X-Render-Token": render_token(self.key)}, timeout=self.timeout)
+        try:
+            data = res.json()
+        except ValueError:
+            data = {}
+        if res.status_code != 200 or not isinstance(data, dict) or not data.get("png"):
+            reason = data.get("error") if isinstance(data, dict) else None
+            raise RuntimeError(f"certificate function {res.status_code}: {reason or res.text[:200]}")
+        try:
+            png = base64.b64decode(data["png"], validate=True)
+        except (binascii.Error, ValueError):
+            png = b""
+        if not png.startswith(b"\x89PNG"):
+            raise RuntimeError("certificate function returned no PNG card")
+        return png

@@ -6,14 +6,14 @@ import { fileURLToPath } from 'node:url';
 import jsQR from 'jsqr';
 import { PNG } from 'pngjs';
 import QRCode from 'qrcode';
-import { buildValues, CertificateError, fillTemplate } from './values.mjs';
+import { buildCardValues, buildValues, CertificateError, fillTemplate } from './values.mjs';
 // Plain JavaScript so the Vercel server function (api/certificate.mjs) can load it as is.
 
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const ORIGIN = 'https://cert.local';
 const CANVAS = { width: 1754, height: 1240 }; // css px; ×2 = 3508 × 2480 = A4 at 300 dpi
 const SCALE = 2;
-const TYPES = { '.ttf': 'font/ttf', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml' };
+const TYPES = { '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml' };
 
 /** @typedef {{ name: string, logo?: string }} Sponsor  logo: path under the repo, e.g. certs/sponsors/x.png */
 
@@ -44,6 +44,7 @@ async function serve(page, html, extra) {
     if (u.pathname === '/') return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html });
     const file = extra.get(u.pathname) ??
       (u.pathname.startsWith('/fonts/') ? resolve(ROOT, 'engine/fonts', u.pathname.slice(7))
+        : u.pathname.startsWith('/cairo/') ? resolve(ROOT, 'src/styles/fonts', u.pathname.slice(7))
         : u.pathname.startsWith('/forma/') ? resolve(ROOT, 'certs/forma', u.pathname.slice(7))
         : u.pathname.startsWith('/brand/') ? resolve(ROOT, 'public/brand', u.pathname.slice(7)) : null);
     if (!file || /\.\./.test(u.pathname)) return route.fulfill({ status: 404, body: '' });
@@ -150,6 +151,36 @@ export async function renderCertificate(browser, input, opts = {}) {
     return { png, jpg, pdf: flat.pdf, url, serial: fields.SERIAL, name: { lines: state.lines, fits: state.fits }, signature: signatureOk };
   } finally {
     // never let a failed clean-up hide the real error (e.g. a crashed browser)
+    await context.close().catch(() => {});
+  }
+}
+
+let cardCache = null;
+const loadCard = async () => (cardCache ??= await readFile(resolve(ROOT, 'certs/card.html'), 'utf8'));
+const CARD = { width: 1200, height: 750 }; // css px; x2 = 2400 x 1500
+
+/**
+ * Researcher attendance card (owner, 20 Nov): one PNG, emailed when a doctor signs.
+ * Fails (never sends half a card) if a font or logo is missing or the text does not fit.
+ * @param {import('playwright-core').Browser} browser
+ * @param {{ name: string, org?: string | null, title: string, dateFrom: string, dateTo: string }} input
+ * @returns {Promise<{ png: Buffer, state: { fonts: boolean, images: boolean, fits: boolean, overflow: boolean } }>}
+ */
+export async function renderCard(browser, input) {
+  const html = fillTemplate(await loadCard(), buildCardValues(input));
+  const context = await browser.newContext({ viewport: CARD, deviceScaleFactor: SCALE, locale: 'ar-IQ' });
+  try {
+    const page = await context.newPage();
+    await serve(page, html, new Map());
+    await page.goto(`${ORIGIN}/`, { waitUntil: 'load' });
+    const state = await page.waitForFunction(() => window.__card, null, { timeout: 15_000 }).then((h) => h.jsonValue());
+    if (!state.fonts) throw new CertificateError('card fonts did not load');
+    if (!state.images) throw new CertificateError('a logo did not load on the card');
+    if (!state.fits) throw new CertificateError(`name or research title too long for the card: ${input.name}`);
+    if (state.overflow) throw new CertificateError('card text overflows');
+    const png = await page.screenshot({ type: 'png', animations: 'disabled' });
+    return { png, state };
+  } finally {
     await context.close().catch(() => {});
   }
 }

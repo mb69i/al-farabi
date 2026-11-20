@@ -100,3 +100,24 @@ export function fillTemplate(template, values) {
     return values[key];
   });
 }
+
+/**
+ * Researcher attendance card (owner, 20 Nov): name, institution, research title and the conference dates.
+ * @param {{ name: string, org?: string | null, title: string, dateFrom: string, dateTo: string }} input
+ * @returns {{ NAME: string, ORG: string, TITLE: string, DATES: string }}
+ */
+export function buildCardValues(input) {
+  const name = tidy(input.name);
+  if (name.length < 2) throw new CertificateError('missing name');
+  const title = tidy(input.title);
+  if (title.length < 2) throw new CertificateError('missing research title');
+  const a = isoDay(input.dateFrom);
+  const b = isoDay(input.dateTo);
+  if (b < a) throw new CertificateError(`date range ends before it starts: ${input.dateFrom} → ${input.dateTo}`);
+  return {
+    NAME: escapeHtml(name),
+    ORG: escapeHtml(tidy(input.org ?? '')),
+    TITLE: escapeHtml(title),
+    DATES: arabicDateWords(input.dateFrom.trim(), input.dateTo.trim()),
+  };
+}

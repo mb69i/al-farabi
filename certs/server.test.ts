@@ -69,3 +69,27 @@ describe('handleCertificateRequest', () => {
     expect((await handleCertificateRequest(req({ headers: {} }), d)).body).toEqual({ error: 'unauthorized' });
   });
 });
+
+describe('researcher attendance card (kind: "card")', () => {
+  const CARD_JOB = { name: 'Layla Hassan', org: 'American University of Beirut', title: 'Trust in AI', date_from: '2026-11-21', date_to: '2026-11-22' };
+  const cardReq = req({ body: { delivery_id: DID, kind: 'card' } });
+
+  it('draws the card from card_job and hands the PNG back', async () => {
+    const renderCard = vi.fn(async () => ({ png: Buffer.from('\x89PNG card') }));
+    const d = deps({ rpc: vi.fn(async () => CARD_JOB), renderCard });
+    const out = await handleCertificateRequest(cardReq, d);
+    expect(out).toEqual({ status: 200, body: { png: Buffer.from('\x89PNG card').toString('base64') } });
+    expect(d.rpc).toHaveBeenCalledWith('card_job', { p_delivery_id: DID });
+    expect(renderCard).toHaveBeenCalledWith({ name: 'Layla Hassan', org: 'American University of Beirut', title: 'Trust in AI',
+      dateFrom: '2026-11-21', dateTo: '2026-11-22' });
+    expect(d.render).not.toHaveBeenCalled();
+  });
+
+  it('404 when the delivery is not a researcher card; 422 when the card cannot be filled; unknown kinds refused', async () => {
+    expect((await handleCertificateRequest(cardReq, deps({ rpc: vi.fn(async () => null), renderCard: vi.fn() }))).status).toBe(404);
+    const bad = vi.fn(async () => { throw new CertificateError('missing research title'); });
+    expect(await handleCertificateRequest(cardReq, deps({ rpc: vi.fn(async () => CARD_JOB), renderCard: bad })))
+      .toEqual({ status: 422, body: { error: 'missing research title' } });
+    expect((await handleCertificateRequest(req({ body: { delivery_id: DID, kind: 'poster' } }), deps())).status).toBe(400);
+  });
+});
