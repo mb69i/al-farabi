@@ -2,13 +2,7 @@
    a large neat QR code, one instruction line and a single small strip of numbers.
    One unit (--u) fits 16:9 and 4:3 projectors; nothing scrolls. Day = white page,
    night = navy page; both in the conference navy, burgundy and gold. */
-/* The certificate's ribbon font, loaded only on the hall screen (SIL OFL, public/fonts/OFL-amiri.txt) */
-@font-face {
-  font-family: 'Amiri';
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/amiri-bold.ttf') format('truetype');
-}
+/* Every text on the hall screen is in the site font, Cairo (owner, 20 Nov), so no extra font is downloaded. */
 
 .display {
   /* 1.6vh (not 16:9's 1.778) leaves ~15% spare height for other browsers, zoom and bars */
@@ -177,7 +171,7 @@
 }
 
 .d-title {
-  font-family: 'Amiri', 'IBM Plex Sans Arabic', serif;
+  font-family: var(--font);
   font-size: calc(var(--u) * 1.9);
   line-height: 1.35;
   font-weight: 700;
@@ -186,7 +180,7 @@
 }
 
 .d-title-en {
-  font-family: 'Amiri', Georgia, serif;
+  font-family: var(--font);
   font-size: calc(var(--u) * 0.8);
   line-height: 1.3;
   letter-spacing: 0.02em;
@@ -514,7 +508,7 @@
 }
 
 .d-sponsors-label {
-  font-family: 'Amiri', 'IBM Plex Sans Arabic', serif;
+  font-family: var(--font);
   font-size: calc(var(--u) * 1.3);
   font-weight: 700;
   color: var(--d-accent);

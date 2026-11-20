@@ -74,7 +74,10 @@ def build(kind: str, lang: str, values: dict, site_url: str) -> tuple[str, str, 
         for line in lines
     )
     html = f"""<!doctype html>
-<html lang="{lang}" dir="{direction}"><body style="margin:0;background:#F4F5F8;font-family:Tahoma,Arial,sans-serif">
+<html lang="{lang}" dir="{direction}"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<style>body,p,td,a{{font-family:'Cairo',Tahoma,Arial,sans-serif}}</style></head>
+<body style="margin:0;background:#F4F5F8;font-family:'Cairo',Tahoma,Arial,sans-serif">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F5F8;padding:24px 0">
 <tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" dir="{direction}" style="max-width:600px;width:100%;background:#FFFFFF;border-radius:12px;overflow:hidden">

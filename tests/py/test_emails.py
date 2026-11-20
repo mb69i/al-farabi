@@ -47,3 +47,10 @@ def test_attendee_certificate_does_not_talk_about_research(lang):
     _, html, text = build("certificate", lang, {"full_name": "Ali"}, "https://s")
     assert "«" not in text and "“" not in text and "بحثكم" not in text and "research:" not in text
     assert "Ali" in text and "PDF" in text
+
+
+def test_emails_use_cairo_with_safe_fallbacks():
+    # The whole system uses Cairo (owner, 20 Nov). Mail apps that can load it show Cairo; others fall back.
+    _, html, _ = build("card", "ar", {"full_name": "علي", "serial": "S"}, "https://alfarabi.mb-ai.org")
+    assert "family=Cairo" in html
+    assert "font-family:'Cairo',Tahoma,Arial,sans-serif" in html
