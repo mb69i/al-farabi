@@ -54,7 +54,7 @@ def _draw_all(certs, rows: list, contexts: dict) -> dict:
         except Exception as exc:  # noqa: BLE001 — reported for that row only
             return exc
 
-    with ThreadPoolExecutor(max_workers=min(4, len(ids))) as pool:
+    with ThreadPoolExecutor(max_workers=len(ids)) as pool:  # the whole batch at once
         return dict(zip(ids, pool.map(draw, ids)))
 
 
@@ -125,19 +125,25 @@ def process_batch(supa, mailer, limit: int = 10, before_send=None, formas: dict 
     return summary
 
 
-def run(supa, mailer, *, certs=None, clock=time.monotonic, sleep=time.sleep,
-        budget: float = 30.0, interval: float = 0.55, batch: int = 3) -> dict:
-    """Single runner: drains the queue at <= 1/interval sends per second within budget.
+SLOTS = 6  # senders allowed at once; must match public.acquire_runner_slot's table (runner_slots)
 
-    Another invocation holding the lease means this one exits at once; the
-    holder keeps claiming until the queue is empty, so new rows are not missed.
-    Three rows per claim, their certificates drawn at the same time, and a 30 s budget: one round of
-    drawing takes up to ~25 s, and the function must finish (and release the lease) within its 60 s limit.
+
+def run(supa, mailer, *, certs=None, clock=time.monotonic, sleep=time.sleep,
+        budget: float = 20.0, interval: float = 1.0, batch: int = 6) -> dict:
+    """One of up to SLOTS senders: drains the queue at <= 1/interval sends per second within budget.
+
+    500 guests registering at once (load test, 20 Nov): one sender drawing 3 at a time managed only
+    3-7 certificates a minute. Now each invocation takes a free slot (none free: it exits at once),
+    six rows per claim are all drawn at the same time, and up to SLOTS senders run side by side.
+    Limits: 6 senders x 1 send/s stays under Resend's 10/s; a round (drawing <= 25 s, then 6 sends)
+    started before the 20 s budget ends inside the function's 60 s limit.
     """
     if not mailer.ready:
         # Leave the queue untouched so no retries are used up before email is set up.
         return {"skipped": "email not configured"}
-    if not supa.rpc("acquire_runner", {"p_ttl_seconds": int(budget) + 30}):
+    slot = supa.rpc("acquire_runner_slot", {"p_ttl_seconds": int(budget) + 25 + int(batch * interval) + 20,
+                                            "p_slots": SLOTS})
+    if not slot:
         return {"skipped": True}
     total = {"claimed": 0, "sent": 0, "failed": 0}
     start = clock()
@@ -162,5 +168,5 @@ def run(supa, mailer, *, certs=None, clock=time.monotonic, sleep=time.sleep,
             if out["claimed"] == 0:
                 break
     finally:
-        supa.rpc("release_runner", {})
+        supa.rpc("release_runner_slot", {"p_slot": slot})
     return total

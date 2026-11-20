@@ -182,6 +182,13 @@ def test_certificates_in_a_batch_are_drawn_at_the_same_time():
     assert [m["to"] for m in mailer.sent] == ["p1@example.com", "p2@example.com", "p3@example.com"]
 
 
+def test_a_whole_batch_of_six_is_drawn_at_once():
+    certs = SlowCerts()
+    supa, mailer = FakeSupa(_new_certs([1, 2, 3, 4, 5, 6])), FakeMailer()
+    assert process_batch(supa, mailer, limit=6, certs=certs)["sent"] == 6
+    assert certs.peak == 6
+
+
 def test_a_failed_drawing_only_fails_its_own_row():
     supa, mailer = FakeSupa(_new_certs([1, 2, 3])), FakeMailer()
     assert process_batch(supa, mailer, limit=3, certs=SlowCerts(fail={"d2"})) == {"claimed": 3, "sent": 2, "failed": 1}
