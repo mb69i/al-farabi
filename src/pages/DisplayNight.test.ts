@@ -26,3 +26,13 @@ describe('hall screen at night', () => {
     expect(css).toMatch(/box-shadow:\s*var\(--d-frame/);
   });
 });
+
+describe('hall screen QR size', () => {
+  it('is big for the main hall screen (owner, 20 Nov: "a little bit bigger")', () => {
+    const rule = css.slice(css.indexOf('.qr-box {'), css.indexOf('}', css.indexOf('.qr-box {')));
+    const m = /width:\s*min\(calc\(var\(--u\) \* ([\d.]+)\),\s*([\d.]+)dvh\)/.exec(rule);
+    expect(m).not.toBeNull();
+    expect(Number(m![1])).toBeGreaterThanOrEqual(16);
+    expect(Number(m![2])).toBeGreaterThanOrEqual(30);
+  });
+});

@@ -32,7 +32,6 @@
   --d-bump: rgba(242, 194, 48, 0.22);
   --d-frame: none;
   --d-title: var(--navy);
-  --d-patron: #8a5a00;
   --d-arch: rgba(163, 38, 43, 0.16);
   --d-when-bg: rgba(163, 38, 43, 0.06);
   --d-when-line: rgba(163, 38, 43, 0.45);
@@ -83,7 +82,6 @@
     0 0 calc(var(--u) * 2.4) rgba(242, 194, 48, 0.18);
   --d-bump: rgba(242, 194, 48, 0.14);
   --d-title: #ffffff;
-  --d-patron: var(--gold);
   --d-arch: rgba(242, 169, 171, 0.16);
   --d-when-bg: rgba(163, 38, 43, 0.2);
   --d-when-line: rgba(194, 52, 58, 0.75);
@@ -173,15 +171,8 @@
   height: calc(var(--u) * 5.6);
 }
 
-.d-patron {
-  margin-top: calc(var(--u) * 0.45);
-  font-size: calc(var(--u) * 1.15);
-  font-weight: 700;
-  color: var(--d-patron);
-}
-
 .d-title {
-  margin-top: calc(var(--u) * 0.15);
+  margin-top: calc(var(--u) * 0.5);
   font-family: var(--font);
   font-size: calc(var(--u) * 1.95);
   line-height: 1.3;
@@ -221,12 +212,10 @@
   transition: box-shadow 0.5s var(--ease);
 }
 
-.d-qr-frame--glow {
-  animation: d-qr-glow 2s var(--ease) 2;
-}
-
 .qr-box {
-  width: min(calc(var(--u) * 12.6), 24dvh);
+  /* big for the main hall screen (owner, 20 Nov); the room came from the removed sponsorship line,
+     web address and welcome pill */
+  width: min(calc(var(--u) * 17.5), 33dvh);
   aspect-ratio: 1;
 }
 
@@ -238,43 +227,10 @@
 
 .qr-caption {
   margin-top: calc(var(--u) * 0.7);
-  font-size: calc(var(--u) * 1.35);
+  margin-bottom: calc(var(--u) * 1.9); /* room for the "+1" badges above the counters */
+  font-size: calc(var(--u) * 1.4);
   font-weight: 500;
   color: var(--d-ink);
-}
-
-.qr-url {
-  margin-top: calc(var(--u) * 0.2);
-  font-size: calc(var(--u) * 0.85);
-  color: var(--d-muted);
-}
-
-.d-moment-slot {
-  display: grid;
-  justify-items: center;
-  align-items: start;
-  height: calc(var(--u) * 3.9);
-  padding-top: calc(var(--u) * 0.4);
-}
-
-.d-moment {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(var(--u) * 0.6);
-  padding: calc(var(--u) * 0.45) calc(var(--u) * 1.3);
-  border-radius: 999px;
-  background: var(--gold);
-  color: var(--navy-deep);
-  font-size: calc(var(--u) * 1.15);
-  font-weight: 700;
-  white-space: nowrap;
-  box-shadow: 0 calc(var(--u) * 0.5) calc(var(--u) * 1.4) rgba(242, 194, 48, 0.35);
-  animation: d-moment 6s var(--ease) forwards;
-}
-
-.d-moment-spark {
-  color: var(--burgundy);
-  animation: d-spin 1.6s var(--ease) infinite;
 }
 
 .d-config {

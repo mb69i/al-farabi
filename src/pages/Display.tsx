@@ -8,7 +8,6 @@ import { SPONSOR_BAND, type SponsorBand } from './sponsors';
 type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean; sponsorBand?: SponsorBand | null };
 
 // Wording of the agenda's opening slide (owner, 20 Nov), always in Arabic as on the slide.
-const PATRON = 'برعاية وزارة التعليم العالي والبحث العلمي';
 const TITLE_LINES = ['مؤتمر الفارابي الأول للبحوث التطبيقية', 'في التحول الرقمي الشامل'] as const;
 const SLOGAN = 'تحت شعار ( الريادة والابتكار ركائز التحول الرقمي الشامل في العراق )';
 const WHEN = '21 – 22 / 11 / 2026 في رحاب جامعة الفارابي – بغداد';
@@ -23,7 +22,6 @@ type Theme = 'day' | 'night';
 // No VIP counter on the hall screen (owner, 19 Nov); VIP stays in the data, the dashboard and the Excel file.
 const KEYS: CounterKey[] = ['total', 'present_today', 'male', 'female', 'researchers_signed'];
 const BUMP_MS = 2200; // how long a number glows after it goes up
-const MOMENT_MS = 6000; // how long "Welcome, guest no. N" stays up
 
 /** Hour of day in Baghdad (UTC+3 all year, no daylight saving). */
 const baghdadHour = (now: number) => (new Date(now).getUTCHours() + 3) % 24;
@@ -83,12 +81,10 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
   const motion = animate && !reduced;
   const [counts, setCounts] = useState<DisplayCounts | null>(null);
   const [bumps, setBumps] = useState<Partial<Record<CounterKey, number>>>({});
-  const [moment, setMoment] = useState<{ n: number; id: number } | null>(null);
   const [lastRegAt, setLastRegAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const prev = useRef<DisplayCounts | null>(null);
   const bumpTimer = useRef<number>();
-  const momentTimer = useRef<number>();
   const [offline, setOffline] = useState(false);
   const [notConfigured, setNotConfigured] = useState(false);
   const [qr, setQr] = useState('');
@@ -131,9 +127,6 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
         if (up.total) {
           setLastRegAt(Date.now());
           setNow(Date.now());
-          setMoment({ n: Number(c.total), id: Date.now() });
-          window.clearTimeout(momentTimer.current);
-          momentTimer.current = window.setTimeout(() => setMoment(null), MOMENT_MS);
         }
       } catch (e) {
         if (!alive) return;
@@ -148,7 +141,6 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
       alive = false;
       window.clearInterval(id);
       window.clearTimeout(bumpTimer.current);
-      window.clearTimeout(momentTimer.current);
     };
   }, [api, slug, pollMs]);
 
@@ -223,7 +215,8 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
 
       <main className="d-stage">
         {/* Header like the opening slide of the agenda (owner, 20 Nov): Al-Farabi | the official conference logo |
-            Ministry, the Ministry's sponsorship in gold, the official name, the slogan, then dates and place. */}
+            Ministry, the official name, the slogan, then dates and place. No sponsorship line, no web address and
+            no welcome pill (owner, 20 Nov); the QR gets the room. */}
         <svg className="d-arch" viewBox="0 0 400 300" aria-hidden="true" focusable="false">
           <circle cx="200" cy="150" r="138" />
           <path d="M120 300 V170 Q120 95 200 60 Q280 95 280 170 V300" />
@@ -239,9 +232,6 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
           />
           <img className="d-logo d-logo--ministry" src="/brand/ministry-360.webp" alt={t('brand.ministry')} />
         </div>
-        <p className="d-patron" lang="ar" dir="rtl">
-          {PATRON}
-        </p>
         <h1 className="d-title" lang="ar" dir="rtl">
           <span>{TITLE_LINES[0]}</span> <span>{TITLE_LINES[1]}</span>
         </h1>
@@ -252,7 +242,7 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
           {WHEN}
         </p>
 
-        <div className={`d-qr-frame ${moment ? 'd-qr-frame--glow' : ''}`}>
+        <div className="d-qr-frame">
           <div
             className="qr-box"
             data-testid="qr"
@@ -263,16 +253,6 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
           />
         </div>
         <p className="qr-caption">{t('display.scan')}</p>
-        <p className="qr-url num">{target.replace(/^https?:\/\//, '').replace(/\/$/, '')}</p>
-
-        <div className="d-moment-slot">
-          {moment && (
-            <div className="d-moment" data-testid="moment" role="status" key={moment.id}>
-              <span className="d-moment-spark" aria-hidden="true">✦</span>
-              {t('display.moment', { n: moment.n.toLocaleString('en-US') })}
-            </div>
-          )}
-        </div>
 
         {notConfigured && (
           <p className="d-config" role="alert">

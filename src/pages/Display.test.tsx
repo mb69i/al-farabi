@@ -72,12 +72,12 @@ describe('Display', () => {
     window.history.pushState({}, '', '/');
   });
 
-  it('QR and its caption always send guests to the live site, whichever copy of the site shows the screen', async () => {
+  it('the QR always sends guests to the live site, whichever copy of the site shows the screen', async () => {
     // (the projector once showed a preview copy, whose address needs a Vercel login)
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});
     expect(screen.getByTestId('qr').getAttribute('data-target')).toBe('https://al-farabi-gilt.vercel.app/');
-    expect(screen.getByText('al-farabi-gilt.vercel.app')).toBeInTheDocument();
+    expect(screen.queryByText('al-farabi-gilt.vercel.app')).toBeNull(); // the address is no longer printed (owner, 20 Nov)
   });
 });
 
@@ -107,19 +107,15 @@ describe('Display — live feel (item 7)', () => {
     expect(card('Registered')).not.toHaveClass('counter--bump');
   });
 
-  it('celebrates a new registration with the guest number only (no names), not on first load', async () => {
+  it('no welcome pill when someone registers (owner, 20 Nov): only the numbers go up', async () => {
     const fn = vi.fn().mockResolvedValueOnce(COUNTS).mockResolvedValue({ ...COUNTS, total: 413 });
     setup(api(fn));
     await act(async () => {});
-    expect(screen.queryByTestId('moment')).toBeNull();
     await act(async () => {
       vi.advanceTimersByTime(5000);
     });
-    expect(screen.getByTestId('moment')).toHaveTextContent('Welcome, guest no. 413');
-    await act(async () => {
-      vi.advanceTimersByTime(7000);
-    });
     expect(screen.queryByTestId('moment')).toBeNull();
+    expect(screen.queryByText(/Welcome, guest no/)).toBeNull();
   });
 
   it('shows how long ago the last registration was', async () => {
@@ -281,10 +277,11 @@ describe('Display — header like the agenda slide, sponsors along the bottom', 
     expect(document.querySelector('.d-logos img[src="/brand/conference-logo-light.svg"]')).not.toBeNull();
   });
 
-  it('opens like the agenda slide: under the Ministry, the official name, the slogan, then dates and place', async () => {
+  it('opens like the agenda slide: the official name, the slogan, then dates and place', async () => {
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});
-    expect(screen.getByText('برعاية وزارة التعليم العالي والبحث العلمي')).toBeInTheDocument();
+    expect(screen.queryByText('برعاية وزارة التعليم العالي والبحث العلمي')).toBeNull(); // removed (owner, 20 Nov)
+    expect(document.querySelector('.qr-url')).toBeNull(); // no web address under the QR either
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل');
     expect(screen.getByText('تحت شعار ( الريادة والابتكار ركائز التحول الرقمي الشامل في العراق )')).toBeInTheDocument();
     expect(screen.getByText('21 – 22 / 11 / 2026 في رحاب جامعة الفارابي – بغداد')).toBeInTheDocument();
