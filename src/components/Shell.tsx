@@ -29,6 +29,10 @@ export function Shell({ children, variant = 'public', actions }: Props) {
           <span className="crest-badge">
             <img className="crest" src="/brand/crest-192.png" alt={t('brand.university')} width={42} height={44} />
           </span>
+          <span className="divider" aria-hidden="true" />
+          {/* the official event logo on every page (owner, 20 Nov); night mode shows the version for dark backgrounds */}
+          <img className="event-logo event-logo--light" src="/brand/conference-logo-light.svg" alt={t('brand.conference')} width={85} height={68} />
+          <img className="event-logo event-logo--dark" src="/brand/conference-logo-dark.svg" alt="" aria-hidden="true" width={85} height={68} />
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {actions}
