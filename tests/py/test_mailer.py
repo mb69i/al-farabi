@@ -41,3 +41,10 @@ def test_mailer_is_ready_only_with_key_and_sender():
     assert Mailer("re_key", "Conf <a@b.org>").ready
     assert not Mailer("", "Conf <a@b.org>").ready
     assert not Mailer("re_key", "").ready
+
+
+def test_an_email_without_attachments_sends_no_attachment_field():
+    # the researcher sign-in email (owner, 20 Nov) has nothing attached
+    http = Http(Res(200, {"id": "re_2"}))
+    Mailer("k", "s", http).send("a@b.co", "S", "h", "t", [], "delivery-2")
+    assert "attachments" not in http.calls[0][1]

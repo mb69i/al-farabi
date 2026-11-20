@@ -31,11 +31,12 @@ class Mailer:
             "subject": subject,
             "html": html,
             "text": text,
-            "attachments": [
+        }
+        if attachments:  # the researcher sign-in email has none
+            payload["attachments"] = [
                 {"filename": name, "content": base64.b64encode(data).decode("ascii"), "content_type": ctype}
                 for name, data, ctype in attachments
-            ],
-        }
+            ]
         res = self.http.post(
             RESEND_URL,
             json=payload,

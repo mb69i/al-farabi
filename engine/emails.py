@@ -35,18 +35,18 @@ BODIES = {
     ],
 }
 
-# Researcher attendance card (owner, 20 Nov): emailed when a doctor signs; the paper certificate comes later.
-SUBJECTS[("researcher_card", "ar")] = "بطاقة حضور الباحث — مؤتمر الفارابي"
-SUBJECTS[("researcher_card", "en")] = "Your researcher attendance card — Al-Farabi Conference"
-BODIES[("researcher_card", "ar")] = [
+# Researcher signed in by a doctor (owner, 20 Nov): a short confirmation only, nothing attached.
+SUBJECTS[("researcher_signin", "ar")] = "تم تسجيل حضوركم — مؤتمر الفارابي"
+SUBJECTS[("researcher_signin", "en")] = "You are signed in — Al-Farabi Conference"
+BODIES[("researcher_signin", "ar")] = [
     "الباحث الكريم {full_name}،",
-    "شكراً لمشاركتكم في مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل ببحثكم الموسوم: «{research_title}».",
-    "تجدون في المرفقات بطاقة حضوركم الرقمية. أما شهادة المشاركة فستُسلَّم لكم ورقياً لاحقاً.",
+    "نؤكد تسجيل حضوركم في مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل عن بحثكم الموسوم: «{research_title}».",
+    "شكراً لمشاركتكم، ونتمنى لكم مؤتمراً موفقاً.",
 ]
-BODIES[("researcher_card", "en")] = [
+BODIES[("researcher_signin", "en")] = [
     "Dear {full_name},",
-    "Thank you for taking part in the First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation with your research: “{research_title}”.",
-    "Your digital attendance card is attached. Your certificate of participation will be handed to you on paper later.",
+    "This confirms that you are signed in at the First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation for your research: “{research_title}”.",
+    "Thank you for taking part; we wish you a successful conference.",
 ]
 
 # Certificates for attendees (no research title): the Chromium engine sends one PDF.

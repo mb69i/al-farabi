@@ -220,21 +220,24 @@ def _researcher_card(i=7):
     return [({"id": f"d{i}", "kind": "card", "event_id": "e"}, ctx)]
 
 
-def test_a_researcher_card_is_drawn_by_the_site_and_emailed_as_a_png_never_stored():
+def test_a_signed_researcher_gets_only_a_sign_in_email_nothing_attached_nothing_drawn():
+    # Owner, 20 Nov (later): on signing the researcher gets only an email saying they are signed in -
+    # no card, no certificate.
+    certs = CardCerts()
     supa, mailer = FakeSupa(_researcher_card()), FakeMailer()
-    assert process_batch(supa, mailer, certs=CardCerts()) == {"claimed": 1, "sent": 1, "failed": 0}
+    assert process_batch(supa, mailer, certs=certs) == {"claimed": 1, "sent": 1, "failed": 0}
     sent = mailer.sent[0]
     assert sent["to"] == "r7@example.com"
-    assert sent["attachments"] == [("al-farabi-attendance-card.png", b"\x89PNG\r\n\x1a\nd7", "image/png")]
-    assert "بطاقة" in sent["subject"]
-    assert "الثقة بالذكاء الاصطناعي" in sent["text"] and "ورقي" in sent["text"]  # the paper certificate comes later
+    assert sent["attachments"] == []
+    assert "تسجيل حضور" in sent["subject"]
+    assert "الثقة بالذكاء الاصطناعي" in sent["text"]
+    assert "مرفق" not in sent["text"] and "بطاقة" not in sent["text"] and "شهادة" not in sent["text"]
+    assert certs.peak == 0  # nothing drawn
     assert supa.uploads == {} and supa.downloaded == []
     assert supa.called("complete_delivery")[0]["p_file_path"] is None
 
 
-def test_researcher_cards_are_drawn_alongside_certificates():
-    certs = CardCerts()
+def test_sign_in_emails_go_out_alongside_certificates():
     supa, mailer = FakeSupa(_new_certs([1, 2]) + _researcher_card(3)), FakeMailer()
-    assert process_batch(supa, mailer, limit=3, certs=certs)["sent"] == 3
-    assert [a[0] for m in mailer.sent for a in m["attachments"]] == [
-        "al-farabi-certificate.pdf", "al-farabi-certificate.pdf", "al-farabi-attendance-card.png"]
+    assert process_batch(supa, mailer, limit=3, certs=CardCerts())["sent"] == 3
+    assert [len(m["attachments"]) for m in mailer.sent] == [1, 1, 0]

@@ -42,7 +42,7 @@ def _is_researcher_card(ctx) -> bool:
 
 
 def _needs_drawing(ctx) -> bool:
-    return bool(ctx) and (_is_researcher_card(ctx) or (ctx.get("kind") == "certificate" and not ctx.get("prerendered")))
+    return bool(ctx) and ctx.get("kind") == "certificate" and not ctx.get("prerendered")
 
 
 def _draw_all(certs, rows: list, contexts: dict) -> dict:
@@ -54,8 +54,6 @@ def _draw_all(certs, rows: list, contexts: dict) -> dict:
 
     def draw(delivery_id):
         try:
-            if _is_researcher_card(contexts.get(delivery_id)):
-                return certs.make_card(delivery_id)
             return certs.make(delivery_id)
         except Exception as exc:  # noqa: BLE001 — reported for that row only
             return exc
@@ -68,19 +66,10 @@ def _make_one(supa, mailer, row: dict, formas: dict, certs=None, ctx=None, drawn
     if ctx is None:
         ctx = supa.rpc("delivery_context", {"p_id": row["id"]})
     if _is_researcher_card(ctx):
-        # Researcher attendance card (owner, 20 Nov): drawn by the site function when the doctor signs, emailed
-        # as a PNG, never stored. Guests' cards (if ever switched on) still use the Pillow design below.
-        if drawn is None:
-            if certs is None or not getattr(certs, "ready", False):
-                raise RuntimeError("certificate renderer not configured")
-            drawn = certs.make_card(row["id"])
-        if isinstance(drawn, Exception):
-            raise drawn
-        if not drawn.startswith(b"\x89PNG"):
-            raise RuntimeError("researcher card is not a PNG")
-        subject, html, text = build("researcher_card", ctx["lang"], ctx["values"], _site_url())
-        provider_id = mailer.send(ctx["to_email"], subject, html, text,
-                                  [("al-farabi-attendance-card.png", drawn, "image/png")],
+        # A researcher signed by a doctor gets only an email saying they are signed in: no card, no certificate
+        # (owner, 20 Nov; the paper certificate is handed over later). Guests' cards still use the design below.
+        subject, html, text = build("researcher_signin", ctx["lang"], ctx["values"], _site_url())
+        provider_id = mailer.send(ctx["to_email"], subject, html, text, [],
                                   idempotency_key=f"delivery-{row['id']}-{row.get('resend_count', 0)}")
         supa.rpc("complete_delivery", {"p_id": row["id"], "p_provider_id": provider_id, "p_file_path": None})
         return
