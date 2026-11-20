@@ -82,9 +82,10 @@ button {
 
 .shell-header {
   display: flex;
+  flex-wrap: wrap; /* on the smallest phones the buttons drop under the logos instead of pushing them off screen */
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-3) var(--space-4);
   padding: var(--space-4) var(--space-4) 0;
   max-width: 1120px;
   width: 100%;
@@ -139,6 +140,68 @@ button {
 
 :root[data-theme='night'] .event-logo--light { display: none; }
 :root[data-theme='night'] .event-logo--dark { display: block; }
+
+/* The Ministry's seal on the registration and researcher pages (owner, 20 Nov), as tall as the crest */
+.shell-logos .ministry {
+  height: 56px;
+  width: auto;
+}
+
+.shell--staff .shell-logos .ministry {
+  height: 44px;
+}
+
+.shell-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-inline-start: auto;
+}
+
+/* logos never get squeezed out of shape when the row is tight */
+.shell-logos > * {
+  flex-shrink: 0;
+}
+
+/* Phones: three logos and the buttons share one row */
+@media (max-width: 480px) {
+  .shell-logos {
+    gap: 8px;
+  }
+  .shell-logos .crest-badge {
+    width: 46px;
+    height: 46px;
+  }
+  .shell-logos .crest {
+    height: 36px;
+  }
+  .shell-logos .event-logo {
+    height: 48px;
+  }
+  .shell-logos .ministry {
+    height: 46px;
+  }
+  .shell--staff .shell-logos .crest-badge,
+  .shell--staff .shell-logos .ministry {
+    width: auto;
+    height: 38px;
+  }
+  .shell--staff .shell-logos .crest-badge {
+    width: 38px;
+  }
+  .shell--staff .shell-logos .crest {
+    height: 30px;
+  }
+  .shell--staff .shell-logos .event-logo {
+    height: 40px;
+  }
+  .shell-actions {
+    gap: 6px;
+  }
+  .lang-toggle {
+    padding: 0 var(--space-3);
+  }
+}
 
 .lang-toggle {
   min-height: 40px;

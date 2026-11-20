@@ -26,6 +26,14 @@ const LINKS: Array<{ to: string; label: Key; ownerOnly?: boolean }> = [
   { to: '/admin/audit', label: 'admin.audit', ownerOnly: true },
 ];
 
+// Every other page of the system, one click from the dashboard (owner, 20 Nov); each opens in a new tab.
+const PAGES: Array<{ href: string; label: Key }> = [
+  { href: '/', label: 'admin.page.register' },
+  { href: '/display', label: 'admin.page.display' },
+  { href: '/researchers', label: 'admin.page.researchers' },
+  { href: '/verify', label: 'admin.page.verify' },
+];
+
 export function AdminLayout({ children }: { children: ReactNode }) {
   const { t } = useI18n();
   const { role, email } = useAuth();
@@ -41,6 +49,15 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             {t(l.label)}
           </NavLink>
         ))}
+        <nav className="admin-pages" aria-label={t('admin.pages')}>
+          <p className="admin-pages-title">{t('admin.pages')}</p>
+          {PAGES.map((p) => (
+            <a key={p.href} href={p.href} target="_blank" rel="noopener noreferrer" className="admin-link admin-link--out">
+              <span>{t(p.label)}</span>
+              <span aria-hidden="true" className="admin-out">↗</span>
+            </a>
+          ))}
+        </nav>
       </nav>
       <section className="admin-main">{children}</section>
     </div>

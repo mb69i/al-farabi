@@ -139,6 +139,11 @@ export const en: Record<Key, string> = {
 
   'admin.title': 'Admin dashboard',
   'admin.overview': 'Overview',
+  'admin.pages': 'Site pages',
+  'admin.page.register': 'Registration page',
+  'admin.page.display': 'Hall screen',
+  'admin.page.researchers': 'Researcher signing',
+  'admin.page.verify': 'Certificate check',
   'admin.guests': 'Guests',
   'admin.researchers': 'Researchers',
   'admin.deliveries': 'Deliveries',

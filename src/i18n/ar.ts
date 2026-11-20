@@ -137,6 +137,11 @@ export const ar = {
 
   'admin.title': 'لوحة الإدارة',
   'admin.overview': 'نظرة عامة',
+  'admin.pages': 'صفحات النظام',
+  'admin.page.register': 'صفحة التسجيل',
+  'admin.page.display': 'شاشة القاعة',
+  'admin.page.researchers': 'توقيع الباحثين',
+  'admin.page.verify': 'التحقق من الشهادات',
   'admin.guests': 'الضيوف',
   'admin.researchers': 'الباحثون',
   'admin.deliveries': 'الإرسال',

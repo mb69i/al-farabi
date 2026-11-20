@@ -63,6 +63,45 @@
   color: var(--white);
 }
 
+/* Every other page of the system, one click away (owner, 20 Nov); each opens in a new tab */
+.admin-pages {
+  display: grid;
+  gap: 2px;
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line-dark);
+}
+
+.admin-pages-title {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-on-dark-muted);
+  opacity: 0.85;
+}
+
+.admin-link--out {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.admin-out {
+  opacity: 0.7;
+}
+
+@media (max-width: 860px) {
+  .admin-pages {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .admin-pages-title {
+    width: 100%;
+  }
+}
+
 .admin-main {
   min-width: 0;
   display: grid;

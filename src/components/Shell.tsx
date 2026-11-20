@@ -3,7 +3,8 @@ import { useI18n } from '../i18n';
 import { SiteFooter } from './SiteFooter';
 import { ThemeToggle } from './ThemeToggle';
 
-type Props = { children: ReactNode; variant?: 'public' | 'staff'; actions?: ReactNode };
+/** ministry: show the Ministry's logo too (owner, 20 Nov: registration and researcher pages); on by default for public pages. */
+type Props = { children: ReactNode; variant?: 'public' | 'staff'; actions?: ReactNode; ministry?: boolean };
 
 export function LanguageToggle() {
   const { t, lang, setLang } = useI18n();
@@ -20,12 +21,13 @@ export function LanguageToggle() {
   );
 }
 
-export function Shell({ children, variant = 'public', actions }: Props) {
+export function Shell({ children, variant = 'public', actions, ministry = variant === 'public' }: Props) {
   const { t } = useI18n();
   return (
     <div className={`shell shell--${variant}`}>
       <header className="shell-header">
-        <div className="shell-logos">
+        {/* same order as the certificate and the hall screen: crest | event logo | Ministry */}
+        <div className="shell-logos" dir="ltr">
           <span className="crest-badge">
             <img className="crest" src="/brand/crest-192.png" alt={t('brand.university')} width={42} height={44} />
           </span>
@@ -33,8 +35,14 @@ export function Shell({ children, variant = 'public', actions }: Props) {
           {/* the official event logo on every page (owner, 20 Nov); night mode shows the version for dark backgrounds */}
           <img className="event-logo event-logo--light" src="/brand/conference-logo-light.svg" alt={t('brand.conference')} width={85} height={68} />
           <img className="event-logo event-logo--dark" src="/brand/conference-logo-dark.svg" alt="" aria-hidden="true" width={85} height={68} />
+          {ministry && (
+            <>
+              <span className="divider" aria-hidden="true" />
+              <img className="ministry" src="/brand/ministry-360.webp" alt={t('brand.ministry')} width={56} height={56} />
+            </>
+          )}
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div className="shell-actions">
           {actions}
           <ThemeToggle />
           <LanguageToggle />
