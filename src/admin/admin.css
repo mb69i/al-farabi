@@ -610,3 +610,19 @@
   gap: 8px;
   color: var(--muted, #5a6378);
 }
+
+/* Add a researcher by hand (21 Nov). */
+.add-researcher {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.add-researcher-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.add-researcher .btn-primary {
+  justify-self: start;
+}

@@ -5,6 +5,7 @@ import type { AdminResearcher, Delivery, Guest, Overview as OverviewData, Page }
 import { Stat, useAdminApi } from './AdminLayout';
 import { parseResearcherSheet, type ImportError, type ResearcherImportRow } from './importResearchers';
 import { ContactForm } from './ContactForm';
+import { AddResearcher } from './AddResearcher';
 import { HallTheme, type HallThemeValue } from './HallTheme';
 import { Switches, type SwitchState } from './Switches';
 
@@ -262,6 +263,9 @@ export function AdminResearchers() {
   return (
     <>
       <h1 className="admin-h1">{t('admin.researchers')}</h1>
+      <div className="admin-panel">
+        <AddResearcher add={(r) => api.addResearcher(r)} onAdded={reload} />
+      </div>
       <div className="admin-panel">
         <label className="file-btn">
           {t('admin.import')}

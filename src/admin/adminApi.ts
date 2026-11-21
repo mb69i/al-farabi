@@ -1,5 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { ResearcherImportRow } from './importResearchers';
+import type { NewResearcher } from './AddResearcher';
+import { normalizePhone } from '../lib/normalize';
 import type { SwitchState } from './Switches';
 
 export type Guest = {
@@ -71,6 +73,11 @@ export function createAdminApi(client: SupabaseClient, slug: string) {
     deleteGuest: (id: string) => rpc<void>('admin_delete_guest', { p_id: id }),
     listResearchers: (search: string, limit: number, offset: number) =>
       rpc<Page<AdminResearcher>>('admin_list_researchers', { p_slug: slug, p_search: search, p_limit: limit, p_offset: offset }),
+    addResearcher: (row: NewResearcher) =>
+      rpc<{ id: string }>('admin_add_researcher', {
+        p_slug: slug,
+        p_row: { ...row, phone: row.phone ? (normalizePhone(row.phone) ?? row.phone) : null },
+      }),
     async importResearchers(rows: ResearcherImportRow[]) {
       const total = { inserted: 0, updated: 0, errors: [] as Array<{ row: number; message: string }> };
       for (let i = 0; i < rows.length; i += CHUNK) {
