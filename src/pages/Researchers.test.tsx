@@ -50,6 +50,42 @@ beforeEach(() => {
 });
 afterEach(() => vi.useRealTimers());
 
+describe('Researchers with the list kept on the phone', () => {
+  const LIST = ROWS.map((r) => ({ ...r, key: `${r.name_ar.replace('أ', 'ا')} ${r.name_en ?? ''} ${(r.paper_code ?? '').toLowerCase()}`.toLowerCase() }));
+
+  function setupList() {
+    const search = vi.fn(async () => [ROWS[0]]);
+    const list = vi.fn(async () => LIST);
+    render(
+      <I18nProvider initial="en">
+        <Researchers search={search} submit={vi.fn(async () => ({ status: 'signed' as const }))} list={list} />
+      </I18nProvider>,
+    );
+    return { search, list };
+  }
+
+  it('shows name and paper matches at once without asking the server', async () => {
+    const { search, list } = setupList();
+    await act(async () => {});
+    expect(list).toHaveBeenCalled();
+    fireEvent.change(screen.getByLabelText('Search researchers'), { target: { value: 'احمد' } });
+    expect(screen.getByText('أحمد علي')).toBeInTheDocument();
+    expect(screen.getByText('أحمد حسن')).toBeInTheDocument();
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
+    expect(search).not.toHaveBeenCalled();
+  });
+
+  it('still asks the server for a phone number', async () => {
+    const { search } = setupList();
+    await act(async () => {});
+    await typeSearch('0770 123 4567');
+    expect(search).toHaveBeenCalledWith('0770 123 4567');
+    expect(await screen.findByText('أحمد علي')).toBeInTheDocument();
+  });
+});
+
 describe('Researchers', () => {
   it('searches after 2 characters with a debounce', async () => {
     const { search } = setup();

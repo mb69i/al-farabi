@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { filterLocal, needsServer, type DeskRow } from '../lib/deskSearch';
 import { SignaturePad } from '../components/SignaturePad';
 import { useI18n, type Key } from '../i18n';
 import type { SignoffResult } from '../lib/signoff';
@@ -8,6 +9,8 @@ import './Researchers.css';
 type Props = {
   search: (q: string) => Promise<ResearcherRow[]>;
   submit: (r: ResearcherRow, png: Blob, strokes: unknown) => Promise<SignoffResult>;
+  /** Every researcher (names, paper ID, hall) so name and paper searches answer at once on the phone. */
+  list?: () => Promise<DeskRow[]>;
 };
 
 /** A signature saving in the background (owner, 21 Nov: "make the researchers sign in faster"): the desk goes
@@ -21,8 +24,9 @@ const RESULT_KEY: Record<SignoffResult['status'], Key> = {
 };
 
 const SHOW_DONE_MS = 8000;
+const LIST_REFRESH_MS = 30_000;
 
-export function Researchers({ search, submit }: Props) {
+export function Researchers({ search, submit, list }: Props) {
   const { t, lang } = useI18n();
   const [query, setQuery] = useState('');
   const [rows, setRows] = useState<ResearcherRow[] | null>(null);
@@ -31,12 +35,33 @@ export function Researchers({ search, submit }: Props) {
   const getters = useRef<{ png: () => Promise<Blob>; data: () => unknown } | null>(null);
   const inFlight = useRef(false);
   const [saves, setSaves] = useState<Save[]>([]);
+  const [all, setAll] = useState<DeskRow[] | null>(null);
+
+  // The whole list (about 240 researchers) is loaded once and refreshed every 30 s for who has signed.
+  useEffect(() => {
+    if (!list) return;
+    let alive = true;
+    const load = () => list().then((r) => alive && setAll(r)).catch(() => {});
+    load();
+    const id = window.setInterval(load, LIST_REFRESH_MS);
+    return () => {
+      alive = false;
+      window.clearInterval(id);
+    };
+  }, [list]);
 
   useEffect(() => {
     const q = query.trim();
     if (q.length < 2) {
       setRows(null);
       return;
+    }
+    if (all && !needsServer(q)) {
+      const local = filterLocal(all, q);
+      if (local.length) {
+        setRows(local);
+        return;
+      }
     }
     let alive = true;
     const id = window.setTimeout(() => {
@@ -48,7 +73,7 @@ export function Researchers({ search, submit }: Props) {
       alive = false;
       window.clearTimeout(id);
     };
-  }, [query, search]);
+  }, [query, search, all]);
 
   function reset() {
     setPicked(null);
@@ -65,6 +90,7 @@ export function Researchers({ search, submit }: Props) {
     submit(row, png, data)
       .then((res) => {
         update(row.id, { state: 'ok', key: RESULT_KEY[res.status] ?? 'res.done' });
+        setAll((l) => l && l.map((r) => (r.id === row.id ? { ...r, signed: true } : r)));
         window.setTimeout(() => setSaves((all) => all.filter((s) => !(s.row.id === row.id && s.state === 'ok'))), SHOW_DONE_MS);
       })
       .catch(() => update(row.id, { state: 'error', key: 'res.failed' }));

@@ -1,3 +1,4 @@
+import type { DeskRow } from './deskSearch';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { submitSignoff, type SignoffResult } from './signoff';
 
@@ -31,6 +32,12 @@ export function createStaffApi(client: SupabaseClient, slug: string) {
       const { data, error } = await client.rpc('search_researchers', { p_slug: slug, p_query: q });
       if (error) throw new Error(error.message);
       return (data ?? []) as ResearcherRow[];
+    },
+
+    async deskResearchers(): Promise<DeskRow[]> {
+      const { data, error } = await client.rpc('desk_researchers', { p_slug: slug });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as DeskRow[];
     },
 
     async signOff(r: ResearcherRow, png: Blob, strokes: unknown): Promise<SignoffResult> {

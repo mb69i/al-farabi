@@ -31,7 +31,7 @@ export default function StaffRoutes({ area }: { area: 'researchers' | 'admin' })
   if (area === 'researchers') {
     return (
       <Shell variant="staff" actions={<SignOut />} ministry>
-        <Researchers search={staff.searchResearchers} submit={staff.signOff} />
+        <Researchers search={staff.searchResearchers} submit={staff.signOff} list={staff.deskResearchers} />
       </Shell>
     );
   }
