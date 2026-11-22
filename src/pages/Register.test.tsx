@@ -105,8 +105,12 @@ describe('Register', () => {
       await screen.findByLabelText(/full name/i);
       fill();
       await sendForm();
-      expect(await screen.findByText('Welcome to day two')).toBeInTheDocument();
-      expect(screen.getByText(/attendance for today is recorded/i)).toBeInTheDocument();
+      const card = await screen.findByRole('status', { name: 'Welcome to day two' });
+      expect(card).toHaveTextContent('Dear Ali,');
+      expect(card).toHaveTextContent('Welcome to day two of The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation');
+      expect(card).toHaveTextContent('Day two · 22 November 2026');
+      expect(card).toHaveTextContent('Al-Farabi University');
+      expect(card.querySelector('img')).toHaveAttribute('alt', 'Al-Farabi University');
     } finally {
       vi.useRealTimers();
     }
@@ -122,7 +126,7 @@ describe('Register', () => {
       await screen.findByLabelText(/full name/i);
       fill();
       await sendForm();
-      expect(await screen.findByText('Welcome to day two')).toBeInTheDocument();
+      expect(await screen.findByRole('status', { name: 'Welcome to day two' })).toBeInTheDocument();
     } finally {
       vi.useRealTimers();
     }
@@ -136,7 +140,7 @@ describe('Register', () => {
       fill();
       await sendForm();
       expect(await screen.findByText('You are registered')).toBeInTheDocument();
-      expect(screen.queryByText('Welcome to day two')).toBeNull();
+      expect(screen.queryByRole('status', { name: 'Welcome to day two' })).toBeNull();
     } finally {
       vi.useRealTimers();
     }

@@ -410,43 +410,74 @@
   font-weight: 700;
 }
 
-/* Second day on (22 Nov): a welcome card above the pass. */
+/* Second day on (22 Nov): an official welcome letter above the pass, like the conference emails. */
 .day-welcome {
   width: 100%;
-  display: grid;
-  justify-items: center;
-  gap: var(--space-2);
-  padding: var(--space-5) var(--space-4);
+  overflow: hidden;
   border-radius: var(--radius-lg);
-  background: linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 100%);
-  color: #fff;
-  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line-dark);
   box-shadow: var(--shadow-card);
-  border-top: 3px solid var(--gold);
   animation: day-welcome-in 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-.day-welcome-badge {
+.day-welcome-head {
+  display: grid;
+  place-items: center;
+  padding: var(--space-5) var(--space-4) var(--space-4);
+  background: linear-gradient(180deg, var(--navy) 0%, var(--navy-deep) 100%);
+  border-bottom: 4px solid #A3262B;
+}
+
+.day-welcome-head img {
+  width: 72px;
+  height: auto;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+}
+
+.day-welcome-body {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  text-align: start;
+  color: var(--ink);
+}
+
+.day-welcome-body p {
+  margin: 0;
+}
+
+.day-welcome-date {
+  justify-self: start;
   padding: 4px var(--space-3);
   border-radius: 999px;
-  background: var(--gold);
-  color: var(--navy-deep);
+  background: rgba(242, 194, 48, 0.18);
+  color: var(--gold-ink);
   font-size: var(--fs-sm);
-  font-weight: 800;
+  font-weight: 700;
 }
 
-.day-welcome-title {
-  margin: 0;
+.day-welcome-greet {
   font-size: var(--fs-lg);
   font-weight: 800;
-  color: #fff;
 }
 
-.day-welcome-note {
-  margin: 0;
-  max-width: 30ch;
-  color: rgba(255, 255, 255, 0.82);
-  line-height: 1.7;
+.day-welcome-text {
+  line-height: 1.9;
+}
+
+.day-welcome-sign {
+  display: grid;
+  gap: 2px;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line-dark);
+  color: var(--ink-muted);
+  font-size: var(--fs-sm);
+}
+
+.day-welcome-sign strong {
+  color: var(--ink);
+  font-size: var(--fs-md, 1rem);
 }
 
 @keyframes day-welcome-in {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { conferenceDay } from '../lib/conferenceDay';
 import { EVENT_STARTS_ON } from '../lib/config';
+import { datePhrase } from '../lib/datePhrase';
 import { Shell } from '../components/Shell';
 import { useI18n, type Key } from '../i18n';
 import type { Api, Gender } from '../lib/api';
@@ -201,6 +202,8 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
 
   const atLimit = deviceUsed >= DEVICE_LIMIT;
   const dayNo = conferenceDay(startsOn, Date.now());
+  const dayWord = dayNo ? t(DAY_WORD[dayNo] ?? 'day.word', { n: String(dayNo) }) : '';
+  const todayIso = dayNo ? new Date(Date.parse(`${startsOn}T00:00:00Z`) + (dayNo - 1) * 86_400_000).toISOString().slice(0, 10) : '';
 
   // the confirm screen opens at its heading (scrolled into view, read out by screen readers)
   useEffect(() => {
@@ -268,11 +271,20 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
       {view === 'done' && pass && (
         <section className="reg-done">
           {dayNo !== null && dayNo >= 2 && checkedIn && (
-            <div className="day-welcome" role="status">
-              <span className="day-welcome-badge">{t('day.badge', { n: String(dayNo) })}</span>
-              <h2 className="day-welcome-title">{t('day.welcome', { day: t(DAY_WORD[dayNo] ?? 'day.word', { n: String(dayNo) }) })}</h2>
-              <p className="day-welcome-note">{t('day.note')}</p>
-            </div>
+            <article className="day-welcome" role="status" aria-label={t('day.title', { day: dayWord })}>
+              <header className="day-welcome-head">
+                <img src="/brand/crest-192.png" alt={t('brand.university')} width={72} height={76} />
+              </header>
+              <div className="day-welcome-body">
+                <p className="day-welcome-date">{t('day.badge', { day: dayWord })} · {datePhrase(todayIso, todayIso, lang)}</p>
+                <p className="day-welcome-greet">{t('day.greeting', { name: pass.firstName })}</p>
+                <p className="day-welcome-text">{t('day.welcome', { day: dayWord, conf: t('brand.conferenceLong') })}</p>
+                <p className="day-welcome-sign">
+                  {t('day.regards')}
+                  <strong>{t('brand.university')}</strong>
+                </p>
+              </div>
+            </article>
           )}
           <div className="reg-card pass-card">
             <h2 className="pass-heading">{outcome === 'created' ? t('thanks.title') : t('pass.title')}</h2>
