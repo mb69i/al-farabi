@@ -29,7 +29,9 @@ export function MfaSetup({ client }: { client: SupabaseClient }) {
       const { data } = await client.auth.mfa.listFactors();
       const verified = data?.totp?.find((f) => f.status === 'verified');
       if (verified) {
-        if (alive) setFactorId(verified.id);
+        // Always kept: in development React runs this effect twice, and the second run returns early
+        // (started.current), so dropping this result left Verify doing nothing.
+        setFactorId(verified.id);
         return;
       }
       // Remove half-finished enrolments so a fresh QR can be issued.

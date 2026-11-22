@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { AuthContext, type AuthState } from '../auth/AuthProvider';
@@ -39,6 +40,16 @@ describe('MfaSetup', () => {
     await new Promise((r) => setTimeout(r, 20));
     expect(c.auth.mfa.enroll).toHaveBeenCalledTimes(1);
     expect(c.auth.mfa.unenroll).not.toHaveBeenCalled();
+  });
+
+  it('a signed-up admin can verify a code in StrictMode (dev runs effects twice)', async () => {
+    const c = client();
+    c.auth.mfa.listFactors.mockResolvedValue({ data: { totp: [{ id: 'f9', status: 'verified' }], all: [] } } as never);
+    render(<StrictMode>{view(c, { user: { id: 'u1' } } as AuthState['session'])}</StrictMode>);
+    await new Promise((r) => setTimeout(r, 20));
+    fireEvent.change(screen.getByLabelText('Code'), { target: { value: '123456' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Verify' }));
+    await waitFor(() => expect(c.auth.mfa.challengeAndVerify).toHaveBeenCalledWith({ factorId: 'f9', code: '123456' }));
   });
 
   it('shows the secret for typing into the app by hand', async () => {
