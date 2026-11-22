@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { conferenceDay } from '../lib/conferenceDay';
 import { Shell } from '../components/Shell';
 import { useI18n, type Key } from '../i18n';
 import type { Api, Gender } from '../lib/api';
@@ -11,6 +12,9 @@ type Field = 'fullName' | 'phone' | 'email' | 'gender' | 'governorate' | 'workpl
 type Values = Record<Field, string>;
 type View = 'loading' | 'form' | 'confirm' | 'done' | 'closed' | 'error' | 'busy' | 'limit';
 type Outcome = 'created' | 'already' | 'returning';
+
+/** Second day on (owner, 22 Nov): a welcome card above the pass. */
+const DAY_WORD: Record<number, 'day.word2' | 'day.word3'> = { 2: 'day.word2', 3: 'day.word3' };
 
 const EMPTY: Values = { fullName: '', phone: '', email: '', gender: '', governorate: '', workplace: '', specialization: '' };
 
@@ -59,6 +63,15 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
   const [checkedIn, setCheckedIn] = useState(false);
   const [deviceUsed, setDeviceUsed] = useState(() => deviceCount(slug));
   const honeypot = useRef<HTMLInputElement>(null);
+  const [startsOn, setStartsOn] = useState<string | undefined>();
+
+  useEffect(() => {
+    let alive = true;
+    api.getPublicEvent(slug).then((ev) => alive && setStartsOn(ev?.starts_on)).catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [api, slug]);
 
   useEffect(() => {
     const saved = loadPass(slug);
@@ -186,6 +199,7 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
   }
 
   const atLimit = deviceUsed >= DEVICE_LIMIT;
+  const dayNo = conferenceDay(startsOn, Date.now());
 
   // the confirm screen opens at its heading (scrolled into view, read out by screen readers)
   useEffect(() => {
@@ -252,6 +266,13 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
 
       {view === 'done' && pass && (
         <section className="reg-done">
+          {dayNo !== null && dayNo >= 2 && checkedIn && (
+            <div className="day-welcome" role="status">
+              <span className="day-welcome-badge">{t('day.badge', { n: String(dayNo) })}</span>
+              <h2 className="day-welcome-title">{t('day.welcome', { day: t(DAY_WORD[dayNo] ?? 'day.word', { n: String(dayNo) }) })}</h2>
+              <p className="day-welcome-note">{t('day.note')}</p>
+            </div>
+          )}
           <div className="reg-card pass-card">
             <h2 className="pass-heading">{outcome === 'created' ? t('thanks.title') : t('pass.title')}</h2>
             {outcome === 'already' && <p className="pass-note">{t('thanks.already')}</p>}

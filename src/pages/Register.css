@@ -409,3 +409,51 @@
   color: var(--success);
   font-weight: 700;
 }
+
+/* Second day on (22 Nov): a welcome card above the pass. */
+.day-welcome {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 100%);
+  color: #fff;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+  border-top: 3px solid var(--gold);
+  animation: day-welcome-in 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.day-welcome-badge {
+  padding: 4px var(--space-3);
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--navy-deep);
+  font-size: var(--fs-sm);
+  font-weight: 800;
+}
+
+.day-welcome-title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  color: #fff;
+}
+
+.day-welcome-note {
+  margin: 0;
+  max-width: 30ch;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.7;
+}
+
+@keyframes day-welcome-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .day-welcome { animation: none; }
+}

@@ -55,6 +55,12 @@ export const en: Record<Key, string> = {
   'err.short': 'Enter at least 2 letters',
 
   'thanks.title': 'You are registered',
+  'day.badge': 'Day {n}',
+  'day.welcome': 'Welcome to day {day}',
+  'day.word2': 'two',
+  'day.word3': 'three',
+  'day.word': '{n}',
+  'day.note': 'Your attendance for today is recorded. We wish you a fruitful day.',
   'thanks.already': 'You were already registered — your attendance today is confirmed.',
   'thanks.emailNote': 'Your certificate will arrive by email within minutes.',
   'pass.title': 'Attendee pass',

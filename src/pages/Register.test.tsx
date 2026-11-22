@@ -98,6 +98,34 @@ describe('Register', () => {
     expect(loadPass('test-slug')?.serial).toBe('ALF26-ABC234');
   });
 
+  it('on the second day, a welcome-to-day-two card greets the registrant', async () => {
+    vi.useFakeTimers({ now: Date.parse('2026-11-22T07:00:00Z'), shouldAdvanceTime: true });
+    try {
+      setup(fakeApi({ getPublicEvent: vi.fn(async () => ({ registration_open: true, starts_on: '2026-11-21' })) }));
+      await screen.findByLabelText(/full name/i);
+      fill();
+      await sendForm();
+      expect(await screen.findByText('Welcome to day two')).toBeInTheDocument();
+      expect(screen.getByText(/attendance for today is recorded/i)).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('on the first day there is no day-two card', async () => {
+    vi.useFakeTimers({ now: Date.parse('2026-11-21T07:00:00Z'), shouldAdvanceTime: true });
+    try {
+      setup(fakeApi({ getPublicEvent: vi.fn(async () => ({ registration_open: true, starts_on: '2026-11-21' })) }));
+      await screen.findByLabelText(/full name/i);
+      fill();
+      await sendForm();
+      expect(await screen.findByText('You are registered')).toBeInTheDocument();
+      expect(screen.queryByText('Welcome to day two')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('already_registered shows the saved pass with day check-in', async () => {
     setup(
       fakeApi({
