@@ -112,6 +112,22 @@ describe('Register', () => {
     }
   });
 
+  it('shows the day-two card even when the event lookup fails (uses the built-in start date)', async () => {
+    vi.useFakeTimers({ now: Date.parse('2026-11-22T07:00:00Z'), shouldAdvanceTime: true });
+    try {
+      setup(fakeApi({
+        getPublicEvent: vi.fn(async () => { throw new Error('offline'); }),
+        registerGuest: vi.fn(async (): Promise<RegisterResult> => ({ status: 'already_registered', serial: 'ALF26-9YQ83D', checked_in_today: true })),
+      }));
+      await screen.findByLabelText(/full name/i);
+      fill();
+      await sendForm();
+      expect(await screen.findByText('Welcome to day two')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('on the first day there is no day-two card', async () => {
     vi.useFakeTimers({ now: Date.parse('2026-11-21T07:00:00Z'), shouldAdvanceTime: true });
     try {

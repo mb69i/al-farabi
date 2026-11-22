@@ -41,6 +41,7 @@ const fakeRpc = {
     admin_add_backup_device: { id: 'd9', label: 'حاسوب المكتبة', code: 'K7Q2-MXH4', expires_at: new Date(Date.now() + 30 * 60000).toISOString() },
   },
   busy: { register_guest: { status: 'rate_limited', checked_in_today: false } },
+  'thanks-already': { register_guest: { status: 'already_registered', serial: 'ALF26-9YQ83D', checked_in_today: true } },
   thanks: { register_guest: { status: 'created', serial: 'ALF26-K7Q2MX', checked_in_today: true } },
   researchers: { whoami: { role: 'doctor', aal: 'aal1', email: 'doctor@example.org' }, search_researchers: RESEARCHERS },
   // the desk right after a signature: back at the search while it saves (21 Nov)
@@ -146,10 +147,10 @@ if (scenario === 'confirm') {
   await fillForm(page);
   await page.waitForTimeout(500);
 }
-if (scenario === 'busy' || scenario === 'thanks') {
+if (scenario === 'busy' || scenario.startsWith('thanks')) {
   await fillForm(page);
   await confirmForm(page);
-  await page.waitForTimeout(scenario === 'thanks' ? 3500 : 800);
+  await page.waitForTimeout(scenario.startsWith('thanks') ? 3500 : 800);
 }
 if (isDisplay || scenario === 'admin' || scenario === 'controls' || scenario === 'backups') await page.waitForTimeout(2000);
 if (scenario === 'backups') {

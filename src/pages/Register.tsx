@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { conferenceDay } from '../lib/conferenceDay';
+import { EVENT_STARTS_ON } from '../lib/config';
 import { Shell } from '../components/Shell';
 import { useI18n, type Key } from '../i18n';
 import type { Api, Gender } from '../lib/api';
@@ -63,11 +64,11 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
   const [checkedIn, setCheckedIn] = useState(false);
   const [deviceUsed, setDeviceUsed] = useState(() => deviceCount(slug));
   const honeypot = useRef<HTMLInputElement>(null);
-  const [startsOn, setStartsOn] = useState<string | undefined>();
+  const [startsOn, setStartsOn] = useState<string>(EVENT_STARTS_ON);
 
   useEffect(() => {
     let alive = true;
-    api.getPublicEvent(slug).then((ev) => alive && setStartsOn(ev?.starts_on)).catch(() => {});
+    api.getPublicEvent(slug).then((ev) => alive && ev?.starts_on && setStartsOn(ev.starts_on)).catch(() => {});
     return () => {
       alive = false;
     };
