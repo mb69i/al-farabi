@@ -34,7 +34,7 @@ describe('Display', () => {
     expect(value('Female')).toBe('176');
     expect(screen.queryByText('VIP guests')).toBeNull();
     expect(document.querySelector('.counter--gold')).toBeNull();
-    expect(value('Researchers')).toBe('64');
+    expect(screen.queryByText('Researchers')).toBeNull(); // owner, 22 Nov: no researchers counter on the hall screen
     expect(value('Registered')).toBe('412');
     expect(value('Present today')).toBe('287');
   });
@@ -127,14 +127,11 @@ describe('Display — live feel (item 7)', () => {
     expect(screen.getByTestId('last-reg')).toHaveTextContent('Last registration: 2 min ago');
   });
 
-  it('shows a live badge and researcher progress (signed of total)', async () => {
+  it('shows a live badge and no researcher progress bar', async () => {
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});
     expect(screen.getByText('Live')).toBeInTheDocument();
-    const bar = screen.getByRole('progressbar');
-    expect(bar).toHaveAttribute('aria-valuenow', '64');
-    expect(bar).toHaveAttribute('aria-valuemax', '121');
-    expect(card('Researchers')).toHaveTextContent('of 121');
+    expect(screen.queryByRole('progressbar')).toBeNull();
   });
 
   it('counts up from zero on start, but jumps straight to the number with reduced motion', async () => {
@@ -251,7 +248,7 @@ describe('Display — centred layout like the previous event tool', () => {
     expect(stage).toContainElement(strip as HTMLElement);
     // the QR comes before the numbers
     expect(qr.compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    for (const label of ['Registered', 'Present today', 'Male', 'Female', 'Researchers']) {
+    for (const label of ['Registered', 'Present today', 'Male', 'Female']) {
       expect(strip).toContainElement(screen.getByText(label));
     }
     expect(screen.getByText('Scan to register your attendance')).toBeInTheDocument();

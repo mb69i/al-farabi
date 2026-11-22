@@ -41,15 +41,13 @@ begin
     raise exception 'FAIL: export has no governorate';
   end if;
 
-  -- hall numbers: male + female = registered, VIP counts guests only (researchers have their own number)
+  -- hall numbers count today only (22 Nov): male + female = present today (see display_today.sql)
   c := public.get_display_counts('alfarabi-conf-2026');
-  n := (select count(*) from public.guests where event_id = ev);
-  if (c->>'total')::int <> n then raise exception 'FAIL: total %', c; end if;
-  if (c->>'male')::int + (c->>'female')::int <> (c->>'total')::int then
-    raise exception 'FAIL: male + female <> total: %', c;
+  if (c->>'male')::int + (c->>'female')::int <> (c->>'present_today')::int then
+    raise exception 'FAIL: male + female <> present today: %', c;
   end if;
-  if (c->>'vip')::int <> (select count(*) from public.guests where event_id = ev and is_vip) then
-    raise exception 'FAIL: vip counts researchers: %', c;
+  if (c->>'vip')::int > (c->>'present_today')::int then
+    raise exception 'FAIL: vip counts more than today''s guests: %', c;
   end if;
 end $$;
 rollback;

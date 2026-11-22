@@ -177,7 +177,6 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
   })();
 
   const n = (k: CounterKey | 'researchers_total') => Number(counts?.[k]) || 0;
-  const pct = (a: number, b: number) => (b > 0 ? Math.min(100, Math.round((a / b) * 100)) : 0);
   const people = n('male') + n('female');
   const malePct = people > 0 ? (n('male') / people) * 100 : 50;
   const theme: Theme = counts?.theme === 'day' || counts?.theme === 'night' ? counts.theme : autoTheme(now);
@@ -287,26 +286,6 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
               <span className="d-split-female" />
             </div>
           </div>
-          {stat(
-            'researchers_signed',
-            t('display.researchers'),
-            'counter--burgundy',
-            counts && n('researchers_total') > 0 ? (
-              <div className="counter-progress-wrap">
-                <div
-                  className="counter-progress"
-                  role="progressbar"
-                  aria-label={t('display.researchers')}
-                  aria-valuemin={0}
-                  aria-valuemax={n('researchers_total')}
-                  aria-valuenow={n('researchers_signed')}
-                >
-                  <span style={{ width: `${pct(n('researchers_signed'), n('researchers_total'))}%` }} />
-                </div>
-                <span className="counter-sub num">{t('display.ofTotal', { n: n('researchers_total').toLocaleString('en-US') })}</span>
-              </div>
-            ) : null,
-          )}
         </div>
       </main>
 
