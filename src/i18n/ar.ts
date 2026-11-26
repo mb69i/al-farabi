@@ -5,8 +5,8 @@ export const ar = {
   'brand.conferenceLong': 'تيداكس بغداد 2026 — ما لم نفقده يوماً',
   'brand.edition': 'النسخة السادسة عشرة',
   'brand.slogan': 'What We Never Lost | ما لم نفقده يوماً',
-  'brand.dates': '19 كانون الأول 2026',
-  'brand.place': 'فندق الرشيد — بغداد',
+  'brand.dates': 'الجمعة 27 تشرين الثاني 2026',
+  'brand.place': 'جامعة الفارابي — بغداد',
   'lang.switch': 'English',
   'lang.switchLabel': 'التبديل إلى الإنجليزية',
 

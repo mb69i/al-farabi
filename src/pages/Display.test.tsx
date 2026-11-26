@@ -276,7 +276,7 @@ describe('Display — TEDxBaghdad 2026 poster (owner, 26 Nov: "redesign it to fi
     expect(document.querySelector('.d-disc')).toHaveTextContent('It Was Always There!');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('ما لم نفقده يوماً');
     expect(screen.getByText('What We Never Lost')).toBeInTheDocument();
-    expect(screen.getByText('19 كانون الأول 2026 · فندق الرشيد – بغداد')).toBeInTheDocument();
+    expect(screen.getByText('الجمعة 27 تشرين الثاني 2026 · جامعة الفارابي – بغداد')).toBeInTheDocument();
     expect(screen.queryByText(/مؤتمر الفارابي/)).toBeNull();
   });
 

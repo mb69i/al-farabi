@@ -7,8 +7,8 @@ export const en: Record<Key, string> = {
   'brand.conferenceLong': 'TEDxBaghdad 2026 — What We Never Lost',
   'brand.edition': '16th edition',
   'brand.slogan': 'What We Never Lost | ما لم نفقده يوماً',
-  'brand.dates': '19 December 2026',
-  'brand.place': 'Al-Rasheed Hotel — Baghdad',
+  'brand.dates': 'Friday 27 November 2026',
+  'brand.place': 'Al-Farabi University — Baghdad',
   'lang.switch': 'العربية',
   'lang.switchLabel': 'Switch to Arabic',
 

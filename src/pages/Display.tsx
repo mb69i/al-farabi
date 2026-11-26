@@ -12,7 +12,7 @@ type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean };
 const WELCOME = 'جامعة الفارابي ترحب بكم في فعالية TEDxBaghdad';
 const THEME_AR = 'ما لم نفقده يوماً';
 const THEME_EN = 'What We Never Lost';
-const WHEN = '19 كانون الأول 2026 · فندق الرشيد – بغداد';
+const WHEN = 'الجمعة 27 تشرين الثاني 2026 · جامعة الفارابي – بغداد'; // Al-Farabi hosts (owner, 26 Nov)
 
 // The QR always sends guests to the live site, even when this screen is opened from a preview copy
 // (whose address needs a Vercel login). VITE_SITE_URL can point it at a custom domain later.

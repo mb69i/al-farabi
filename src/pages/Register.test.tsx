@@ -124,7 +124,7 @@ describe('Register', () => {
   });
 
   it('shows the day-two card even when the event lookup fails (uses the built-in start date)', async () => {
-    vi.useFakeTimers({ now: Date.parse('2026-12-20T07:00:00Z'), shouldAdvanceTime: true });
+    vi.useFakeTimers({ now: Date.parse('2026-11-28T07:00:00Z'), shouldAdvanceTime: true });
     try {
       setup(fakeApi({
         getPublicEvent: vi.fn(async () => { throw new Error('offline'); }),
@@ -334,7 +334,7 @@ describe('Register', () => {
 });
 
 describe('Register — opens on the main event poster, then slides to the form (owner, 26 Nov)', () => {
-  it('the first slide is the theme artwork with the date and Al-Rasheed Hotel, and no form yet', () => {
+  it('the first slide is the theme artwork with the date (Friday 27 Nov 2026 at Al-Farabi, owner 26 Nov), and no form yet', () => {
     renderPage(fakeApi());
     const hero = document.querySelector('.reg-hero') as HTMLElement;
     expect(hero.querySelector('.reg-year')).toHaveTextContent('2026THEME');
@@ -345,8 +345,8 @@ describe('Register — opens on the main event poster, then slides to the form (
     const h1 = screen.getByRole('heading', { level: 1 });
     // the event and the theme on their own lines, no dangling dash
     expect([...h1.querySelectorAll('.reg-title-line')].map((l) => l.textContent)).toEqual(['TEDxBaghdad 2026', 'What We Never Lost']);
-    expect(hero).toHaveTextContent('19 December 2026');
-    expect(hero).toHaveTextContent('Al-Rasheed Hotel — Baghdad');
+    expect(hero).toHaveTextContent('Friday 27 November 2026');
+    expect(hero).toHaveTextContent('Al-Farabi University — Baghdad');
     expect(screen.queryByLabelText(/full name/i)).toBeNull();
   });
 
