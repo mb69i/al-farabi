@@ -867,9 +867,9 @@
 
 /* arrows follow the reading direction */
 [dir='ltr'] .reg-back::before {
-  content: '90  ';
+  content: '← ';
 }
 
 [dir='ltr'] .reg-swipe::after {
-  content: ' 92';
+  content: ' →';
 }
