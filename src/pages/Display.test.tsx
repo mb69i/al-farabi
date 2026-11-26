@@ -255,32 +255,38 @@ describe('Display — centred layout like the previous event tool', () => {
   });
 });
 
-describe('Display — TEDxBaghdad 2026 training (owner, 26 Nov)', () => {
-  it('shows the TEDxBaghdad logo on a white plate, with Al-Farabi as the host', async () => {
+describe('Display — TEDxBaghdad 2026 poster (owner, 26 Nov: "redesign it to fit this")', () => {
+  it('shows the TEDxBaghdad logo in white on the violet, with Al-Farabi as the host', async () => {
     setup(api(vi.fn(async () => ({ ...COUNTS, theme: 'night' as const }))));
     await act(async () => {});
     const row = document.querySelector('.d-logos') as HTMLElement;
     expect(row).toHaveAttribute('dir', 'ltr');
     const srcs = [...row.querySelectorAll('img')].map((i) => i.getAttribute('src'));
-    expect(srcs).toEqual(['/brand/tedx-baghdad-720.png', '/brand/crest-360.webp']);
-    expect(row.querySelector('.d-logo-plate img')).toHaveAttribute('alt', 'TEDxBaghdad');
+    expect(srcs).toEqual(['/brand/tedx-baghdad-white-720.png', '/brand/crest-360.webp']);
+    expect(screen.getByAltText('TEDxBaghdad')).toBeInTheDocument();
+    expect(document.querySelector('.d-logo-plate')).toBeNull();
     expect(screen.queryByAltText('Ministry of Higher Education and Scientific Research')).toBeNull();
   });
 
-  it('opens with the event, the 2026 theme and the training line', async () => {
+  it('reads like the theme artwork: 2026 THEME, LOOK CLOSER!, the red disc, then the theme', async () => {
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});
+    expect(document.querySelector('.d-year')).toHaveTextContent('2026THEME');
+    expect(screen.getByText('LOOK CLOSER!')).toBeInTheDocument();
+    expect(document.querySelector('.d-disc')).toHaveTextContent('It Was Always There!');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('ما لم نفقده يوماً');
     expect(screen.getByText('What We Never Lost')).toBeInTheDocument();
     expect(screen.getByText('الورشة التدريبية لفرق تيداكس بغداد 2026 · جامعة الفارابي – بغداد')).toBeInTheDocument();
     expect(screen.queryByText(/مؤتمر الفارابي/)).toBeNull();
-    expect(document.querySelector('.d-arch')).toBeNull(); // the Al-Farabi arch drawing is gone
   });
 
-  it('has no sponsors bar', async () => {
+  it('has the dotted map of Iraq (Baghdad in red) behind the QR, and no sponsors bar', async () => {
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});
+    const map = document.querySelector('.d-map') as HTMLImageElement;
+    expect(map).toHaveAttribute('src', '/brand/iraq-dots.svg');
+    expect(map).toHaveAttribute('alt', '');
+    expect(document.querySelector('.d-scan')).toContainElement(screen.getByTestId('qr'));
     expect(screen.queryByRole('contentinfo')).toBeNull();
-    expect(document.querySelector('.d-sponsors')).toBeNull();
   });
 });

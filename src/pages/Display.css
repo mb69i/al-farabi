@@ -671,164 +671,229 @@
   }
 }
 
-/* ---------- TEDxBaghdad 2026 (owner, 26 Nov): the theme reveal's look ----------
-   Electric violet page, a white halftone-dot cluster (the dotted map of the artwork), a solid TED-red disc,
-   white type, TED red for accents. Night is the event look; day is the same on white. */
-.display {
-  --d-ink: #170f3a;
-  --d-muted: #5a5478;
-  --d-accent: #e62b1e;
-  --d-gold: #3f14d9;
-  --d-glass: rgba(63, 20, 217, 0.06);
-  --d-line: rgba(63, 20, 217, 0.3);
-  --d-divider: rgba(23, 15, 58, 0.12);
-  --d-rule: rgba(23, 15, 58, 0.2);
-  --d-track: rgba(23, 15, 58, 0.1);
-  --d-male: #3f14d9;
-  --d-female: #e62b1e;
-  --d-chip: rgba(230, 43, 30, 0.08);
-  --d-bump: rgba(230, 43, 30, 0.16);
-  --d-title: #170f3a;
-  --d-when-bg: rgba(63, 20, 217, 0.06);
-  --d-when-line: rgba(63, 20, 217, 0.4);
-  --d-halftone: #3f14d9;
-  --d-pattern:
-    radial-gradient(circle, rgba(63, 20, 217, 0.12) 1.2px, transparent 1.6px) 0 0 / 26px 26px;
-}
-
-.display[data-theme='night'] {
-  --d-bg: #3f14d9;
-  --d-pattern:
-    radial-gradient(70% 60% at 50% 40%, rgba(255, 255, 255, 0.07), transparent 70%),
-    linear-gradient(160deg, #4a1cf2 0%, #3f14d9 45%, #2a0ba8 100%);
-  --d-frame:
-    inset 0 0 0 calc(var(--u) * 0.8) #2a0ba8,
-    inset 0 0 0 calc(var(--u) * 0.8 + 2px) #e62b1e;
+/* ---------- TEDxBaghdad 2026: the theme artwork as the hall screen (owner, 26 Nov) ----------
+   Flat electric violet, the white TEDxBaghdad logo top-left, "2026 THEME" with a red bar top-right,
+   LOOK CLOSER! in heavy white over a solid TED-red disc ("It Was Always There!"), and on the right the QR
+   on the white halftone map of Iraq with Baghdad in red. Day and night look the same: the poster. */
+.display,
+.display[data-theme='night'],
+.display[data-theme='day'] {
+  --d-bg: #4b14f5;
+  --d-pattern: linear-gradient(#4b14f5, #4b14f5);
+  --d-frame: none;
   --d-ink: #ffffff;
-  --d-muted: rgba(255, 255, 255, 0.78);
+  --d-muted: rgba(255, 255, 255, 0.8);
   --d-accent: #ff4a3d;
   --d-gold: #ffffff;
-  --d-glass: rgba(255, 255, 255, 0.08);
-  --d-line: rgba(255, 255, 255, 0.28);
-  --d-divider: rgba(255, 255, 255, 0.16);
-  --d-rule: rgba(255, 255, 255, 0.24);
-  --d-track: rgba(255, 255, 255, 0.16);
+  --d-glass: rgba(255, 255, 255, 0.1);
+  --d-line: rgba(255, 255, 255, 0.3);
+  --d-divider: rgba(255, 255, 255, 0.2);
+  --d-rule: rgba(255, 255, 255, 0.28);
+  --d-track: rgba(255, 255, 255, 0.2);
   --d-male: #ffffff;
   --d-female: #e62b1e;
-  --d-chip: rgba(255, 255, 255, 0.08);
-  --d-qr-shadow: 0 calc(var(--u) * 1.4) calc(var(--u) * 4) calc(var(--u) * -1) rgba(16, 4, 70, 0.8);
-  --d-bump: rgba(255, 255, 255, 0.14);
+  --d-chip: rgba(255, 255, 255, 0.1);
+  --d-qr-shadow: 0 calc(var(--u) * 1.6) calc(var(--u) * 4) calc(var(--u) * -1) rgba(20, 4, 90, 0.65);
+  --d-bump: rgba(255, 255, 255, 0.16);
   --d-title: #ffffff;
-  --d-when-bg: rgba(255, 255, 255, 0.08);
-  --d-when-line: rgba(255, 255, 255, 0.45);
-  --d-halftone: #ffffff;
+  --d-when-bg: transparent;
+  --d-when-line: transparent;
+  --red: #e62b1e;
+
+  padding: calc(var(--u) * 2.6) calc(var(--u) * 4.2);
+  font-family: var(--font);
 }
 
-/* the halftone cluster and the red disc sit behind everything */
-.display::before,
-.display::after {
-  content: '';
-  position: absolute;
-  pointer-events: none;
-  z-index: 0;
+/* ----- top row ----- */
+.d-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: calc(var(--u) * 3);
 }
 
-.display::before {
-  inset: 0;
-  background: radial-gradient(circle, var(--d-halftone) calc(var(--u) * 0.32), transparent calc(var(--u) * 0.36)) 0 0 /
-    calc(var(--u) * 1.5) calc(var(--u) * 1.5);
-  -webkit-mask-image: radial-gradient(34% 46% at 84% 64%, #000 0%, rgba(0, 0, 0, 0.55) 45%, transparent 75%);
-  mask-image: radial-gradient(34% 46% at 84% 64%, #000 0%, rgba(0, 0, 0, 0.55) 45%, transparent 75%);
-  opacity: 0.55;
-}
-
-/* like the artwork: a large disc cut off by the screen edge, level with the theme */
-.display::after {
-  width: calc(var(--u) * 22);
-  height: calc(var(--u) * 22);
-  top: calc(var(--u) * 8);
-  left: calc(var(--u) * -8);
-  border-radius: 50%;
-  background: #e62b1e;
-  opacity: 0.92;
-}
-
-.display[data-theme='day']::after {
-  opacity: 0.85;
-}
-
-.d-stage,
-.d-corner {
-  z-index: 1;
-}
-
-.d-arch,
-.d-logo--mark,
-.d-logo--ministry {
-  display: none;
-}
-
-.d-logo-plate {
-  display: inline-flex;
-  align-items: center;
-  padding: calc(var(--u) * 0.9) calc(var(--u) * 1.4);
-  border-radius: calc(var(--u) * 0.9);
-  background: #fff;
-  box-shadow: 0 calc(var(--u) * 0.6) calc(var(--u) * 2) calc(var(--u) * -0.8) rgba(16, 4, 70, 0.45);
+.d-logos {
+  gap: calc(var(--u) * 1.6);
 }
 
 .d-logo--tedx {
-  height: calc(var(--u) * 3.4);
+  height: calc(var(--u) * 3);
+}
+
+.d-logos-sep {
+  width: 1px;
+  height: calc(var(--u) * 3.6);
+  background: rgba(255, 255, 255, 0.45);
 }
 
 .d-logo--crest {
-  height: calc(var(--u) * 5.2);
-  padding: calc(var(--u) * 0.35);
+  height: calc(var(--u) * 4.2);
+  padding: calc(var(--u) * 0.3);
   border-radius: 50%;
   background: #fff;
 }
 
-.d-kicker {
-  margin-top: calc(var(--u) * 1.2);
-  font-size: calc(var(--u) * 1);
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--d-accent);
+.d-year {
+  display: grid;
+  justify-items: start;
+  padding-inline-start: calc(var(--u) * 1);
+  border-inline-start: calc(var(--u) * 0.35) solid var(--red);
+  color: #fff;
+  line-height: 1;
 }
 
-.display[data-theme='night'] .d-kicker {
+.d-year-num {
+  font-size: calc(var(--u) * 2.2);
+  font-weight: 800;
+}
+
+.d-year-word {
+  margin-top: calc(var(--u) * 0.3);
+  font-size: calc(var(--u) * 0.85);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+/* the clock moves to the bottom corner, out of the poster */
+.d-corner {
+  top: auto;
+  bottom: calc(var(--u) * 1.6);
+  inset-inline-end: calc(var(--u) * 2.4);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.d-clock {
   color: #fff;
-  opacity: 0.85;
+}
+
+/* ----- the stage: poster on the left, QR on the map on the right ----- */
+.d-stage {
+  margin: auto 0;
+  width: 100%;
+  max-width: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: center;
+  column-gap: calc(var(--u) * 4);
+  text-align: left;
+}
+
+.d-poster {
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  justify-items: start;
+  align-content: center;
+}
+
+.d-headline {
+  font-size: calc(var(--u) * 8.4);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  color: #fff;
+  max-width: 7ch;
+  text-wrap: balance;
+}
+
+/* the solid red disc, half under CLOSER!, with the small line in it */
+.d-disc {
+  position: relative;
+  z-index: -1;
+  display: grid;
+  place-items: center;
+  width: calc(var(--u) * 13);
+  height: calc(var(--u) * 13);
+  margin-top: calc(var(--u) * -6.4);
+  margin-inline-start: calc(var(--u) * 0.4);
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+}
+
+.d-disc span {
+  margin-top: calc(var(--u) * 3);
+  font-size: calc(var(--u) * 1.25);
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .display .d-title {
-  margin-top: calc(var(--u) * 0.2);
-  font-size: calc(var(--u) * 3.4);
+  margin-top: calc(var(--u) * 1.4);
+  font-size: calc(var(--u) * 3.6);
   line-height: 1.15;
   font-weight: 900;
+  color: #fff;
+  text-align: left;
 }
 
 .d-theme-en {
   margin-top: calc(var(--u) * 0.1);
-  font-size: calc(var(--u) * 1.7);
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  color: var(--d-title);
+  font-size: calc(var(--u) * 1.6);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.88);
 }
 
-.d-theme-en::after {
-  content: '';
-  display: inline-block;
-  width: calc(var(--u) * 0.7);
-  height: calc(var(--u) * 0.7);
-  margin-inline-start: calc(var(--u) * 0.5);
-  border-radius: 50%;
-  background: #e62b1e;
-  vertical-align: middle;
+/* the numbers sit under the theme, left-aligned */
+.display .d-strip {
+  margin-top: calc(var(--u) * 2.2);
+  width: min(100%, calc(var(--u) * 62));
+  justify-self: start;
+  direction: rtl; /* Arabic labels: read right to left */
 }
 
-/* the live label reads in white on violet */
-.display[data-theme='night'] .d-live {
+.display .d-live {
   color: #fff;
+}
+
+.d-when {
+  margin-top: calc(var(--u) * 1.6);
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: calc(var(--u) * 0.95);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: left;
+}
+
+/* ----- QR on the dotted map of Iraq ----- */
+.d-scan {
+  grid-column: 2;
+  grid-row: 1;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  min-height: calc(var(--u) * 46);
+}
+
+.d-map {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  height: calc(var(--u) * 50);
+  width: auto;
+  transform: translate(-30%, -60%);
+  pointer-events: none;
+}
+
+.display .d-qr-frame {
+  margin-top: calc(var(--u) * 12);
+  margin-right: calc(var(--u) * 10);
+}
+
+.display .qr-caption {
+  margin-right: calc(var(--u) * 10);
+  margin-top: calc(var(--u) * 1);
+  padding: calc(var(--u) * 0.35) calc(var(--u) * 1.4);
+  border-radius: 999px;
+  background: #fff;
+  color: #2a0ba8;
+  font-weight: 700;
+  font-size: calc(var(--u) * 1);
 }

@@ -228,11 +228,22 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
 
   return (
     <Shell>
+      {/* The theme artwork as the page header (owner, 26 Nov): 2026 THEME, LOOK CLOSER! over the red disc, the event
+          and theme, and the dotted map of Iraq with Baghdad in red bleeding off the edge. */}
       <section className="reg-hero">
-        <p className="reg-kicker">
-          {t('brand.edition')} · <span className="num">2026</span>
+        <img className="reg-map" src="/brand/iraq-dots.svg" alt="" aria-hidden="true" />
+        <p className="reg-year" dir="ltr">
+          <span className="num">2026</span>
+          <span>THEME</span>
+        </p>
+        <p className="reg-headline" lang="en" dir="ltr">
+          LOOK CLOSER!
+        </p>
+        <p className="reg-disc" lang="en" dir="ltr">
+          <span>It Was Always There!</span>
         </p>
         <h1 className="reg-title">{t('brand.conferenceLong')}</h1>
+        <p className="reg-kicker">{t('brand.edition')}</p>
         <p className="reg-meta">
           <span>{t('brand.dates')}</span>
           <span>{t('brand.place')}</span>

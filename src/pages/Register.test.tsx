@@ -325,3 +325,16 @@ describe('Register', () => {
     expect(localStorage.getItem('alfarabi-device-count:test-slug')).toBeNull();
   });
 });
+
+describe('Register — TEDxBaghdad 2026 poster header (owner, 26 Nov)', () => {
+  it('opens like the theme artwork: 2026 THEME, LOOK CLOSER!, the red disc and the dotted map', async () => {
+    setup(fakeApi());
+    await screen.findByLabelText(/full name/i);
+    const hero = document.querySelector('.reg-hero') as HTMLElement;
+    expect(hero.querySelector('.reg-year')).toHaveTextContent('2026THEME');
+    expect(hero).toHaveTextContent('LOOK CLOSER!');
+    expect(hero.querySelector('.reg-disc')).toHaveTextContent('It Was Always There!');
+    expect(hero.querySelector('.reg-map')).toHaveAttribute('src', '/brand/iraq-dots.svg');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('TEDxBaghdad 2026 — What We Never Lost');
+  });
+});

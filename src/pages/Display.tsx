@@ -8,7 +8,6 @@ type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean };
 
 // Wording of the agenda's opening slide (owner, 20 Nov), always in Arabic as on the slide.
 // TEDxBaghdad 2026 training at Al-Farabi (owner, 26 Nov): the 2026 theme leads, as on the theme reveal.
-const KICKER = 'TEDxBaghdad 2026';
 const THEME_AR = 'ما لم نفقده يوماً';
 const THEME_EN = 'What We Never Lost';
 const WHEN = 'الورشة التدريبية لفرق تيداكس بغداد 2026 · جامعة الفارابي – بغداد';
@@ -213,73 +212,87 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
         )}
       </div>
 
-      <main className="d-stage">
-        {/* Header like the opening slide of the agenda (owner, 20 Nov): Al-Farabi | the official conference logo |
-            Ministry, the official name, the slogan, then dates and place. No sponsorship line, no web address and
-            no welcome pill (owner, 20 Nov); the QR gets the room. */}
+      {/* The theme artwork as the hall screen (owner, 26 Nov): logo top-left, 2026 THEME top-right, LOOK CLOSER!
+          over the red disc, the theme, the numbers; on the right the QR on the dotted map of Iraq. */}
+      <header className="d-top" dir="ltr">
         <div className="d-logos" dir="ltr">
-          <span className="d-logo-plate">
-            <img className="d-logo d-logo--tedx" src="/brand/tedx-baghdad-720.png" alt="TEDxBaghdad" />
-          </span>
+          <img className="d-logo d-logo--tedx" src="/brand/tedx-baghdad-white-720.png" alt="TEDxBaghdad" />
+          <span className="d-logos-sep" aria-hidden="true" />
           <img className="d-logo d-logo--crest" src="/brand/crest-360.webp" alt={t('brand.university')} />
         </div>
-        <p className="d-kicker" dir="ltr">{KICKER}</p>
-        <h1 className="d-title" lang="ar" dir="rtl">
-          {THEME_AR}
-        </h1>
-        <p className="d-theme-en" lang="en" dir="ltr">
-          {THEME_EN}
+        <p className="d-year">
+          <span className="d-year-num num">2026</span>
+          <span className="d-year-word">THEME</span>
         </p>
-        <p className="d-when" lang="ar" dir="rtl">
-          {WHEN}
-        </p>
+      </header>
 
-        <div className="d-qr-frame">
-          <div
-            className="qr-box"
-            data-testid="qr"
-            data-target={target}
-            role="img"
-            aria-label={t('display.scan')}
-            dangerouslySetInnerHTML={{ __html: qr }}
-          />
-        </div>
-        <p className="qr-caption">{t('display.scan')}</p>
+      <main className="d-stage" dir="ltr">
+        <section className="d-scan">
+          <img className="d-map" src="/brand/iraq-dots.svg" alt="" aria-hidden="true" />
+            <div className="d-qr-frame">
+              <div
+                className="qr-box"
+                data-testid="qr"
+                data-target={target}
+                role="img"
+                aria-label={t('display.scan')}
+                dangerouslySetInnerHTML={{ __html: qr }}
+              />
+            </div>
+              <p className="qr-caption" dir="rtl">{t('display.scan')}</p>
+        </section>
 
-        {notConfigured && (
-          <p className="d-config" role="alert">
-            {t('display.notConfigured')}
+        <section className="d-poster">
+          <p className="d-headline" lang="en">
+            LOOK CLOSER!
           </p>
-        )}
-        <div className="d-strip">
-          {offline ? (
-            <span className="d-live d-live--offline" role="status">
-              <span className="dot" aria-hidden="true" />
-              {t('display.reconnecting')}
-            </span>
-          ) : (
-            <span className="d-live">
-              <span className="dot" aria-hidden="true" />
-              {t('display.live')}
-            </span>
-          )}
-          {stat('total', t('display.total'), 'counter--main')}
-          {stat('present_today', t('display.today'), '')}
-          <div className="d-gender">
-            <div className="d-gender-nums">
-              {stat('male', t('display.male'), 'counter--male')}
-              {stat('female', t('display.female'), 'counter--female')}
+          <p className="d-disc" lang="en">
+            <span>It Was Always There!</span>
+          </p>
+          <h1 className="d-title" lang="ar" dir="rtl">
+            {THEME_AR}
+          </h1>
+          <p className="d-theme-en" lang="en">
+            {THEME_EN}
+          </p>
+            {notConfigured && (
+              <p className="d-config" role="alert">
+                {t('display.notConfigured')}
+              </p>
+            )}
+                <div className="d-strip">
+              {offline ? (
+                <span className="d-live d-live--offline" role="status">
+                  <span className="dot" aria-hidden="true" />
+                  {t('display.reconnecting')}
+                </span>
+              ) : (
+                <span className="d-live">
+                  <span className="dot" aria-hidden="true" />
+                  {t('display.live')}
+                </span>
+              )}
+              {stat('total', t('display.total'), 'counter--main')}
+              {stat('present_today', t('display.today'), '')}
+              <div className="d-gender">
+                <div className="d-gender-nums">
+                  {stat('male', t('display.male'), 'counter--male')}
+                  {stat('female', t('display.female'), 'counter--female')}
+                </div>
+                <div
+                  className="d-split"
+                  role="img"
+                  aria-label={`${t('display.male')} ${n('male')} · ${t('display.female')} ${n('female')}`}
+                >
+                  <span className="d-split-male" style={{ width: `${malePct}%` }} />
+                  <span className="d-split-female" />
+                </div>
+              </div>
             </div>
-            <div
-              className="d-split"
-              role="img"
-              aria-label={`${t('display.male')} ${n('male')} · ${t('display.female')} ${n('female')}`}
-            >
-              <span className="d-split-male" style={{ width: `${malePct}%` }} />
-              <span className="d-split-female" />
-            </div>
-          </div>
-        </div>
+              <p className="d-when" lang="ar" dir="rtl">
+            {WHEN}
+          </p>
+        </section>
       </main>
 
     </div>

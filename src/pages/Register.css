@@ -488,3 +488,132 @@
 @media (prefers-reduced-motion: reduce) {
   .day-welcome { animation: none; }
 }
+
+/* ---------- TEDxBaghdad 2026 (owner, 26 Nov): the page hero is the theme artwork ----------
+   Full-width violet under the header, "2026 THEME" with a red bar, LOOK CLOSER! in heavy white over a solid
+   TED-red disc, the event and theme, and the white halftone map of Iraq (Baghdad in red) bleeding off the edge.
+   The form card rises over the band's lower edge. */
+.reg-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) calc(var(--space-8) + var(--space-6));
+  text-align: left;
+  direction: ltr;
+  background: #4b14f5;
+  box-shadow: 0 0 0 100vmax #4b14f5;
+  clip-path: inset(0 -100vmax);
+  color: #fff;
+}
+
+.reg-map {
+  position: absolute;
+  z-index: -1;
+  right: -40px;
+  top: 24px;
+  height: 92%;
+  max-height: 440px;
+  width: auto;
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+/* phones: the map sits low on the right, behind, so the words stay clear */
+@media (max-width: 640px) {
+  .reg-map {
+    top: auto;
+    bottom: 36px;
+    right: -70px;
+    height: 250px;
+    opacity: 0.4;
+  }
+}
+
+.reg-year {
+  display: inline-grid;
+  justify-items: start;
+  padding-left: 10px;
+  border-left: 4px solid #e62b1e;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.reg-year span:first-child {
+  font-size: 1.35rem;
+}
+
+.reg-year span:last-child {
+  margin-top: 3px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+.reg-headline {
+  margin-top: var(--space-5);
+  max-width: 7ch;
+  font-size: clamp(3.4rem, 2rem + 8vw, 6.5rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+}
+
+.reg-disc {
+  position: relative;
+  z-index: -1;
+  display: grid;
+  place-items: center;
+  width: clamp(120px, 30vw, 190px);
+  aspect-ratio: 1;
+  margin-top: clamp(-80px, -14vw, -52px);
+  margin-left: 4px;
+  border-radius: 50%;
+  background: #e62b1e;
+}
+
+.reg-disc span {
+  max-width: 78%;
+  margin-top: 30%;
+  font-size: clamp(0.78rem, 0.6rem + 0.8vw, 1rem);
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.reg-hero .reg-title {
+  margin-top: var(--space-4);
+  max-width: 18ch;
+  color: #fff;
+  font-size: clamp(1.5rem, 1.1rem + 2vw, 2.25rem);
+  line-height: 1.25;
+  direction: rtl;
+  text-align: left;
+}
+
+.reg-hero .reg-kicker {
+  margin-top: var(--space-3);
+  padding: 4px var(--space-3);
+  background: #fff;
+  color: #2a0ba8;
+  font-weight: 700;
+  direction: rtl;
+}
+
+.reg-hero .reg-meta {
+  align-items: flex-start;
+  margin-top: var(--space-3);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* the form card rises over the band */
+.reg-hero ~ .reg-card {
+  position: relative;
+  background: var(--page);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.reg-hero + .reg-card {
+  margin-top: calc(var(--space-8) * -1);
+}

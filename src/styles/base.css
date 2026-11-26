@@ -318,3 +318,53 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------- TEDxBaghdad 2026 (owner, 26 Nov): public pages open on the theme artwork's violet ----------
+   The header and the page hero share one full-width violet band (box-shadow + clip-path paint it edge to edge
+   without changing the layout); the white logo sits straight on it, the buttons turn white. */
+.shell--public .shell-header {
+  position: relative;
+  z-index: 1;
+  padding-bottom: var(--space-3);
+  background: #4b14f5;
+  box-shadow: 0 0 0 100vmax #4b14f5;
+  clip-path: inset(0 -100vmax);
+  color: #fff;
+}
+
+.shell--public .shell-logos .tedx-logo--white {
+  height: 30px;
+  width: auto;
+}
+
+.shell--public .shell-logos .divider {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.shell--public .shell-logos .crest-badge {
+  box-shadow: none;
+}
+
+.shell--public .lang-toggle,
+.shell--public .theme-toggle {
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.shell--public .lang-toggle:hover,
+.shell--public .theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #fff;
+}
+
+@media (max-width: 480px) {
+  .shell--public .shell-logos .tedx-logo--white {
+    height: 22px;
+  }
+}
+
+/* the hero starts right under the header, no white gap */
+.shell--public .shell-main {
+  padding-top: 0;
+}
