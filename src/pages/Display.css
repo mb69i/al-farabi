@@ -899,6 +899,7 @@
 }
 
 /* the hall screen holds still when motion is off */
+.display--still .iraq-dot,
 .display--still .baghdad,
 .display--still .baghdad-ring {
   animation: none;

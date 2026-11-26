@@ -331,7 +331,15 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
         <button type="button" className="reg-back" onClick={() => goTo('poster')}>
           {t('slide.back')}
         </button>
-        <h1 className="reg-band-title">{t('brand.conferenceLong')}</h1>
+        <h1 className="reg-band-title">
+          {t('brand.conferenceLong')
+            .split(' — ')
+            .map((line) => (
+              <span key={line} className="reg-title-line">
+                {line}
+              </span>
+            ))}
+        </h1>
         <p className="reg-band-meta">
           {t('brand.dates')} · {t('brand.place')}
         </p>

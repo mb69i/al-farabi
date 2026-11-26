@@ -340,7 +340,7 @@ describe('Register — opens on the main event poster, then slides to the form (
     expect(hero.querySelector('.reg-year')).toHaveTextContent('2026THEME');
     expect(hero).toHaveTextContent('LOOK CLOSER!');
     expect(hero.querySelector('.reg-disc')).toHaveTextContent('It Was Always There!');
-    expect(hero.querySelector('.reg-map')).toHaveAttribute('src', '/brand/iraq-dots.svg');
+    expect(hero.querySelector('svg.reg-map')).not.toBeNull(); // the live dotted map
     expect(hero.querySelector('.baghdad')).not.toBeNull(); // the beating Baghdad dot
     const h1 = screen.getByRole('heading', { level: 1 });
     // the event and the theme on their own lines, no dangling dash

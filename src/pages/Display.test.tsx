@@ -283,15 +283,10 @@ describe('Display — TEDxBaghdad 2026 poster (owner, 26 Nov: "redesign it to fi
   it('has the dotted map of Iraq (Baghdad in red) behind the QR, and no sponsors bar', async () => {
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});
-    const map = document.querySelector('.d-map') as HTMLImageElement;
-    expect(map).toHaveAttribute('src', '/brand/iraq-dots.svg');
-    expect(map).toHaveAttribute('alt', '');
+    // the live dotted map (owner, 26 Nov): Baghdad beats and the beat rolls across Iraq as a wave
+    expect(document.querySelector('.d-map-wrap svg.d-map')).not.toBeNull();
+    expect(document.querySelector('.d-map-wrap .baghdad')).not.toBeNull();
     expect(document.querySelector('.d-scan')).toContainElement(screen.getByTestId('qr'));
-    // Baghdad beats like a heart (owner, 26 Nov): its own element over the map, placed on Baghdad
-    const dot = document.querySelector('.d-map-wrap .baghdad') as HTMLElement;
-    expect(dot).not.toBeNull();
-    expect(dot.style.left).toMatch(/%$/);
-    expect(dot.style.top).toMatch(/%$/);
     expect(screen.queryByRole('contentinfo')).toBeNull();
   });
 });

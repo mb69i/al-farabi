@@ -1,6 +1,5 @@
-// Builds public/brand/iraq-dots.svg: Iraq as a white halftone of dots (bigger inland, smaller at the borders)
-// like the TEDxBaghdad 2026 theme artwork (owner, 26 Nov). Baghdad is left empty: the page draws its red dot on top
-// (it beats like a heart), placed from src/brand/baghdadOnMap.ts, which this script writes too.
+// Builds src/brand/iraqDots.ts: Iraq as a white halftone of dots (bigger inland, smaller at the borders) like the
+// TEDxBaghdad 2026 theme artwork (owner, 26 Nov), plus Baghdad's spot (left empty for the beating red dot).
 // Run: node scripts/make-iraq-dots.mjs
 import { writeFileSync } from 'node:fs';
 
@@ -53,24 +52,17 @@ for (let y = minY + STEP / 2, row = 0; y < maxY; y += STEP * 0.866, row++) {
     if (Math.hypot(x - bx, y - by) < STEP * 0.9) continue; // room for the red Baghdad dot
     const d = edgeDistance([x, y]);
     const r = Math.min(STEP * 0.46, 1.6 + d * 0.11);
-    dots.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}"/>`);
+    dots.push([+x.toFixed(1), +y.toFixed(1), +r.toFixed(2)]);
   }
 }
 const pad = 12;
 const w = Math.ceil(maxX - minX + pad * 2);
 const h = Math.ceil(maxY - minY + pad * 2);
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${(minX - pad).toFixed(0)} ${(minY - pad).toFixed(0)} ${w} ${h}" role="img" aria-label="Iraq">
-<g fill="#ffffff">${dots.join('')}</g>
-</svg>
+const ts = `// Written by scripts/make-iraq-dots.mjs (owner, 26 Nov): Iraq as a halftone of dots, [x, y, r] in the viewBox,
+// and Baghdad's spot. IraqMap draws them live so the heartbeat can roll across the map as a wave.
+export const MAP_VIEWBOX = '${(minX - pad).toFixed(0)} ${(minY - pad).toFixed(0)} ${w} ${h}';
+export const MAP_BAGHDAD = { x: ${bx.toFixed(1)}, y: ${by.toFixed(1)}, r: ${(STEP * 0.55).toFixed(1)} } as const;
+export const MAP_DOTS: ReadonlyArray<readonly [number, number, number]> = ${JSON.stringify(dots)};
 `;
-writeFileSync(new URL('../public/brand/iraq-dots.svg', import.meta.url), svg);
-const pct = (v) => Math.round(v * 1000) / 10;
-const x = pct((bx - (minX - pad)) / w);
-const y = pct((by - (minY - pad)) / h);
-const size = pct((STEP * 1.1) / w);
-const ts = `// Written by scripts/make-iraq-dots.mjs: where Baghdad sits on public/brand/iraq-dots.svg, in % of the picture
-// (size: the dot's width in % of the picture's width).
-export const BAGHDAD = { x: ${x}, y: ${y}, size: ${size} } as const;
-`;
-writeFileSync(new URL('../src/brand/baghdadOnMap.ts', import.meta.url), ts);
-console.log(`iraq-dots.svg: ${dots.length} dots, ${w}x${h}`);
+writeFileSync(new URL('../src/brand/iraqDots.ts', import.meta.url), ts);
+console.log(`iraqDots.ts: ${dots.length} dots, ${w}x${h}`);

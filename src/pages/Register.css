@@ -524,10 +524,10 @@
 @media (max-width: 640px) {
   .reg-map-wrap {
     top: auto;
-    bottom: 36px;
+    bottom: 64px;
     right: -70px;
-    height: 250px;
-    opacity: 0.4;
+    height: 300px;
+    opacity: 1;
   }
 }
 
@@ -848,8 +848,8 @@
   .reg-map-wrap {
     opacity: 1;
   }
-  .reg-map-wrap > img {
-    opacity: 0.4;
+  .reg-map-wrap .iraq-dot {
+    opacity: 0.5;
   }
 }
 

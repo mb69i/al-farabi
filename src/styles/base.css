@@ -369,61 +369,127 @@ button {
   padding-top: 0;
 }
 
-/* ---------- The dotted map of Iraq with Baghdad beating like a heart (owner, 26 Nov) ----------
-   The wrapper takes the page's size and place; the picture fills its height; the red dot sits on Baghdad and
-   beats lub-dub every 1.4 s while two rings spread outward and fade. Still under reduced motion. */
+/* ---------- The dotted map of Iraq: Baghdad beats like a heart, the beat rolls across Iraq (owner, 26 Nov) ----------
+   One beat every 2.4 s: the red Baghdad dot goes lub-dub, two rings spread from it, and on the dub a wave
+   leaves Baghdad and crosses the whole map: each dot swells and warms as it passes (its delay, --wave, is its
+   distance from Baghdad). Transforms on SVG dots scale each around its own centre. Still under reduced motion. */
+/* the page class sets the height; the map's own proportions (its viewBox) set the width */
 .iraq-map {
   display: block;
-  width: max-content;
+  aspect-ratio: 843 / 851;
+  width: auto;
   pointer-events: none;
 }
 
-.iraq-map > img {
+.iraq-map > svg {
   display: block;
+  width: 100%;
   height: 100%;
-  width: auto;
-  max-width: none; /* the global img rule would squeeze it to the wrapper */
+  overflow: visible;
+}
+
+.iraq-dot,
+.baghdad,
+.baghdad-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.iraq-dot {
+  animation: iraq-wave 2.4s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+  animation-delay: var(--wave);
 }
 
 .baghdad {
-  position: absolute;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #e62b1e;
-  box-shadow: 0 0 0 2px rgba(230, 43, 30, 0.25);
-  transform: translate(-50%, -50%);
-  animation: baghdad-beat 1.4s ease-in-out infinite;
+  animation: baghdad-beat 2.4s ease-in-out infinite;
 }
 
 .baghdad-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 2px solid #ff4a3d;
+  fill: none;
+  stroke: #ff4a3d;
+  stroke-width: 3;
   opacity: 0;
-  animation: baghdad-ring 1.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  animation: baghdad-ring 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
 }
 
 .baghdad-ring--late {
-  animation-delay: 0.28s;
+  animation-delay: 0.3s;
 }
 
 @keyframes baghdad-beat {
-  0% { transform: translate(-50%, -50%) scale(1); }
-  14% { transform: translate(-50%, -50%) scale(1.32); }
-  28% { transform: translate(-50%, -50%) scale(1); }
-  42% { transform: translate(-50%, -50%) scale(1.2); }
-  70%, 100% { transform: translate(-50%, -50%) scale(1); }
+  0% { transform: scale(1); }
+  7% { transform: scale(1.35); }
+  13% { transform: scale(1); }
+  19% { transform: scale(1.22); }
+  32%, 100% { transform: scale(1); }
 }
 
 @keyframes baghdad-ring {
-  0% { transform: scale(1); opacity: 0.75; }
-  100% { transform: scale(3.6); opacity: 0; }
+  0% { transform: scale(1); opacity: 0.8; }
+  45% { transform: scale(4.2); opacity: 0; }
+  100% { transform: scale(4.2); opacity: 0; }
+}
+
+/* the wave passing one dot: a quick swell and a warm tint, then rest until the next beat */
+@keyframes iraq-wave {
+  0% { transform: scale(1); fill: #ffffff; }
+  9% { transform: scale(1.22); fill: #ffe6e2; }
+  24% { transform: scale(1); fill: #ffffff; }
+  100% { transform: scale(1); fill: #ffffff; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .iraq-dot,
   .baghdad,
   .baghdad-ring {
     animation: none;
   }
+}
+
+
+/* ---------- Public pages are violet from top to bottom (owner, 26 Nov: the poster felt cut off from the footer) ----------
+   The poster, the form band and the footer share one violet ground; cards (the form, the pass) stay solid so
+   they read easily, and the footer's contact block becomes a glass panel with white type. */
+.shell--public {
+  min-height: 100dvh;
+  background: #4b14f5;
+  color: #fff;
+}
+
+.shell--public .reg-card {
+  background: var(--page);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.shell--public .site-footer {
+  margin-top: 0;
+  border-top-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.shell--public .site-footer-contact {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.shell--public .site-footer-contact h2,
+.shell--public .site-footer-contact li {
+  color: #fff;
+}
+
+.shell--public .site-footer-contact li > span:first-child {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.shell--public .site-footer-contact a {
+  color: #fff;
+  text-decoration: underline;
+  text-decoration-color: #e62b1e;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.shell--public .site-footer-credits {
+  color: rgba(255, 255, 255, 0.7);
 }
