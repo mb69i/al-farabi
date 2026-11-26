@@ -672,14 +672,15 @@
 }
 
 /* ---------- TEDxBaghdad 2026: the theme artwork as the hall screen (owner, 26 Nov) ----------
-   Flat electric violet, the white TEDxBaghdad logo top-left, "2026 THEME" with a red bar top-right,
+   Flat deep navy, the white TEDxBaghdad logo top-left, "2026 THEME" with a red bar top-right,
    LOOK CLOSER! in heavy white over a solid TED-red disc ("It Was Always There!"), and on the right the QR
    on the white halftone map of Iraq with Baghdad in red. Day and night look the same: the poster. */
 .display,
 .display[data-theme='night'],
 .display[data-theme='day'] {
-  --d-bg: #4b14f5;
-  --d-pattern: linear-gradient(#4b14f5, #4b14f5);
+  --d-bg: #14234b;
+  --d-pattern: radial-gradient(70% 70% at 100% 100%, rgba(163, 38, 43, 0.55), transparent 70%),
+    radial-gradient(60% 50% at 0% 0%, rgba(43, 64, 128, 0.45), transparent 70%);
   --d-frame: none;
   --d-ink: #ffffff;
   --d-muted: rgba(255, 255, 255, 0.8);
@@ -693,7 +694,7 @@
   --d-male: #ffffff;
   --d-female: #e62b1e;
   --d-chip: rgba(255, 255, 255, 0.1);
-  --d-qr-shadow: 0 calc(var(--u) * 1.6) calc(var(--u) * 4) calc(var(--u) * -1) rgba(20, 4, 90, 0.65);
+  --d-qr-shadow: 0 calc(var(--u) * 1.6) calc(var(--u) * 4) calc(var(--u) * -1) rgba(6, 12, 30, 0.65);
   --d-bump: rgba(255, 255, 255, 0.16);
   --d-title: #ffffff;
   --d-when-bg: transparent;
@@ -893,7 +894,7 @@
   padding: calc(var(--u) * 0.35) calc(var(--u) * 1.4);
   border-radius: 999px;
   background: #fff;
-  color: #2a0ba8;
+  color: #14234b;
   font-weight: 700;
   font-size: calc(var(--u) * 1);
 }
@@ -903,4 +904,34 @@
 .display--still .baghdad,
 .display--still .baghdad-ring {
   animation: none;
+}
+
+/* the welcome from the host, like the hosting poster: white words, then a thin line with a red diamond */
+.d-welcome {
+  font-size: calc(var(--u) * 1.7);
+  font-weight: 800;
+  line-height: 1.3;
+  color: #fff;
+  text-align: left;
+  unicode-bidi: plaintext;
+}
+
+.d-rule {
+  position: relative;
+  display: block;
+  width: calc(var(--u) * 18);
+  height: 1px;
+  margin: calc(var(--u) * 1) 0 calc(var(--u) * 1.8);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.45) 0 44%, transparent 44% 56%, rgba(255, 255, 255, 0.45) 56%);
+}
+
+.d-rule::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--u) * 0.8);
+  height: calc(var(--u) * 0.8);
+  background: #e62b1e;
+  transform: translate(-50%, -50%) rotate(45deg);
 }

@@ -1,9 +1,9 @@
-/* TEDxBaghdad 2026 identity (owner, 26 Nov): TED red #E62B1E and the theme reveal's electric violet #3F14D9.
+/* TEDxBaghdad 2026 at Al-Farabi (owner, 26 Nov): the hosting poster's deep navy #14234B, TED red #E62B1E, white.
    Token names are kept from the Al-Farabi build so every page follows. */
 :root {
-  --navy-deep: #1C0870;
-  --navy: #3F14D9;
-  --navy-raised: #5A2EF0;
+  --navy-deep: #0c1733;
+  --navy: #14234b;
+  --navy-raised: #1b2d5c;
   --burgundy: #E62B1E;
   --burgundy-bright: #FF3B2F;
   --gold: #E62B1E;
@@ -12,25 +12,25 @@
   /* Light theme: white page, navy text, blue glass cards, red borders. The *-on-dark names are
      kept so every page follows; they now mean "text on the page background". */
   --page: #FFFFFF;
-  --paper: rgba(63, 20, 217, 0.06);
-  --glass: rgba(63, 20, 217, 0.06);
-  --glass-strong: rgba(63, 20, 217, 0.12);
-  --card-border: #3F14D9;
+  --paper: rgba(20, 35, 75, 0.06);
+  --glass: rgba(20, 35, 75, 0.06);
+  --glass-strong: rgba(20, 35, 75, 0.12);
+  --card-border: #14234b;
   --gold-ink: #C4170C;
-  --ink: #170F3A;
-  --ink-muted: #5A5478;
-  --line-dark: rgba(63, 20, 217, 0.3);
+  --ink: #14234b;
+  --ink-muted: #4a5570;
+  --line-dark: rgba(20, 35, 75, 0.3);
   --line-light: #D9DCE4;
-  --text-on-dark: #170F3A;
-  --text-on-dark-muted: #5A5478;
+  --text-on-dark: #14234b;
+  --text-on-dark-muted: #4a5570;
   /* Roles that change between day and night */
   --surface: #FFFFFF; /* inputs, chips, bubbles */
-  --heading: #170F3A;
+  --heading: #14234b;
   --accent-ink: #E62B1E;
-  --focus: #3F14D9;
-  --chip-on: #3F14D9;
+  --focus: #14234b;
+  --chip-on: #14234b;
   --suggest-bg: #FFF1F0;
-  --switch-off: rgba(23, 15, 58, 0.2);
+  --switch-off: rgba(20, 35, 75, 0.2);
   --danger: #B42318;
   --success: #1F7A4D;
 
@@ -55,13 +55,13 @@
   --radius: 14px;
   --radius-lg: 22px;
   --tap: 48px;
-  --shadow-card: 0 1px 2px rgba(23, 15, 58, 0.08), 0 16px 36px -20px rgba(23, 15, 58, 0.35);
+  --shadow-card: 0 1px 2px rgba(20, 35, 75, 0.08), 0 16px 36px -20px rgba(20, 35, 75, 0.35);
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   /* Flyer background: faint dot grid with sparse burgundy dots. */
   --dots:
     radial-gradient(circle, rgba(230, 43, 30, 0.35) 1.8px, transparent 2.2px) 13px 13px / 104px 104px,
-    radial-gradient(circle, rgba(63, 20, 217, 0.1) 1.1px, transparent 1.5px) 0 0 / 26px 26px;
+    radial-gradient(circle, rgba(20, 35, 75, 0.1) 1.1px, transparent 1.5px) 0 0 / 26px 26px;
 }
 
 /* Night mode for the public and staff pages (button next to the language switch).
@@ -69,19 +69,19 @@
    set by an admin. */
 :root[data-theme='night'] {
   color-scheme: dark;
-  --page: #1A0A5E;
+  --page: #0c1733;
   --paper: rgba(255, 255, 255, 0.07);
   --glass: rgba(255, 255, 255, 0.07);
   --glass-strong: rgba(255, 255, 255, 0.13);
   --card-border: #E62B1E;
   --gold-ink: #FF8A80;
   --ink: #FFFFFF;
-  --ink-muted: #C9C2F0;
+  --ink-muted: #aeb8d3;
   --line-dark: rgba(255, 255, 255, 0.24);
   --line-light: rgba(255, 255, 255, 0.18);
   --text-on-dark: #FFFFFF;
-  --text-on-dark-muted: #C9C2F0;
-  --surface: #2A1280;
+  --text-on-dark-muted: #aeb8d3;
+  --surface: #13224a;
   --heading: #FFFFFF;
   --accent-ink: #FF6B60;
   --focus: #FF6B60;

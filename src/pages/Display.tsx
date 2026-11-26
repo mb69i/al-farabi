@@ -9,6 +9,7 @@ type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean };
 
 // Wording of the agenda's opening slide (owner, 20 Nov), always in Arabic as on the slide.
 // TEDxBaghdad 2026 training at Al-Farabi (owner, 26 Nov): the 2026 theme leads, as on the theme reveal.
+const WELCOME = 'جامعة الفارابي ترحب بكم في فعالية TEDxBaghdad';
 const THEME_AR = 'ما لم نفقده يوماً';
 const THEME_EN = 'What We Never Lost';
 const WHEN = '19 كانون الأول 2026 · فندق الرشيد – بغداد';
@@ -244,6 +245,11 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
         </section>
 
         <section className="d-poster">
+          {/* Al-Farabi hosts the event (owner, 26 Nov: "تيدكس فارابي ترحب بكم"), as on the hosting poster */}
+          <p className="d-welcome" lang="ar" dir="rtl">
+            {WELCOME}
+          </p>
+          <span className="d-rule" aria-hidden="true" />
           <p className="d-headline" lang="en">
             LOOK CLOSER!
           </p>

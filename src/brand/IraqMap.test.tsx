@@ -23,6 +23,26 @@ describe('IraqMap', () => {
     expect(parseFloat(nearest.style.getPropertyValue('--wave'))).toBeLessThan(parseFloat(farthest.style.getPropertyValue('--wave')));
   });
 
+  it('a red wave front travels out from Baghdad, lighting only the dots, right to the edge of the map', () => {
+    const { container } = render(<IraqMap wrapClass="w" imgClass="m" />);
+    const front = container.querySelector('.wave-front') as SVGCircleElement;
+    expect(front).not.toBeNull();
+    // it is masked by the dots (so only the dots light up) from an untransformed group
+    const group = front.parentElement as unknown as SVGGElement;
+    const maskRef = group.getAttribute('mask') ?? '';
+    const id = maskRef.replace(/^url\(#/, '').replace(/\)$/, '');
+    const mask = [...container.querySelectorAll('mask')].find((m) => m.id === id) as SVGMaskElement;
+    expect(mask).not.toBeNull();
+    const dots = container.querySelectorAll('circle.iraq-dot');
+    expect(mask.querySelectorAll('circle')).toHaveLength(dots.length);
+    // at full size the front reaches past the farthest dot
+    const baghdad = container.querySelector('.baghdad') as SVGCircleElement;
+    const bx = Number(baghdad.getAttribute('cx'));
+    const by = Number(baghdad.getAttribute('cy'));
+    const far = Math.max(...[...dots].map((d) => Math.hypot(Number(d.getAttribute('cx')) - bx, Number(d.getAttribute('cy')) - by)));
+    expect(Number(front.getAttribute('r'))).toBeGreaterThan(far);
+  });
+
   it('Baghdad is a red dot with rings that spread outward', () => {
     const { container } = render(<IraqMap wrapClass="w" imgClass="m" />);
     expect(container.querySelector('.baghdad')).toHaveAttribute('fill', '#e62b1e');

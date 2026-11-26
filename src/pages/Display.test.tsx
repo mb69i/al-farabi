@@ -280,6 +280,16 @@ describe('Display — TEDxBaghdad 2026 poster (owner, 26 Nov: "redesign it to fi
     expect(screen.queryByText(/مؤتمر الفارابي/)).toBeNull();
   });
 
+  it('welcomes the hall on behalf of Al-Farabi University (owner, 26 Nov)', async () => {
+    setup(api(vi.fn(async () => COUNTS)));
+    await act(async () => {});
+    const welcome = document.querySelector('.d-welcome') as HTMLElement;
+    expect(welcome).toHaveTextContent('جامعة الفارابي ترحب بكم في فعالية TEDxBaghdad');
+    // it leads the poster column, before LOOK CLOSER!
+    const headline = screen.getByText('LOOK CLOSER!');
+    expect(welcome.compareDocumentPosition(headline) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('has the dotted map of Iraq (Baghdad in red) behind the QR, and no sponsors bar', async () => {
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});

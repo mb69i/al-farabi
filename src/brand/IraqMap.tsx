@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useId, type CSSProperties } from 'react';
 import { MAP_BAGHDAD, MAP_DOTS, MAP_VIEWBOX } from './iraqDots';
 
 type Props = { wrapClass: string; imgClass: string };
@@ -22,9 +22,21 @@ const DOTS = MAP_DOTS.map(([x, y, r]) => ({
  * holds still under reduced motion (base.css).
  */
 export function IraqMap({ wrapClass, imgClass }: Props) {
+  // the wave front: a broad red ring that grows from Baghdad past the farthest dot, seen only through the dots
+  // (owner, 26 Nov: "the wave should continue to the edge of the map")
+  const maskId = `iraq-dots-${useId().replace(/:/g, '')}`;
   return (
     <span className={`iraq-map ${wrapClass}`} aria-hidden="true">
       <svg className={imgClass} viewBox={MAP_VIEWBOX} focusable="false">
+        <defs>
+          <mask id={maskId} maskUnits="userSpaceOnUse">
+            <g fill="#ffffff">
+              {DOTS.map((d) => (
+                <circle key={`${d.x},${d.y}`} cx={d.x} cy={d.y} r={d.r * 1.15} />
+              ))}
+            </g>
+          </mask>
+        </defs>
         <g fill="#ffffff">
           {DOTS.map((d) => (
             <circle
@@ -36,6 +48,9 @@ export function IraqMap({ wrapClass, imgClass }: Props) {
               style={{ '--wave': `${d.wave.toFixed(2)}s` } as CSSProperties}
             />
           ))}
+        </g>
+        <g mask={`url(#${maskId})`}>
+          <circle className="wave-front" cx={MAP_BAGHDAD.x} cy={MAP_BAGHDAD.y} r={FARTHEST + 40} />
         </g>
         <circle className="baghdad-ring" cx={MAP_BAGHDAD.x} cy={MAP_BAGHDAD.y} r={MAP_BAGHDAD.r} />
         <circle className="baghdad-ring baghdad-ring--late" cx={MAP_BAGHDAD.x} cy={MAP_BAGHDAD.y} r={MAP_BAGHDAD.r} />

@@ -490,7 +490,7 @@
 }
 
 /* ---------- TEDxBaghdad 2026 (owner, 26 Nov): the page hero is the theme artwork ----------
-   Full-width violet under the header, "2026 THEME" with a red bar, LOOK CLOSER! in heavy white over a solid
+   Full-width navy under the header, "2026 THEME" with a red bar, LOOK CLOSER! in heavy white over a solid
    TED-red disc, the event and theme, and the white halftone map of Iraq (Baghdad in red) bleeding off the edge.
    The form card rises over the band's lower edge. */
 .reg-hero {
@@ -502,9 +502,6 @@
   padding: var(--space-6) var(--space-4) calc(var(--space-8) + var(--space-6));
   text-align: left;
   direction: ltr;
-  background: #4b14f5;
-  box-shadow: 0 0 0 100vmax #4b14f5;
-  clip-path: inset(0 -100vmax);
   color: #fff;
 }
 
@@ -595,7 +592,7 @@
   margin-top: var(--space-3);
   padding: 4px var(--space-3);
   background: #fff;
-  color: #2a0ba8;
+  color: #14234b;
   font-weight: 700;
   direction: rtl;
 }
@@ -620,7 +617,7 @@
 
 /* ---------- Two slides (owner, 26 Nov): the main event poster, then the form ----------
    The poster fills the phone's screen under the header; its button (or a sideways swipe) slides the form in from
-   the reading direction under a slim violet band with a way back. The poster enters once on first load. */
+   the reading direction under a slim navy band with a way back. The poster enters once on first load. */
 .reg-slide {
   --slide-dir: 1;
   outline: none;
@@ -654,16 +651,16 @@
   padding-inline: var(--space-6);
   border-radius: 999px;
   background: #fff;
-  color: #2a0ba8;
+  color: #14234b;
   font-size: 1.05rem;
   font-weight: 800;
-  box-shadow: 0 12px 28px -14px rgba(16, 4, 70, 0.7);
+  box-shadow: 0 12px 28px -14px rgba(6, 12, 30, 0.7);
   transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease), background 0.18s var(--ease);
 }
 
 .reg-go:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 32px -14px rgba(16, 4, 70, 0.8);
+  box-shadow: 0 16px 32px -14px rgba(6, 12, 30, 0.8);
 }
 
 .reg-go:active {
@@ -720,7 +717,7 @@
   border-radius: 999px;
 }
 
-/* the form slide: a slim violet band, then the card rising over it */
+/* the form slide: a slim navy band, then the card rising over it */
 .reg-band {
   position: relative;
   display: grid;
@@ -729,9 +726,6 @@
   max-width: 1120px;
   margin: 0 auto;
   padding: var(--space-3) var(--space-4) calc(var(--space-8) + var(--space-3));
-  background: #4b14f5;
-  box-shadow: 0 0 0 100vmax #4b14f5;
-  clip-path: inset(0 -100vmax);
   color: #fff;
 }
 
@@ -862,4 +856,20 @@
 .reg-hero .reg-meta span,
 .reg-band-meta {
   unicode-bidi: plaintext;
+}
+
+/* the form slide takes focus for keyboard users, without drawing an outline round the whole slide (owner, 26 Nov) */
+.reg-slide.reg-slide:focus,
+.reg-slide.reg-slide:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+/* arrows follow the reading direction */
+[dir='ltr'] .reg-back::before {
+  content: '90  ';
+}
+
+[dir='ltr'] .reg-swipe::after {
+  content: ' 92';
 }

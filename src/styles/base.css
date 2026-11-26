@@ -124,14 +124,14 @@ button {
   background: var(--line-dark);
 }
 
-/* TEDxBaghdad logo (black on white) on a white plate, so it reads on violet and in night mode (owner, 26 Nov) */
+/* TEDxBaghdad logo (black on white) on a white plate, so it reads on navy and in night mode (owner, 26 Nov) */
 .shell-logos .tedx-plate {
   display: inline-flex;
   align-items: center;
   padding: 10px 14px;
   border-radius: 12px;
   background: #fff;
-  box-shadow: 0 0 0 1px rgba(23, 15, 58, 0.08), 0 6px 18px -10px rgba(23, 15, 58, 0.35);
+  box-shadow: 0 0 0 1px rgba(20, 35, 75, 0.08), 0 6px 18px -10px rgba(20, 35, 75, 0.35);
 }
 
 .shell-logos .tedx-logo {
@@ -319,16 +319,13 @@ button {
   }
 }
 
-/* ---------- TEDxBaghdad 2026 (owner, 26 Nov): public pages open on the theme artwork's violet ----------
-   The header and the page hero share one full-width violet band (box-shadow + clip-path paint it edge to edge
+/* ---------- TEDxBaghdad 2026 (owner, 26 Nov): public pages open on the theme artwork's navy ----------
+   The header and the page hero share one full-width navy band (box-shadow + clip-path paint it edge to edge
    without changing the layout); the white logo sits straight on it, the buttons turn white. */
 .shell--public .shell-header {
   position: relative;
   z-index: 1;
   padding-bottom: var(--space-3);
-  background: #4b14f5;
-  box-shadow: 0 0 0 100vmax #4b14f5;
-  clip-path: inset(0 -100vmax);
   color: #fff;
 }
 
@@ -447,12 +444,13 @@ button {
 }
 
 
-/* ---------- Public pages are violet from top to bottom (owner, 26 Nov: the poster felt cut off from the footer) ----------
-   The poster, the form band and the footer share one violet ground; cards (the form, the pass) stay solid so
+/* ---------- Public pages are navy from top to bottom (owner, 26 Nov: the poster felt cut off from the footer) ----------
+   The poster, the form band and the footer share one navy ground; cards (the form, the pass) stay solid so
    they read easily, and the footer's contact block becomes a glass panel with white type. */
 .shell--public {
   min-height: 100dvh;
-  background: #4b14f5;
+  /* the hosting poster: deep navy, a burgundy glow from the lower corner */
+  background: radial-gradient(90% 55% at 100% 100%, rgba(163, 38, 43, 0.55), transparent 70%), radial-gradient(70% 45% at 0% 0%, rgba(43, 64, 128, 0.45), transparent 70%), #14234b;
   color: #fff;
 }
 
@@ -492,4 +490,37 @@ button {
 
 .shell--public .site-footer-credits {
   color: rgba(255, 255, 255, 0.7);
+}
+
+/* the wave front (owner, 26 Nov): a broad red ring, shown only through the dots, leaves Baghdad on the dub and
+   grows past the farthest border dot in the same 1.1 s as the swell, then fades before the next beat */
+.wave-front {
+  fill: none;
+  stroke: #ff4a3d;
+  stroke-width: 70;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: iraq-wave-front 2.4s linear infinite;
+  animation-delay: 0.3s;
+}
+
+@keyframes iraq-wave-front {
+  0% { transform: scale(0.02); opacity: 0.95; }
+  42% { opacity: 0.85; }
+  46% { transform: scale(1); opacity: 0.75; }
+  52% { transform: scale(1); opacity: 0; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave-front {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+.display--still .wave-front {
+  animation: none;
+  opacity: 0;
 }
