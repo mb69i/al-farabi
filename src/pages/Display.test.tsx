@@ -276,7 +276,7 @@ describe('Display — TEDxBaghdad 2026 poster (owner, 26 Nov: "redesign it to fi
     expect(document.querySelector('.d-disc')).toHaveTextContent('It Was Always There!');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('ما لم نفقده يوماً');
     expect(screen.getByText('What We Never Lost')).toBeInTheDocument();
-    expect(screen.getByText('الورشة التدريبية لفرق تيداكس بغداد 2026 · جامعة الفارابي – بغداد')).toBeInTheDocument();
+    expect(screen.getByText('19 كانون الأول 2026 · فندق الرشيد – بغداد')).toBeInTheDocument();
     expect(screen.queryByText(/مؤتمر الفارابي/)).toBeNull();
   });
 
@@ -287,6 +287,11 @@ describe('Display — TEDxBaghdad 2026 poster (owner, 26 Nov: "redesign it to fi
     expect(map).toHaveAttribute('src', '/brand/iraq-dots.svg');
     expect(map).toHaveAttribute('alt', '');
     expect(document.querySelector('.d-scan')).toContainElement(screen.getByTestId('qr'));
+    // Baghdad beats like a heart (owner, 26 Nov): its own element over the map, placed on Baghdad
+    const dot = document.querySelector('.d-map-wrap .baghdad') as HTMLElement;
+    expect(dot).not.toBeNull();
+    expect(dot.style.left).toMatch(/%$/);
+    expect(dot.style.top).toMatch(/%$/);
     expect(screen.queryByRole('contentinfo')).toBeNull();
   });
 });

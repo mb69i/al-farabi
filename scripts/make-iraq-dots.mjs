@@ -1,5 +1,6 @@
 // Builds public/brand/iraq-dots.svg: Iraq as a white halftone of dots (bigger inland, smaller at the borders)
-// with a red dot on Baghdad, like the TEDxBaghdad 2026 theme artwork (owner, 26 Nov).
+// like the TEDxBaghdad 2026 theme artwork (owner, 26 Nov). Baghdad is left empty: the page draws its red dot on top
+// (it beats like a heart), placed from src/brand/baghdadOnMap.ts, which this script writes too.
 // Run: node scripts/make-iraq-dots.mjs
 import { writeFileSync } from 'node:fs';
 
@@ -60,8 +61,16 @@ const w = Math.ceil(maxX - minX + pad * 2);
 const h = Math.ceil(maxY - minY + pad * 2);
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${(minX - pad).toFixed(0)} ${(minY - pad).toFixed(0)} ${w} ${h}" role="img" aria-label="Iraq">
 <g fill="#ffffff">${dots.join('')}</g>
-<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${(STEP * 0.55).toFixed(1)}" fill="#e62b1e"/>
 </svg>
 `;
 writeFileSync(new URL('../public/brand/iraq-dots.svg', import.meta.url), svg);
+const pct = (v) => Math.round(v * 1000) / 10;
+const x = pct((bx - (minX - pad)) / w);
+const y = pct((by - (minY - pad)) / h);
+const size = pct((STEP * 1.1) / w);
+const ts = `// Written by scripts/make-iraq-dots.mjs: where Baghdad sits on public/brand/iraq-dots.svg, in % of the picture
+// (size: the dot's width in % of the picture's width).
+export const BAGHDAD = { x: ${x}, y: ${y}, size: ${size} } as const;
+`;
+writeFileSync(new URL('../src/brand/baghdadOnMap.ts', import.meta.url), ts);
 console.log(`iraq-dots.svg: ${dots.length} dots, ${w}x${h}`);

@@ -19,12 +19,19 @@ function fakeApi(over: Partial<Api> = {}): Api {
   } as Api;
 }
 
-function setup(api: Api) {
+function renderPage(api: Api) {
   render(
     <I18nProvider initial="en">
       <Register api={api} slug="test-slug" />
     </I18nProvider>,
   );
+}
+
+/** The page opens on the event poster (owner, 26 Nov); most tests start on the form, one tap in. */
+function setup(api: Api) {
+  renderPage(api);
+  const go = screen.queryByRole('button', { name: 'Register now' });
+  if (go) fireEvent.click(go);
 }
 
 function fill() {
@@ -326,15 +333,63 @@ describe('Register', () => {
   });
 });
 
-describe('Register — TEDxBaghdad 2026 poster header (owner, 26 Nov)', () => {
-  it('opens like the theme artwork: 2026 THEME, LOOK CLOSER!, the red disc and the dotted map', async () => {
-    setup(fakeApi());
-    await screen.findByLabelText(/full name/i);
+describe('Register — opens on the main event poster, then slides to the form (owner, 26 Nov)', () => {
+  it('the first slide is the theme artwork with the date and Al-Rasheed Hotel, and no form yet', () => {
+    renderPage(fakeApi());
     const hero = document.querySelector('.reg-hero') as HTMLElement;
     expect(hero.querySelector('.reg-year')).toHaveTextContent('2026THEME');
     expect(hero).toHaveTextContent('LOOK CLOSER!');
     expect(hero.querySelector('.reg-disc')).toHaveTextContent('It Was Always There!');
     expect(hero.querySelector('.reg-map')).toHaveAttribute('src', '/brand/iraq-dots.svg');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('TEDxBaghdad 2026 — What We Never Lost');
+    expect(hero.querySelector('.baghdad')).not.toBeNull(); // the beating Baghdad dot
+    const h1 = screen.getByRole('heading', { level: 1 });
+    // the event and the theme on their own lines, no dangling dash
+    expect([...h1.querySelectorAll('.reg-title-line')].map((l) => l.textContent)).toEqual(['TEDxBaghdad 2026', 'What We Never Lost']);
+    expect(hero).toHaveTextContent('19 December 2026');
+    expect(hero).toHaveTextContent('Al-Rasheed Hotel — Baghdad');
+    expect(screen.queryByLabelText(/full name/i)).toBeNull();
+  });
+
+  it('Register now slides to the form, and Back to the poster slides back', async () => {
+    renderPage(fakeApi());
+    fireEvent.click(screen.getByRole('button', { name: 'Register now' }));
+    expect(await screen.findByLabelText(/full name/i)).toBeInTheDocument();
+    expect(document.querySelector('.reg-slide--form')).not.toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Back to the poster' }));
+    expect(screen.getByRole('button', { name: 'Register now' })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/full name/i)).toBeNull();
+  });
+
+  it('a sideways swipe on the poster slides to the form', async () => {
+    renderPage(fakeApi());
+    const slide = document.querySelector('.reg-slide--poster') as HTMLElement;
+    fireEvent.touchStart(slide, { touches: [{ clientX: 300, clientY: 400 }] });
+    fireEvent.touchEnd(slide, { changedTouches: [{ clientX: 120, clientY: 410 }] });
+    expect(await screen.findByLabelText(/full name/i)).toBeInTheDocument();
+  });
+
+  it('a small vertical scroll is not a swipe', () => {
+    renderPage(fakeApi());
+    const slide = document.querySelector('.reg-slide--poster') as HTMLElement;
+    fireEvent.touchStart(slide, { touches: [{ clientX: 200, clientY: 400 }] });
+    fireEvent.touchEnd(slide, { changedTouches: [{ clientX: 170, clientY: 200 }] });
+    expect(screen.queryByLabelText(/full name/i)).toBeNull();
+  });
+
+  it('the two dots show where you are and move between the slides', async () => {
+    renderPage(fakeApi());
+    const dots = screen.getAllByRole('button', { name: /^(Event poster|Registration)$/ });
+    expect(dots).toHaveLength(2);
+    expect(dots[0]).toHaveAttribute('aria-current', 'true');
+    fireEvent.click(dots[1]);
+    expect(await screen.findByLabelText(/full name/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Registration' })).toHaveAttribute('aria-current', 'true');
+  });
+
+  it('someone who already registered on this phone goes straight to their pass', async () => {
+    savePass('test-slug', { serial: 'ALF26-ABC234', firstName: 'Ali', phone: '+9647701234567', lang: 'en' });
+    renderPage(fakeApi());
+    expect(screen.queryByRole('button', { name: 'Register now' })).toBeNull();
+    expect(await screen.findByText('ALF26-ABC234')).toBeInTheDocument();
   });
 });

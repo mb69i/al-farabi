@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { IraqMap } from '../brand/IraqMap';
 import { conferenceDay } from '../lib/conferenceDay';
 import { EVENT_STARTS_ON } from '../lib/config';
 import { datePhrase } from '../lib/datePhrase';
@@ -14,6 +15,7 @@ type Field = 'fullName' | 'phone' | 'email' | 'gender' | 'governorate' | 'workpl
 type Values = Record<Field, string>;
 type View = 'loading' | 'form' | 'confirm' | 'done' | 'closed' | 'error' | 'busy' | 'limit';
 type Outcome = 'created' | 'already' | 'returning';
+type Slide = 'poster' | 'form';
 
 /** Second day on (owner, 22 Nov): a welcome card above the pass. */
 const DAY_WORD: Record<number, 'day.word2' | 'day.word3'> = { 2: 'day.word2', 3: 'day.word3' };
@@ -66,6 +68,12 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
   const [deviceUsed, setDeviceUsed] = useState(() => deviceCount(slug));
   const honeypot = useRef<HTMLInputElement>(null);
   const [startsOn, setStartsOn] = useState<string>(EVENT_STARTS_ON);
+  // Two slides (owner, 26 Nov): the main event poster first, then the form. Someone with a pass saved on this
+  // phone goes straight to it.
+  const [slide, setSlide] = useState<Slide>(() => (loadPass(slug) ? 'form' : 'poster'));
+  const [moved, setMoved] = useState<'next' | 'back' | null>(null);
+  const swipe = useRef<{ x: number; y: number } | null>(null);
+  const formSlide = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let alive = true;
@@ -226,12 +234,56 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
       </p>
     ) : null;
 
+  function goTo(next: Slide) {
+    if (next === slide) return;
+    setMoved(next === 'form' ? 'next' : 'back');
+    setSlide(next);
+  }
+
+  useEffect(() => {
+    if (slide === 'form' && moved === 'next') formSlide.current?.focus({ preventScroll: true });
+  }, [slide, moved]);
+
+  /** A sideways swipe on the poster (either way) slides to the form; a vertical scroll does not. */
+  const onSwipeEnd = (x: number, y: number) => {
+    const start = swipe.current;
+    swipe.current = null;
+    if (!start) return;
+    const dx = x - start.x;
+    const dy = y - start.y;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) goTo('form');
+  };
+
+  const dots = (
+    <div className="reg-dots" role="group" aria-label={t('slide.where')}>
+      {(['poster', 'form'] as const).map((s) => (
+        <button
+          key={s}
+          type="button"
+          className="reg-dot"
+          aria-label={t(s === 'poster' ? 'slide.poster' : 'slide.form')}
+          aria-current={slide === s ? 'true' : undefined}
+          onClick={() => goTo(s)}
+        />
+      ))}
+    </div>
+  );
+
   return (
     <Shell>
       {/* The theme artwork as the page header (owner, 26 Nov): 2026 THEME, LOOK CLOSER! over the red disc, the event
           and theme, and the dotted map of Iraq with Baghdad in red bleeding off the edge. */}
+      {slide === 'poster' && (
+      <div
+        className={`reg-slide reg-slide--poster ${moved === 'back' ? 'reg-slide--in-back' : 'reg-slide--first'}`}
+        onPointerDown={(e) => (swipe.current = { x: e.clientX, y: e.clientY })}
+        onPointerUp={(e) => onSwipeEnd(e.clientX, e.clientY)}
+        onPointerCancel={() => (swipe.current = null)}
+        onTouchStart={(e) => (swipe.current = { x: e.touches[0].clientX, y: e.touches[0].clientY })}
+        onTouchEnd={(e) => onSwipeEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY)}
+      >
       <section className="reg-hero">
-        <img className="reg-map" src="/brand/iraq-dots.svg" alt="" aria-hidden="true" />
+        <IraqMap wrapClass="reg-map-wrap" imgClass="reg-map" />
         <p className="reg-year" dir="ltr">
           <span className="num">2026</span>
           <span>THEME</span>
@@ -242,13 +294,49 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
         <p className="reg-disc" lang="en" dir="ltr">
           <span>It Was Always There!</span>
         </p>
-        <h1 className="reg-title">{t('brand.conferenceLong')}</h1>
+        <h1 className="reg-title">
+          {t('brand.conferenceLong')
+            .split(' — ')
+            .map((line) => (
+              <span key={line} className="reg-title-line">
+                {line}
+              </span>
+            ))}
+        </h1>
         <p className="reg-kicker">{t('brand.edition')}</p>
         <p className="reg-meta">
           <span>{t('brand.dates')}</span>
           <span>{t('brand.place')}</span>
         </p>
+        <div className="reg-cta">
+          <button type="button" className="btn-primary reg-go" onClick={() => goTo('form')}>
+            {t('slide.register')}
+          </button>
+          <span className="reg-swipe" aria-hidden="true">
+            {t('slide.swipe')}
+          </span>
+        </div>
+        {dots}
       </section>
+      </div>
+      )}
+
+      {slide === 'form' && (
+      <div
+        ref={formSlide}
+        tabIndex={-1}
+        className={`reg-slide reg-slide--form ${moved === 'next' ? 'reg-slide--in-next' : ''}`}
+      >
+      <div className="reg-band">
+        <button type="button" className="reg-back" onClick={() => goTo('poster')}>
+          {t('slide.back')}
+        </button>
+        <h1 className="reg-band-title">{t('brand.conferenceLong')}</h1>
+        <p className="reg-band-meta">
+          {t('brand.dates')} · {t('brand.place')}
+        </p>
+        {dots}
+      </div>
 
       {view === 'loading' && <div className="reg-card reg-card--loading" aria-busy="true" />}
 
@@ -457,6 +545,8 @@ export function Register({ api, slug }: { api: Api; slug: string }) {
             {t('reg.review')}
           </button>
         </form>
+      )}
+      </div>
       )}
     </Shell>
   );

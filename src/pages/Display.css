@@ -871,7 +871,7 @@
   min-height: calc(var(--u) * 46);
 }
 
-.d-map {
+.d-map-wrap {
   position: absolute;
   z-index: -1;
   top: 50%;
@@ -896,4 +896,10 @@
   color: #2a0ba8;
   font-weight: 700;
   font-size: calc(var(--u) * 1);
+}
+
+/* the hall screen holds still when motion is off */
+.display--still .baghdad,
+.display--still .baghdad-ring {
+  animation: none;
 }

@@ -20,7 +20,7 @@ const BAGHDAD_MS = 3 * 3600_000; // UTC+3, no daylight saving
 
 const L = {
   ar: {
-    title: 'تيداكس بغداد 2026 — الورشة التدريبية',
+    title: 'تيداكس بغداد 2026 — ما لم نفقده يوماً',
     sheets: ['الملخص', 'الضيوف', 'الباحثون', 'الحضور اليومي'],
     guests: ['#', 'الاسم', 'الرقم المرجعي', 'الهاتف', 'البريد الإلكتروني', 'الجنس', 'المحافظة', 'جهة العمل', 'الفريق', 'كبار الضيوف', 'أيام الحضور', 'وقت التسجيل', 'لغة التسجيل'],
     researchers: ['#', 'الاسم', 'البريد الإلكتروني', 'الهاتف', 'الجنس', 'الجهة', 'عنوان البحث', 'كبار الضيوف', 'وقّع', 'وقت التوقيع', 'الطبيب', 'التوقيع'],
@@ -38,7 +38,7 @@ const L = {
     },
   },
   en: {
-    title: 'TEDxBaghdad 2026 — team training',
+    title: 'TEDxBaghdad 2026 — What We Never Lost',
     sheets: ['Summary', 'Guests', 'Researchers', 'Check-ins'],
     guests: ['#', 'Name', 'Reference', 'Phone', 'Email', 'Gender', 'Governorate', 'Workplace', 'Team', 'VIP', 'Days present', 'Registered at', 'Language'],
     researchers: ['#', 'Name', 'Email', 'Phone', 'Gender', 'Institution', 'Research title', 'VIP', 'Signed', 'Signed at', 'Doctor', 'Signature'],

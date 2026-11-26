@@ -1,4 +1,5 @@
 import QRCode from 'qrcode';
+import { IraqMap } from '../brand/IraqMap';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useI18n } from '../i18n';
 import { ApiError, type Api, type DisplayCounts } from '../lib/api';
@@ -10,7 +11,7 @@ type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean };
 // TEDxBaghdad 2026 training at Al-Farabi (owner, 26 Nov): the 2026 theme leads, as on the theme reveal.
 const THEME_AR = 'ما لم نفقده يوماً';
 const THEME_EN = 'What We Never Lost';
-const WHEN = 'الورشة التدريبية لفرق تيداكس بغداد 2026 · جامعة الفارابي – بغداد';
+const WHEN = '19 كانون الأول 2026 · فندق الرشيد – بغداد';
 
 // The QR always sends guests to the live site, even when this screen is opened from a preview copy
 // (whose address needs a Vercel login). VITE_SITE_URL can point it at a custom domain later.
@@ -228,7 +229,7 @@ export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
 
       <main className="d-stage" dir="ltr">
         <section className="d-scan">
-          <img className="d-map" src="/brand/iraq-dots.svg" alt="" aria-hidden="true" />
+          <IraqMap wrapClass="d-map-wrap" imgClass="d-map" />
             <div className="d-qr-frame">
               <div
                 className="qr-box"
