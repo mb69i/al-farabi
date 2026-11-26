@@ -3,7 +3,7 @@ import { useI18n } from '../i18n';
 import { SiteFooter } from './SiteFooter';
 import { ThemeToggle } from './ThemeToggle';
 
-/** ministry: show the Ministry's logo too (owner, 20 Nov: registration and researcher pages); on by default for public pages. */
+/** ministry: kept so callers compile; the TEDx pages never show the Ministry's logo (owner, 26 Nov). */
 type Props = { children: ReactNode; variant?: 'public' | 'staff'; actions?: ReactNode; ministry?: boolean };
 
 export function LanguageToggle() {
@@ -21,26 +21,21 @@ export function LanguageToggle() {
   );
 }
 
-export function Shell({ children, variant = 'public', actions, ministry = variant === 'public' }: Props) {
+export function Shell({ children, variant = 'public', actions }: Props) {
   const { t } = useI18n();
   return (
     <div className={`shell shell--${variant}`}>
       <header className="shell-header">
-        {/* same order as the certificate and the hall screen: crest | event logo | Ministry */}
+        {/* TEDxBaghdad 2026 training at Al-Farabi (owner, 26 Nov): the TEDx logo (black on white, so on a white
+            plate in both themes), then the host university's crest. */}
         <div className="shell-logos" dir="ltr">
+          <span className="tedx-plate">
+            <img className="tedx-logo" src="/brand/tedx-baghdad-720.png" alt="TEDxBaghdad" width={150} height={28} />
+          </span>
+          <span className="divider" aria-hidden="true" />
           <span className="crest-badge">
             <img className="crest" src="/brand/crest-192.png" alt={t('brand.university')} width={42} height={44} />
           </span>
-          <span className="divider" aria-hidden="true" />
-          {/* the official event logo on every page (owner, 20 Nov); night mode shows the version for dark backgrounds */}
-          <img className="event-logo event-logo--light" src="/brand/conference-logo-light.svg" alt={t('brand.conference')} width={85} height={68} />
-          <img className="event-logo event-logo--dark" src="/brand/conference-logo-dark.svg" alt="" aria-hidden="true" width={85} height={68} />
-          {ministry && (
-            <>
-              <span className="divider" aria-hidden="true" />
-              <img className="ministry" src="/brand/ministry-360.webp" alt={t('brand.ministry')} width={56} height={56} />
-            </>
-          )}
         </div>
         <div className="shell-actions">
           {actions}

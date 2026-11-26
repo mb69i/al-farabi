@@ -76,8 +76,8 @@ describe('Display', () => {
     // (the projector once showed a preview copy, whose address needs a Vercel login)
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});
-    expect(screen.getByTestId('qr').getAttribute('data-target')).toBe('https://al-farabi-gilt.vercel.app/');
-    expect(screen.queryByText('al-farabi-gilt.vercel.app')).toBeNull(); // the address is no longer printed (owner, 20 Nov)
+    expect(screen.getByTestId('qr').getAttribute('data-target')).toBe('https://tedx.mb-ai.org/'); // TEDx (owner, 26 Nov)
+    expect(screen.queryByText('tedx.mb-ai.org')).toBeNull(); // the address is not printed
   });
 });
 
@@ -255,76 +255,32 @@ describe('Display — centred layout like the previous event tool', () => {
   });
 });
 
-describe('Display — header like the agenda slide, sponsors along the bottom', () => {
-  it('shows the three logos like the agenda: Al-Farabi, the official conference logo in the middle, the Ministry', async () => {
+describe('Display — TEDxBaghdad 2026 training (owner, 26 Nov)', () => {
+  it('shows the TEDxBaghdad logo on a white plate, with Al-Farabi as the host', async () => {
     setup(api(vi.fn(async () => ({ ...COUNTS, theme: 'night' as const }))));
     await act(async () => {});
     const row = document.querySelector('.d-logos') as HTMLElement;
     expect(row).toHaveAttribute('dir', 'ltr');
     const srcs = [...row.querySelectorAll('img')].map((i) => i.getAttribute('src'));
-    // owner, 20 Nov: the full conference logo (arch + "مؤتمر الفارابي / Al-Farabi Conference / النسخة الأولى 2026")
-    expect(srcs).toEqual(['/brand/crest-360.webp', '/brand/conference-logo-dark.svg', '/brand/ministry-360.webp']);
-    expect(screen.getByAltText('Al-Farabi University')).toBeInTheDocument();
-    expect(screen.getByAltText('Ministry of Higher Education and Scientific Research')).toBeInTheDocument();
+    expect(srcs).toEqual(['/brand/tedx-baghdad-720.png', '/brand/crest-360.webp']);
+    expect(row.querySelector('.d-logo-plate img')).toHaveAttribute('alt', 'TEDxBaghdad');
+    expect(screen.queryByAltText('Ministry of Higher Education and Scientific Research')).toBeNull();
   });
 
-  it('by day uses the conference logo made for light backgrounds', async () => {
-    setup(api(vi.fn(async () => ({ ...COUNTS, theme: 'day' as const }))));
-    await act(async () => {});
-    expect(document.querySelector('.d-logos img[src="/brand/conference-logo-light.svg"]')).not.toBeNull();
-  });
-
-  it('opens like the agenda slide: the official name, the slogan, then dates and place', async () => {
+  it('opens with the event, the 2026 theme and the training line', async () => {
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});
-    expect(screen.queryByText('برعاية وزارة التعليم العالي والبحث العلمي')).toBeNull(); // removed (owner, 20 Nov)
-    expect(document.querySelector('.qr-url')).toBeNull(); // no web address under the QR either
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل');
-    expect(screen.getByText('تحت شعار ( الريادة والابتكار ركائز التحول الرقمي الشامل في العراق )')).toBeInTheDocument();
-    expect(screen.getByText('21 – 22 / 11 / 2026 في رحاب جامعة الفارابي – بغداد')).toBeInTheDocument();
-    expect(document.querySelector('.d-ribbon')).toBeNull(); // the old certificate ribbon is gone
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('ما لم نفقده يوماً');
+    expect(screen.getByText('What We Never Lost')).toBeInTheDocument();
+    expect(screen.getByText('الورشة التدريبية لفرق تيداكس بغداد 2026 · جامعة الفارابي – بغداد')).toBeInTheDocument();
+    expect(screen.queryByText(/مؤتمر الفارابي/)).toBeNull();
+    expect(document.querySelector('.d-arch')).toBeNull(); // the Al-Farabi arch drawing is gone
   });
 
-  it('shows the 68 sponsor logos as a moving bar along the bottom, outside the centred column', async () => {
+  it('has no sponsors bar', async () => {
     setup(api(vi.fn(async () => COUNTS)));
     await act(async () => {});
-    const footer = screen.getByRole('contentinfo');
-    expect(document.querySelector('.d-stage')).not.toContainElement(footer);
-    const imgs = footer.querySelectorAll('.d-marquee-track img');
-    // two copies of one strip image (one download) make the loop seamless; screen readers hear it once
-    expect(imgs).toHaveLength(2);
-    for (const img of imgs) expect(img).toHaveAttribute('src', '/brand/sponsors-strip.webp');
-    expect(imgs[0].getAttribute('alt')).toContain('Sponsors & Partners');
-    expect(imgs[1]).toHaveAttribute('alt', '');
-    expect(imgs[1]).toHaveAttribute('aria-hidden', 'true');
-    expect(footer.querySelectorAll('.d-sponsor--empty')).toHaveLength(0);
-  });
-
-  it('the bar moves, but stands still when motion is off', async () => {
-    setup(api(vi.fn(async () => COUNTS))); // animate={false}
-    await act(async () => {});
-    expect(document.querySelector('.d-marquee')).toHaveClass('d-marquee--still');
-    window.history.pushState({}, '', '/display?lang=en');
-    const { container } = render(
-      <I18nProvider initial="en">
-        <Display api={api(vi.fn(async () => COUNTS))} slug="s" />
-      </I18nProvider>,
-    );
-    await act(async () => {});
-    expect(container.querySelector('.d-marquee')).not.toHaveClass('d-marquee--still');
-  });
-
-  it('falls back to marked empty slots (no invented sponsors) if the band is removed', async () => {
-    window.history.pushState({}, '', '/display?lang=en');
-    render(
-      <I18nProvider initial="en">
-        <Display api={api(vi.fn(async () => COUNTS))} slug="s" animate={false} sponsorBand={null} />
-      </I18nProvider>,
-    );
-    await act(async () => {});
-    const footer = screen.getByRole('contentinfo');
-    expect(footer).toHaveTextContent('Sponsored by');
-    expect(footer.querySelectorAll('.d-sponsor--empty')).toHaveLength(4);
-    expect(footer.querySelectorAll('img')).toHaveLength(0);
+    expect(screen.queryByRole('contentinfo')).toBeNull();
+    expect(document.querySelector('.d-sponsors')).toBeNull();
   });
 });

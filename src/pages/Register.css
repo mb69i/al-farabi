@@ -426,7 +426,7 @@
   place-items: center;
   padding: var(--space-5) var(--space-4) var(--space-4);
   background: linear-gradient(180deg, var(--navy) 0%, var(--navy-deep) 100%);
-  border-bottom: 4px solid #A3262B;
+  border-bottom: 4px solid #E62B1E;
 }
 
 .day-welcome-head img {

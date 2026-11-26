@@ -670,3 +670,165 @@
     transition: none !important;
   }
 }
+
+/* ---------- TEDxBaghdad 2026 (owner, 26 Nov): the theme reveal's look ----------
+   Electric violet page, a white halftone-dot cluster (the dotted map of the artwork), a solid TED-red disc,
+   white type, TED red for accents. Night is the event look; day is the same on white. */
+.display {
+  --d-ink: #170f3a;
+  --d-muted: #5a5478;
+  --d-accent: #e62b1e;
+  --d-gold: #3f14d9;
+  --d-glass: rgba(63, 20, 217, 0.06);
+  --d-line: rgba(63, 20, 217, 0.3);
+  --d-divider: rgba(23, 15, 58, 0.12);
+  --d-rule: rgba(23, 15, 58, 0.2);
+  --d-track: rgba(23, 15, 58, 0.1);
+  --d-male: #3f14d9;
+  --d-female: #e62b1e;
+  --d-chip: rgba(230, 43, 30, 0.08);
+  --d-bump: rgba(230, 43, 30, 0.16);
+  --d-title: #170f3a;
+  --d-when-bg: rgba(63, 20, 217, 0.06);
+  --d-when-line: rgba(63, 20, 217, 0.4);
+  --d-halftone: #3f14d9;
+  --d-pattern:
+    radial-gradient(circle, rgba(63, 20, 217, 0.12) 1.2px, transparent 1.6px) 0 0 / 26px 26px;
+}
+
+.display[data-theme='night'] {
+  --d-bg: #3f14d9;
+  --d-pattern:
+    radial-gradient(70% 60% at 50% 40%, rgba(255, 255, 255, 0.07), transparent 70%),
+    linear-gradient(160deg, #4a1cf2 0%, #3f14d9 45%, #2a0ba8 100%);
+  --d-frame:
+    inset 0 0 0 calc(var(--u) * 0.8) #2a0ba8,
+    inset 0 0 0 calc(var(--u) * 0.8 + 2px) #e62b1e;
+  --d-ink: #ffffff;
+  --d-muted: rgba(255, 255, 255, 0.78);
+  --d-accent: #ff4a3d;
+  --d-gold: #ffffff;
+  --d-glass: rgba(255, 255, 255, 0.08);
+  --d-line: rgba(255, 255, 255, 0.28);
+  --d-divider: rgba(255, 255, 255, 0.16);
+  --d-rule: rgba(255, 255, 255, 0.24);
+  --d-track: rgba(255, 255, 255, 0.16);
+  --d-male: #ffffff;
+  --d-female: #e62b1e;
+  --d-chip: rgba(255, 255, 255, 0.08);
+  --d-qr-shadow: 0 calc(var(--u) * 1.4) calc(var(--u) * 4) calc(var(--u) * -1) rgba(16, 4, 70, 0.8);
+  --d-bump: rgba(255, 255, 255, 0.14);
+  --d-title: #ffffff;
+  --d-when-bg: rgba(255, 255, 255, 0.08);
+  --d-when-line: rgba(255, 255, 255, 0.45);
+  --d-halftone: #ffffff;
+}
+
+/* the halftone cluster and the red disc sit behind everything */
+.display::before,
+.display::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.display::before {
+  inset: 0;
+  background: radial-gradient(circle, var(--d-halftone) calc(var(--u) * 0.32), transparent calc(var(--u) * 0.36)) 0 0 /
+    calc(var(--u) * 1.5) calc(var(--u) * 1.5);
+  -webkit-mask-image: radial-gradient(34% 46% at 84% 64%, #000 0%, rgba(0, 0, 0, 0.55) 45%, transparent 75%);
+  mask-image: radial-gradient(34% 46% at 84% 64%, #000 0%, rgba(0, 0, 0, 0.55) 45%, transparent 75%);
+  opacity: 0.55;
+}
+
+/* like the artwork: a large disc cut off by the screen edge, level with the theme */
+.display::after {
+  width: calc(var(--u) * 22);
+  height: calc(var(--u) * 22);
+  top: calc(var(--u) * 8);
+  left: calc(var(--u) * -8);
+  border-radius: 50%;
+  background: #e62b1e;
+  opacity: 0.92;
+}
+
+.display[data-theme='day']::after {
+  opacity: 0.85;
+}
+
+.d-stage,
+.d-corner {
+  z-index: 1;
+}
+
+.d-arch,
+.d-logo--mark,
+.d-logo--ministry {
+  display: none;
+}
+
+.d-logo-plate {
+  display: inline-flex;
+  align-items: center;
+  padding: calc(var(--u) * 0.9) calc(var(--u) * 1.4);
+  border-radius: calc(var(--u) * 0.9);
+  background: #fff;
+  box-shadow: 0 calc(var(--u) * 0.6) calc(var(--u) * 2) calc(var(--u) * -0.8) rgba(16, 4, 70, 0.45);
+}
+
+.d-logo--tedx {
+  height: calc(var(--u) * 3.4);
+}
+
+.d-logo--crest {
+  height: calc(var(--u) * 5.2);
+  padding: calc(var(--u) * 0.35);
+  border-radius: 50%;
+  background: #fff;
+}
+
+.d-kicker {
+  margin-top: calc(var(--u) * 1.2);
+  font-size: calc(var(--u) * 1);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--d-accent);
+}
+
+.display[data-theme='night'] .d-kicker {
+  color: #fff;
+  opacity: 0.85;
+}
+
+.display .d-title {
+  margin-top: calc(var(--u) * 0.2);
+  font-size: calc(var(--u) * 3.4);
+  line-height: 1.15;
+  font-weight: 900;
+}
+
+.d-theme-en {
+  margin-top: calc(var(--u) * 0.1);
+  font-size: calc(var(--u) * 1.7);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--d-title);
+}
+
+.d-theme-en::after {
+  content: '';
+  display: inline-block;
+  width: calc(var(--u) * 0.7);
+  height: calc(var(--u) * 0.7);
+  margin-inline-start: calc(var(--u) * 0.5);
+  border-radius: 50%;
+  background: #e62b1e;
+  vertical-align: middle;
+}
+
+/* the live label reads in white on violet */
+.display[data-theme='night'] .d-live {
+  color: #fff;
+}

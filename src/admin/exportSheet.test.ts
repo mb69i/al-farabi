@@ -176,6 +176,6 @@ describe('designed Excel export', () => {
   });
 
   it('file name carries language and time', () => {
-    expect(exportFileName('en', new Date(2026, 10, 21, 9, 5))).toBe('alfarabi-conf-2026-en-20261121-0905.xlsx');
+    expect(exportFileName('en', new Date(2026, 10, 21, 9, 5))).toBe('tedxbaghdad-2026-en-20261121-0905.xlsx');
   });
 });

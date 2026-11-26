@@ -20,9 +20,9 @@ const BAGHDAD_MS = 3 * 3600_000; // UTC+3, no daylight saving
 
 const L = {
   ar: {
-    title: 'مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل',
+    title: 'تيداكس بغداد 2026 — الورشة التدريبية',
     sheets: ['الملخص', 'الضيوف', 'الباحثون', 'الحضور اليومي'],
-    guests: ['#', 'الاسم', 'الرقم المرجعي', 'الهاتف', 'البريد الإلكتروني', 'الجنس', 'المحافظة', 'جهة العمل', 'التخصص', 'كبار الضيوف', 'أيام الحضور', 'وقت التسجيل', 'لغة التسجيل'],
+    guests: ['#', 'الاسم', 'الرقم المرجعي', 'الهاتف', 'البريد الإلكتروني', 'الجنس', 'المحافظة', 'جهة العمل', 'الفريق', 'كبار الضيوف', 'أيام الحضور', 'وقت التسجيل', 'لغة التسجيل'],
     researchers: ['#', 'الاسم', 'البريد الإلكتروني', 'الهاتف', 'الجنس', 'الجهة', 'عنوان البحث', 'كبار الضيوف', 'وقّع', 'وقت التوقيع', 'الطبيب', 'التوقيع'],
     checkins: ['#', 'اليوم', 'الوقت', 'الاسم', 'الرقم المرجعي'],
     gender: { male: 'ذكر', female: 'أنثى' } as Record<string, string>,
@@ -38,9 +38,9 @@ const L = {
     },
   },
   en: {
-    title: 'The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation',
+    title: 'TEDxBaghdad 2026 — team training',
     sheets: ['Summary', 'Guests', 'Researchers', 'Check-ins'],
-    guests: ['#', 'Name', 'Reference', 'Phone', 'Email', 'Gender', 'Governorate', 'Workplace', 'Specialisation', 'VIP', 'Days present', 'Registered at', 'Language'],
+    guests: ['#', 'Name', 'Reference', 'Phone', 'Email', 'Gender', 'Governorate', 'Workplace', 'Team', 'VIP', 'Days present', 'Registered at', 'Language'],
     researchers: ['#', 'Name', 'Email', 'Phone', 'Gender', 'Institution', 'Research title', 'VIP', 'Signed', 'Signed at', 'Doctor', 'Signature'],
     checkins: ['#', 'Day', 'Time', 'Name', 'Reference'],
     gender: { male: 'Male', female: 'Female' } as Record<string, string>,
@@ -255,7 +255,7 @@ export async function buildExport(data: AdminExport, lang: Lang, opts: ExportOpt
 }
 
 export function exportFileName(lang: Lang, d = new Date()): string {
-  return `alfarabi-conf-2026-${lang}-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.xlsx`;
+  return `tedxbaghdad-2026-${lang}-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.xlsx`;
 }
 
 export async function downloadExport(data: AdminExport, lang: Lang, signature?: SignatureFetcher): Promise<void> {

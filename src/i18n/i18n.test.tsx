@@ -23,18 +23,16 @@ describe('dictionaries', () => {
   it('have exactly the same keys', () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(ar).sort());
   });
-  it('registration promises the certificate that is emailed right away, not a card', () => {
-    const keys = ['reg.lead', 'reg.fullNameHint', 'reg.emailHint', 'thanks.emailNote'] as const;
+  it('TEDx training registration promises no certificate and no email (owner, 26 Nov)', () => {
+    const keys = ['reg.lead', 'reg.fullNameHint', 'reg.emailHint', 'reg.confirmLead', 'thanks.emailNote'] as const;
     for (const k of keys) {
-      expect(ar[k]).toMatch(/شهادة|شهادتك/);
-      expect(ar[k]).not.toMatch(/بطاقة|بطاقتك/);
-      expect(en[k]).toMatch(/certificate/i);
-      expect(en[k]).not.toMatch(/card/i);
+      expect(ar[k]).not.toMatch(/شهادة|شهادتك|الشهادة/);
+      expect(en[k]).not.toMatch(/certificate/i);
     }
   });
-  it('use the official event name from the agenda (owner, 20 Nov): "the First" Al-Farabi Conference', () => {
-    expect(ar['brand.conferenceLong']).toBe('مؤتمر الفارابي الأول للبحوث التطبيقية في التحول الرقمي الشامل');
-    expect(en['brand.conferenceLong']).toBe('The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation');
+  it('use the TEDxBaghdad 2026 name and theme (owner, 26 Nov)', () => {
+    expect(ar['brand.conferenceLong']).toBe('تيداكس بغداد 2026 — ما لم نفقده يوماً');
+    expect(en['brand.conferenceLong']).toBe('TEDxBaghdad 2026 — What We Never Lost');
   });
   it('have no empty strings', () => {
     for (const v of [...Object.values(ar), ...Object.values(en)]) expect(v.trim()).not.toBe('');

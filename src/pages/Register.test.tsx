@@ -34,7 +34,7 @@ function fill() {
   set(/phone number/i, '07701234567');
   set(/^email/i, 'ali@gmail.com');
   set(/workplace/i, 'Baghdad University');
-  set(/specialisation/i, 'Engineering');
+  set(/which team/i, 'Media & Design'); // TEDx training (owner, 26 Nov): the team, typed freely
   set(/governorate/i, 'baghdad');
   fireEvent.click(screen.getByLabelText('Male'));
 }
@@ -107,7 +107,7 @@ describe('Register', () => {
       await sendForm();
       const card = await screen.findByRole('status', { name: 'Welcome to day two' });
       expect(card).toHaveTextContent('Dear Ali,');
-      expect(card).toHaveTextContent('Welcome to day two of The First Al-Farabi Conference on Applied Research in Comprehensive Digital Transformation');
+      expect(card).toHaveTextContent('Welcome to day two of TEDxBaghdad 2026 — What We Never Lost');
       expect(card).toHaveTextContent('Day two · 22 November 2026');
       expect(card).toHaveTextContent('Al-Farabi University');
       expect(card.querySelector('img')).toHaveAttribute('alt', 'Al-Farabi University');
@@ -117,7 +117,7 @@ describe('Register', () => {
   });
 
   it('shows the day-two card even when the event lookup fails (uses the built-in start date)', async () => {
-    vi.useFakeTimers({ now: Date.parse('2026-11-22T07:00:00Z'), shouldAdvanceTime: true });
+    vi.useFakeTimers({ now: Date.parse('2026-12-20T07:00:00Z'), shouldAdvanceTime: true });
     try {
       setup(fakeApi({
         getPublicEvent: vi.fn(async () => { throw new Error('offline'); }),
@@ -270,7 +270,7 @@ describe('Register', () => {
     fill();
     review();
     const box = await screen.findByRole('region', { name: /confirm your details/i });
-    for (const v of ['Ali Hasan Kareem', '+9647701234567', 'ali@gmail.com', 'Male', 'Baghdad', 'Baghdad University', 'Engineering']) {
+    for (const v of ['Ali Hasan Kareem', '+9647701234567', 'ali@gmail.com', 'Male', 'Baghdad', 'Baghdad University', 'Media & Design']) {
       expect(box).toHaveTextContent(v);
     }
     expect(api.registerGuest).not.toHaveBeenCalled();

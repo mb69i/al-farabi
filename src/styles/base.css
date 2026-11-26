@@ -124,6 +124,34 @@ button {
   background: var(--line-dark);
 }
 
+/* TEDxBaghdad logo (black on white) on a white plate, so it reads on violet and in night mode (owner, 26 Nov) */
+.shell-logos .tedx-plate {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(23, 15, 58, 0.08), 0 6px 18px -10px rgba(23, 15, 58, 0.35);
+}
+
+.shell-logos .tedx-logo {
+  height: 28px;
+  width: auto;
+}
+
+.shell--staff .shell-logos .tedx-logo {
+  height: 22px;
+}
+
+@media (max-width: 480px) {
+  .shell-logos .tedx-plate {
+    padding: 8px 10px;
+  }
+  .shell-logos .tedx-logo {
+    height: 22px;
+  }
+}
+
 /* The official event logo beside the crest on every page (owner, 20 Nov) */
 .shell-logos .event-logo {
   height: 60px;

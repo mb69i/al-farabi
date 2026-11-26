@@ -1,35 +1,36 @@
-/* Al-Farabi Conference identity — from the official flyers. */
+/* TEDxBaghdad 2026 identity (owner, 26 Nov): TED red #E62B1E and the theme reveal's electric violet #3F14D9.
+   Token names are kept from the Al-Farabi build so every page follows. */
 :root {
-  --navy-deep: #0C1733;
-  --navy: #14234B;
-  --navy-raised: #1B2D5C;
-  --burgundy: #A3262B;
-  --burgundy-bright: #C2343A;
-  --gold: #F2C230;
-  --gold-soft: #F7D873;
+  --navy-deep: #1C0870;
+  --navy: #3F14D9;
+  --navy-raised: #5A2EF0;
+  --burgundy: #E62B1E;
+  --burgundy-bright: #FF3B2F;
+  --gold: #E62B1E;
+  --gold-soft: #FF8A80;
   --white: #FFFFFF;
   /* Light theme: white page, navy text, blue glass cards, red borders. The *-on-dark names are
      kept so every page follows; they now mean "text on the page background". */
   --page: #FFFFFF;
-  --paper: rgba(37, 78, 160, 0.07);
-  --glass: rgba(37, 78, 160, 0.07);
-  --glass-strong: rgba(37, 78, 160, 0.13);
-  --card-border: #A3262B;
-  --gold-ink: #8A5A00;
-  --ink: #14234B;
-  --ink-muted: #4A5570;
-  --line-dark: rgba(163, 38, 43, 0.38);
+  --paper: rgba(63, 20, 217, 0.06);
+  --glass: rgba(63, 20, 217, 0.06);
+  --glass-strong: rgba(63, 20, 217, 0.12);
+  --card-border: #3F14D9;
+  --gold-ink: #C4170C;
+  --ink: #170F3A;
+  --ink-muted: #5A5478;
+  --line-dark: rgba(63, 20, 217, 0.3);
   --line-light: #D9DCE4;
-  --text-on-dark: #14234B;
-  --text-on-dark-muted: #4A5570;
+  --text-on-dark: #170F3A;
+  --text-on-dark-muted: #5A5478;
   /* Roles that change between day and night */
   --surface: #FFFFFF; /* inputs, chips, bubbles */
-  --heading: #14234B;
-  --accent-ink: #A3262B;
-  --focus: #14234B;
-  --chip-on: #14234B;
-  --suggest-bg: #FFF6D6;
-  --switch-off: rgba(20, 35, 75, 0.2);
+  --heading: #170F3A;
+  --accent-ink: #E62B1E;
+  --focus: #3F14D9;
+  --chip-on: #3F14D9;
+  --suggest-bg: #FFF1F0;
+  --switch-off: rgba(23, 15, 58, 0.2);
   --danger: #B42318;
   --success: #1F7A4D;
 
@@ -54,13 +55,13 @@
   --radius: 14px;
   --radius-lg: 22px;
   --tap: 48px;
-  --shadow-card: 0 1px 2px rgba(12, 23, 51, 0.08), 0 16px 36px -20px rgba(12, 23, 51, 0.35);
+  --shadow-card: 0 1px 2px rgba(23, 15, 58, 0.08), 0 16px 36px -20px rgba(23, 15, 58, 0.35);
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   /* Flyer background: faint dot grid with sparse burgundy dots. */
   --dots:
-    radial-gradient(circle, rgba(163, 38, 43, 0.22) 1.6px, transparent 2px) 13px 13px / 104px 104px,
-    radial-gradient(circle, rgba(20, 35, 75, 0.06) 1.1px, transparent 1.5px) 0 0 / 26px 26px;
+    radial-gradient(circle, rgba(230, 43, 30, 0.35) 1.8px, transparent 2.2px) 13px 13px / 104px 104px,
+    radial-gradient(circle, rgba(63, 20, 217, 0.1) 1.1px, transparent 1.5px) 0 0 / 26px 26px;
 }
 
 /* Night mode for the public and staff pages (button next to the language switch).
@@ -68,29 +69,29 @@
    set by an admin. */
 :root[data-theme='night'] {
   color-scheme: dark;
-  --page: #0C1733;
-  --paper: rgba(255, 255, 255, 0.06);
-  --glass: rgba(255, 255, 255, 0.06);
-  --glass-strong: rgba(255, 255, 255, 0.12);
-  --card-border: #C2343A;
-  --gold-ink: #F2C230;
-  --ink: #F2F4FA;
-  --ink-muted: #AEB8D3;
-  --line-dark: rgba(242, 194, 48, 0.32);
+  --page: #1A0A5E;
+  --paper: rgba(255, 255, 255, 0.07);
+  --glass: rgba(255, 255, 255, 0.07);
+  --glass-strong: rgba(255, 255, 255, 0.13);
+  --card-border: #E62B1E;
+  --gold-ink: #FF8A80;
+  --ink: #FFFFFF;
+  --ink-muted: #C9C2F0;
+  --line-dark: rgba(255, 255, 255, 0.24);
   --line-light: rgba(255, 255, 255, 0.18);
-  --text-on-dark: #F2F4FA;
-  --text-on-dark-muted: #AEB8D3;
-  --surface: #13224A;
+  --text-on-dark: #FFFFFF;
+  --text-on-dark-muted: #C9C2F0;
+  --surface: #2A1280;
   --heading: #FFFFFF;
-  --accent-ink: #F7D873;
-  --focus: #F2C230;
-  --chip-on: #A3262B;
-  --suggest-bg: rgba(242, 194, 48, 0.16);
+  --accent-ink: #FF6B60;
+  --focus: #FF6B60;
+  --chip-on: #E62B1E;
+  --suggest-bg: rgba(230, 43, 30, 0.18);
   --switch-off: rgba(255, 255, 255, 0.25);
   --danger: #FF7A6E;
   --success: #46C98D;
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 36px -20px rgba(0, 0, 0, 0.7);
   --dots:
-    radial-gradient(circle, rgba(242, 194, 48, 0.16) 1.6px, transparent 2px) 13px 13px / 104px 104px,
-    radial-gradient(circle, rgba(255, 255, 255, 0.05) 1.1px, transparent 1.5px) 0 0 / 26px 26px;
+    radial-gradient(circle, rgba(230, 43, 30, 0.4) 1.8px, transparent 2.2px) 13px 13px / 104px 104px,
+    radial-gradient(circle, rgba(255, 255, 255, 0.08) 1.1px, transparent 1.5px) 0 0 / 26px 26px;
 }

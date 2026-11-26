@@ -3,18 +3,19 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useI18n } from '../i18n';
 import { ApiError, type Api, type DisplayCounts } from '../lib/api';
 import './Display.css';
-import { SPONSOR_BAND, type SponsorBand } from './sponsors';
 
-type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean; sponsorBand?: SponsorBand | null };
+type Props = { api: Api; slug: string; pollMs?: number; animate?: boolean };
 
 // Wording of the agenda's opening slide (owner, 20 Nov), always in Arabic as on the slide.
-const TITLE_LINES = ['مؤتمر الفارابي الأول للبحوث التطبيقية', 'في التحول الرقمي الشامل'] as const;
-const SLOGAN = 'تحت شعار ( الريادة والابتكار ركائز التحول الرقمي الشامل في العراق )';
-const WHEN = '21 – 22 / 11 / 2026 في رحاب جامعة الفارابي – بغداد';
+// TEDxBaghdad 2026 training at Al-Farabi (owner, 26 Nov): the 2026 theme leads, as on the theme reveal.
+const KICKER = 'TEDxBaghdad 2026';
+const THEME_AR = 'ما لم نفقده يوماً';
+const THEME_EN = 'What We Never Lost';
+const WHEN = 'الورشة التدريبية لفرق تيداكس بغداد 2026 · جامعة الفارابي – بغداد';
 
 // The QR always sends guests to the live site, even when this screen is opened from a preview copy
 // (whose address needs a Vercel login). VITE_SITE_URL can point it at a custom domain later.
-const SITE = ((import.meta.env.VITE_SITE_URL as string | undefined) || 'https://al-farabi-gilt.vercel.app').replace(/\/+$/, '');
+const SITE = ((import.meta.env.VITE_SITE_URL as string | undefined) || 'https://tedx.mb-ai.org').replace(/\/+$/, '');
 
 type CounterKey = Exclude<keyof DisplayCounts, 'researchers_total' | 'theme'>;
 type Theme = 'day' | 'night';
@@ -75,7 +76,7 @@ function AnimatedNumber({ value, animate }: { value: number; animate: boolean })
   return <>{shown.toLocaleString('en-US')}</>;
 }
 
-export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand = SPONSOR_BAND }: Props) {
+export function Display({ api, slug, pollMs = 5000, animate = true }: Props) {
   const { t, setLang } = useI18n();
   const reduced = usePrefersReducedMotion();
   const motion = animate && !reduced;
@@ -216,26 +217,18 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
         {/* Header like the opening slide of the agenda (owner, 20 Nov): Al-Farabi | the official conference logo |
             Ministry, the official name, the slogan, then dates and place. No sponsorship line, no web address and
             no welcome pill (owner, 20 Nov); the QR gets the room. */}
-        <svg className="d-arch" viewBox="0 0 400 300" aria-hidden="true" focusable="false">
-          <circle cx="200" cy="150" r="138" />
-          <path d="M120 300 V170 Q120 95 200 60 Q280 95 280 170 V300" />
-          <path d="M150 300 V180 Q150 125 200 100 Q250 125 250 180 V300" />
-          <path d="M175 300 V190 Q175 150 200 135 Q225 150 225 190 V300" />
-        </svg>
         <div className="d-logos" dir="ltr">
+          <span className="d-logo-plate">
+            <img className="d-logo d-logo--tedx" src="/brand/tedx-baghdad-720.png" alt="TEDxBaghdad" />
+          </span>
           <img className="d-logo d-logo--crest" src="/brand/crest-360.webp" alt={t('brand.university')} />
-          <img
-            className="d-logo d-logo--mark"
-            src={theme === 'night' ? '/brand/conference-logo-dark.svg' : '/brand/conference-logo-light.svg'}
-            alt={t('brand.conference')}
-          />
-          <img className="d-logo d-logo--ministry" src="/brand/ministry-360.webp" alt={t('brand.ministry')} />
         </div>
+        <p className="d-kicker" dir="ltr">{KICKER}</p>
         <h1 className="d-title" lang="ar" dir="rtl">
-          <span>{TITLE_LINES[0]}</span> <span>{TITLE_LINES[1]}</span>
+          {THEME_AR}
         </h1>
-        <p className="d-slogan" lang="ar" dir="rtl">
-          {SLOGAN}
+        <p className="d-theme-en" lang="en" dir="ltr">
+          {THEME_EN}
         </p>
         <p className="d-when" lang="ar" dir="rtl">
           {WHEN}
@@ -289,30 +282,6 @@ export function Display({ api, slug, pollMs = 5000, animate = true, sponsorBand 
         </div>
       </main>
 
-      {/* Sponsors as on the sponsors certificate: the designer's band, on the same paper as the logos */}
-      <footer className="d-sponsors">
-        {sponsorBand ? (
-          <>
-            <p className="d-sponsors-title">الجهات الراعية والمشاركة · Sponsors &amp; Partners</p>
-            <div className={`d-marquee ${motion ? '' : 'd-marquee--still'}`}>
-              {/* two copies of one strip slide by exactly one copy's width: a seamless loop, one download */}
-              <div className="d-marquee-track" dir="ltr">
-                <img src={sponsorBand.src} alt={sponsorBand.alt} />
-                <img src={sponsorBand.src} alt="" aria-hidden="true" />
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <span className="d-sponsors-label">{t('display.sponsoredBy')}</span>
-            {[1, 2, 3, 4].map((i) => (
-              <span key={i} className="d-sponsor d-sponsor--empty">
-                {t('display.sponsorSlot')}
-              </span>
-            ))}
-          </>
-        )}
-      </footer>
     </div>
   );
 }
