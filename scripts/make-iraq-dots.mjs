@@ -51,7 +51,7 @@ for (let y = minY + STEP / 2, row = 0; y < maxY; y += STEP * 0.866, row++) {
     if (!inside([x, y])) continue;
     if (Math.hypot(x - bx, y - by) < STEP * 0.9) continue; // room for the red Baghdad dot
     const d = edgeDistance([x, y]);
-    const r = Math.min(STEP * 0.46, 1.6 + d * 0.11);
+    const r = Math.min(STEP * 0.46, 5 + d * 0.09); // border dots start at 5, not 1.6 (owner, 27 Nov: "skinny")
     dots.push([+x.toFixed(1), +y.toFixed(1), +r.toFixed(2)]);
   }
 }

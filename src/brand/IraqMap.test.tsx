@@ -43,6 +43,14 @@ describe('IraqMap', () => {
     expect(Number(front.getAttribute('r'))).toBeGreaterThan(far);
   });
 
+  it('the border dots are full enough to read (owner, 27 Nov: "the dots in the edges look skinny")', () => {
+    const { container } = render(<IraqMap wrapClass="w" imgClass="m" />);
+    const radii = [...container.querySelectorAll('circle.iraq-dot')].map((d) => Number(d.getAttribute('r')));
+    // the halftone still grows inland, but even the outermost dot is at least a third of the biggest
+    expect(Math.min(...radii)).toBeGreaterThanOrEqual(Math.max(...radii) / 3);
+    expect(Math.max(...radii)).toBeGreaterThan(Math.min(...radii) * 1.8);
+  });
+
   it('Baghdad is a red dot with rings that spread outward', () => {
     const { container } = render(<IraqMap wrapClass="w" imgClass="m" />);
     expect(container.querySelector('.baghdad')).toHaveAttribute('fill', '#e62b1e');
