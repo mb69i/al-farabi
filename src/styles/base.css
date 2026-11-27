@@ -449,8 +449,12 @@ button {
    they read easily, and the footer's contact block becomes a glass panel with white type. */
 .shell--public {
   min-height: 100dvh;
-  /* the hosting poster: deep navy, a burgundy glow from the lower corner */
-  background: radial-gradient(90% 55% at 100% 100%, rgba(163, 38, 43, 0.55), transparent 70%), radial-gradient(70% 45% at 0% 0%, rgba(43, 64, 128, 0.45), transparent 70%), #14234b;
+  /* the hosting poster: its navy damask (as big as on the photo on a phone), a burgundy glow from the lower corner */
+  background:
+    radial-gradient(85% 60% at 100% 100%, rgba(122, 28, 52, 0.75), transparent 70%),
+    radial-gradient(60% 45% at 0% 100%, rgba(95, 25, 50, 0.35), transparent 70%),
+    url(/brand/damask.webp) center top / min(100vw, 720px) auto repeat,
+    #15244c;
   color: #fff;
 }
 

@@ -678,9 +678,12 @@
 .display,
 .display[data-theme='night'],
 .display[data-theme='day'] {
-  --d-bg: #14234b;
-  --d-pattern: radial-gradient(70% 70% at 100% 100%, rgba(163, 38, 43, 0.55), transparent 70%),
-    radial-gradient(60% 50% at 0% 0%, rgba(43, 64, 128, 0.45), transparent 70%);
+  --d-bg: #15244c;
+  /* the hosting poster's navy damask at its own flower size, shifted so a flower column covers the middle
+     (owner, 27 Nov), under the burgundy glow from the lower corner */
+  --d-pattern: radial-gradient(85% 60% at 100% 100%, rgba(122, 28, 52, 0.75), transparent 70%),
+    radial-gradient(60% 45% at 0% 100%, rgba(95, 25, 50, 0.35), transparent 70%),
+    url(/brand/damask.webp) calc(var(--u) * 3.75) calc(var(--u) * -3.75) / calc(var(--u) * 56) auto repeat;
   --d-frame: none;
   --d-ink: #ffffff;
   --d-muted: rgba(255, 255, 255, 0.8);
